@@ -1,0 +1,581 @@
+:root {
+    --primary: #1565c0;
+    --primary-dark: #0d47a1;
+    --primary-light: #e3f2fd;
+    --bg: #f4f7fb;
+    --border: #e1e7ef;
+    --text: #1f2d3d;
+    --muted: #6b7c93;
+}
+
+/* ===== PAGE ===== */
+
+body {
+    margin: 0;
+    font-family: "Segoe UI", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    height: 100vh;
+}
+
+.layout {
+    display: grid;
+    grid-template-columns: 55% 45%;
+    height: 100vh;
+}
+
+/* ===== LEFT PANEL ===== */
+
+.form-panel {
+    background: white;
+    border-right: 1px solid var(--border);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow-y: auto;
+}
+
+.form-panel-inner {
+    width: 100%;
+    max-width: 680px;
+    padding: 60px 40px;
+}
+
+/* TITLE */
+
+h2 {
+    margin-bottom: 35px;
+    color: var(--primary-dark);
+    font-size: 26px;
+}
+
+/* INFO CARD */
+
+.info-card {
+    background: var(--primary-light);
+    padding: 26px;
+    border-radius: 16px;
+    margin-bottom: 40px;
+    display: grid;
+    gap: 10px;
+}
+
+/* DESCRIPTION */
+
+.description-section h3 {
+    font-size: 13px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 10px;
+}
+
+.description-section p {
+    border: 1px solid var(--border);
+    padding: 22px;
+    border-radius: 14px;
+    line-height: 1.6;
+}
+
+/* ===== TABS ===== */
+
+.tab-buttons {
+    margin-top: 35px;
+    display: flex;
+    gap: 12px;
+}
+
+.tab-btn {
+    background: white;
+    border: 1px solid var(--border);
+    padding: 10px 18px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: 0.2s ease;
+    font-weight: 500;
+}
+
+.tab-btn:hover {
+    background: var(--primary-light);
+}
+
+.tab-btn.active {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+}
+
+/* ===== BACK BUTTON ===== */
+
+.back-btn {
+    margin-top: 30px;
+}
+
+.btn-secondary {
+    display: inline-block;
+    padding: 8px 14px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    text-decoration: none;
+    color: var(--text);
+    transition: 0.2s ease;
+}
+
+.btn-secondary:hover {
+    background: var(--primary-light);
+}
+
+/* ===== RIGHT PANEL ===== */
+
+.right-panel {
+    position: relative;
+    background: #eef3f9;
+    height: 100vh;
+    overflow: hidden;
+}
+
+/* ===== CONTENT PANELS ===== */
+
+.content-panel {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transform: translateY(20px);
+    pointer-events: none;
+    transition: 0.25s ease;
+    overflow-y: auto;
+}
+
+.content-panel.active {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+/* ===== MAP ===== */
+
+#map {
+    width: 100%;
+    height: 100%;
+}
+
+/* ===== IMAGES ===== */
+
+.image-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 24px;
+    padding: 40px;
+    box-sizing: border-box;
+}
+
+.signal-image {
+    width: 100%;
+    height: 240px;
+    object-fit: cover;
+    border-radius: 18px;
+    cursor: pointer;
+    transition: 0.3s ease;
+}
+
+.signal-image:hover {
+    transform: scale(1.03);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+}
+
+/* ===== IMAGE MODAL ===== */
+
+.image-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.85);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+.image-modal.active {
+    display: flex;
+}
+
+.image-modal img {
+    max-width: 90%;
+    max-height: 90%;
+    border-radius: 16px;
+}
+
+/* ===== COMMENTS ===== */
+
+.comments-wrapper{
+    padding:40px;
+    display:flex;
+    flex-direction:column;
+    gap:16px;
+
+    height:100%;
+}
+
+.comment-row {
+    display: flex;
+}
+
+.my-comment {
+    justify-content: flex-end;
+}
+
+.comment-bubble{
+    max-width:70%;
+    padding:14px 18px;
+    border-radius:18px;
+    font-size:14px;
+    line-height:1.5;
+
+    box-shadow:0 4px 14px rgba(0,0,0,0.08);
+}
+
+.my-comment .comment-bubble{
+    background:linear-gradient(135deg,#1e88e5,#1565c0);
+    color:white;
+
+    box-shadow:
+        0 6px 16px rgba(21,101,192,0.35);
+}
+
+.other-comment .comment-bubble{
+    background:white;
+    border:1px solid #d6dde6;
+
+    color:#1f2d3d;
+
+    box-shadow:
+        0 4px 14px rgba(0,0,0,0.08);
+}
+
+.comment-meta{
+    font-size:12px;
+    margin-bottom:6px;
+
+    display:flex;
+    flex-direction:column;
+    gap:2px;
+}
+
+.comment-meta span:first-child{
+    font-weight:600;
+}
+
+.comment-meta span:last-child{
+    font-size:11px;
+    opacity:0.7;
+}
+
+/* ===== EMPTY TEXT ===== */
+
+.empty-text {
+    padding: 40px;
+    color: var(--muted);
+}
+
+/* ===== ADMIN ACTION ROW ===== */
+
+.action-row {
+    margin-top: 40px;
+    display: flex;
+    gap: 16px;
+}
+
+/* ===== ADMIN BUTTON (PRIMARY) ===== */
+
+.btn-admin {
+    flex: 1;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    padding: 12px 20px;
+    border-radius: 14px;
+
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 15px;
+
+    color: white;
+
+    background: linear-gradient(135deg,
+                var(--primary),
+                var(--primary-dark));
+
+    box-shadow: 0 12px 28px rgba(21,101,192,0.35);
+
+    transition: 0.25s ease;
+}
+
+.btn-admin:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 18px 40px rgba(21,101,192,0.45);
+}
+
+/* ===== BACK BUTTON (SECONDARY) ===== */
+
+.btn-back {
+    flex: 1;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    padding: 12px 20px;
+    border-radius: 14px;
+
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 15px;
+
+    background: white;
+    border: 1px solid var(--border);
+    color: var(--text);
+
+    transition: 0.2s ease;
+}
+
+.btn-back:hover {
+    background: var(--primary-light);
+}
+
+/* ===== INFO CARD STRUCTURE IMPROVEMENT ===== */
+
+.info-card {
+    background: linear-gradient(135deg, #1565c0, #0d47a1);
+    padding: 28px 30px;
+    border-radius: 18px;
+    margin-bottom: 40px;
+    display: grid;
+    gap: 14px;
+    border: none;
+    color: white;
+    box-shadow: 0 12px 28px rgba(13, 71, 161, 0.25);
+}
+
+.info-card div {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    font-size: 14px;
+}
+
+.info-card div:last-child {
+    border-bottom: none;
+}
+
+.info-card strong {
+    color: rgba(255, 255, 255, 0.7);
+    font-weight: 600;
+}
+
+/* ===== STATUS BADGE ===== */
+
+.status-badge {
+    padding: 6px 16px;
+    border-radius: 30px;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* OPEN (Светло синьо/Бяло) */
+.status-open {
+    background: #e3f2fd;
+    color: #1565c0 !important;
+}
+
+/* IN PROGRESS (Ярко оранжево) */
+.status-in_progress {
+    background: #fff3e0;
+    color: #ef6c00 !important;
+}
+
+/* RESOLVED (Ярко зелено - точно като на скрийншота) */
+.status-resolved {
+    background: #e8f5e9;
+    color: #2e7d32 !important;
+}
+
+/* REJECTED (Ярко червено) */
+.status-rejected {
+    background: #ffebee;
+    color: #c62828 !important;
+}
+
+/* ================= TAB SECTION ================= */
+
+.tab-buttons,
+.action-row {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+
+/* Разстояние между двата реда */
+.tab-buttons {
+    margin: 35px 0 20px 0;
+}
+
+.action-row {
+    margin-top: 10px;
+}
+
+/* ================= UNIFIED BUTTON STYLE ================= */
+
+.tab-btn,
+.btn-back,
+.btn-admin {
+    width: 210px;          /* еднаква ширина */
+    height: 48px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 14px;
+    font-size: 14px;
+    font-weight: 600;
+    text-align: center;
+
+    transition: 0.25s ease;
+}
+
+/* TAB DEFAULT */
+
+.tab-btn {
+    border: 1px solid var(--border);
+    background: white;
+    color: var(--primary-dark);
+    cursor: pointer;
+}
+
+.tab-btn:hover {
+    background: var(--primary-light);
+    transform: translateY(-2px);
+}
+
+.tab-btn.active {
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    color: white;
+    border: none;
+}
+
+/* BACK */
+
+.btn-back {
+    border: 1px solid var(--border);
+    background: white;
+    color: var(--primary-dark);
+    text-decoration: none;
+}
+
+.btn-back:hover {
+    background: var(--primary-light);
+}
+
+/* ADMIN */
+
+.btn-admin {
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    color: white;
+    text-decoration: none;
+}
+
+.btn-admin:hover {
+    transform: translateY(-2px);
+}
+
+/* ================= КОМЕНТАРИ (МЕТА ДАННИ) ================= */
+
+#commentsSection {
+    display: flex;
+    flex-direction: column;
+    /* Важно: Трябва да има фиксирана височина или да заема 100% от контейнера си */
+    height: 100%;
+    position: relative;
+    background-color: #f0f2f5;
+    overflow: hidden; /* Спираме общия скрол на секцията */
+}
+
+.comments-wrapper {
+    flex: 1; /* Заема цялото налично пространство */
+    overflow-y: auto; /* Само тук се появява скрол */
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    /* Място отдолу, за да не се застъпва последният коментар с инпута */
+    padding-bottom: 80px;
+}
+
+/* Изчистен фиксиран инпут най-отдолу */
+.comment-input-wrapper {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+
+    background: white;
+    padding: 15px 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-sizing: border-box;
+    border-top: 1px solid rgba(0,0,0,0.08);
+    z-index: 10;
+}
+
+.comment-input {
+    flex: 1;
+    background: #f0f2f5;
+    border: none;
+    border-radius: 20px;
+    padding: 10px 15px;
+    height: 38px; /* Фиксирана височина за един ред */
+    resize: none;
+    outline: none;
+    font-size: 14px;
+    font-family: inherit;
+    color: #050505;
+    display: flex;
+    align-items: center;
+}
+
+.comment-send {
+    background: transparent;
+    border: none;
+    color: #0084ff;
+    font-size: 24px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s ease;
+}
+
+.comment-send:hover {
+    transform: scale(1.1);
+}
+
+/* Стил за името в бяло при сините балончета */
+.my-comment .comment-meta span:first-child {
+    color: #ffffff !important;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.my-comment .comment-meta span:last-child {
+    color: rgba(255, 255, 255, 0.7) !important;
+    font-size: 11px;
+}

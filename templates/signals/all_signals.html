@@ -1,0 +1,321 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+<meta charset="UTF-8">
+<title>Сигнали – Община Варна</title>
+
+<link rel="stylesheet" href="{% static 'css/all_signals.css' %}">
+</head>
+
+<body>
+
+<!-- ================= TOP BAR ================= -->
+
+<div class="top-bar">
+
+    <div class="top-bar-title">
+
+        <a href="{% url 'index' %}">
+            <img src="/media/logo/og-varna.png" class="varna-logo">
+        </a>
+
+        <div class="brand-text-container">
+            <span>СИГНАЛИ</span>
+            <span class="sub-title-text">
+                Управление на подадените сигнали
+            </span>
+        </div>
+
+    </div>
+
+    <div class="top-bar-actions">
+
+        <a href="{% url 'map' %}" class="nav-btn" data-tooltip="Към картата">
+            <img src="/media/buttons/map.png">
+        </a>
+
+    </div>
+
+</div>
+
+<!-- ================= FILTER ================= -->
+
+<div class="signals-filters">
+
+<form method="GET" class="filter-form">
+
+<div class="filter-group">
+<label>Статус</label>
+<select name="status">
+<option value="">Всички</option>
+
+{% for value,label in statuses %}
+<option value="{{ value }}"
+{% if request.GET.status == value %}selected{% endif %}>
+{{ label }}
+</option>
+{% endfor %}
+</select>
+</div>
+
+<div class="filter-group">
+<label>Категория</label>
+<select name="category">
+<option value="">Всички</option>
+
+{% for c in categories %}
+<option value="{{ c.id }}"
+{% if request.GET.category == c.id|stringformat:"s" %}selected{% endif %}>
+{{ c.name }}
+</option>
+{% endfor %}
+</select>
+</div>
+
+<div class="filter-group">
+<label>Сортиране</label>
+<select name="sort">
+    <option value="">По подразбиране</option>
+
+    <option value="newest"
+        {% if request.GET.sort == "newest" %}selected{% endif %}>
+        Най-нови
+    </option>
+
+    <option value="oldest"
+        {% if request.GET.sort == "oldest" %}selected{% endif %}>
+        Най-стари
+    </option>
+
+    <option value="az"
+        {% if request.GET.sort == "az" %}selected{% endif %}>
+        А → Я
+    </option>
+
+    <option value="za"
+        {% if request.GET.sort == "za" %}selected{% endif %}>
+        Я → А
+    </option>
+</select>
+</div>
+
+<div class="filter-group">
+<button type="submit" class="filter-btn">
+Филтрирай
+</button>
+</div>
+<div class="filter-group">
+    <a href="{% url 'signals:all_signals' %}" class="reset-btn">
+        Изчисти
+    </a>
+</div>
+
+
+</form>
+
+</div>
+
+<!-- ================= GRID ================= -->
+
+<main class="signals-container">
+
+{% for signal in signals %}
+
+<div class="signal-card">
+
+    <div class="signal-content">
+
+        <div class="signal-status status-{{ signal.status|lower }}">
+            {{ signal.get_status_display }}
+        </div>
+
+        <h2 class="signal-title">
+            {{ signal.title }}
+        </h2>
+
+        <div class="signal-meta">
+            <img src="/media/icons/location.svg" class="meta-icon">
+            {{ signal.address }}
+        </div>
+
+        <div class="signal-meta">
+            <img src="/media/icons/tag.svg" class="meta-icon">
+            {{ signal.category.name }}
+        </div>
+
+        <div class="signal-meta">
+            <img src="/media/icons/user.svg" class="meta-icon">
+            {{ signal.user }}
+        </div>
+
+        <div class="signal-meta">
+            <img src="/media/icons/clock.svg" class="meta-icon">
+            {{ signal.created_at|date:"d.m.Y H:i" }}
+        </div>
+
+        <!-- ACTIONS -->
+
+        <div class="signal-actions">
+
+            <a href="{% url 'signals:signal_detail' signal.id %}"
+               class="signal-action-btn view-btn"
+               data-tooltip="Преглед">
+                👁
+            </a>
+
+            <a href="{% url 'signals:manage_signal' signal.id %}"
+               class="signal-action-btn edit-btn"
+               data-tooltip="Управление">
+                ⚙
+            </a>
+
+            <a href="{% url 'signals:signal_detail' signal.id %}#comments"
+               class="signal-action-btn comment-btn"
+               data-tooltip="Коментари">
+                ✉︎
+            </a>
+
+            <button onclick="openDeletePopup({{ signal.id }})"
+                    class="signal-action-btn delete-btn"
+                    data-tooltip="Изтрий">
+                ✖
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% empty %}
+
+<div class="no-signals">
+    Няма налични сигнали.
+</div>
+
+{% endfor %}
+
+</main>
+
+<!-- ================= PAGINATION ================= -->
+
+<div class="signals-pagination">
+
+    {% if signals.has_previous %}
+        <a href="?page={{ signals.previous_page_number }}&status={{ request.GET.status }}&category={{ request.GET.category }}&sort={{ request.GET.sort }}"
+           class="page-btn"
+           data-tooltip="Предишна страница">
+            ◀
+        </a>
+    {% endif %}
+
+    {% for num in signals.paginator.page_range %}
+
+        {% if signals.number == num %}
+
+            <span class="page-btn active">
+                {{ num }}
+            </span>
+
+        {% elif num > signals.number|add:'-3' and num < signals.number|add:'3' %}
+
+            <a href="?page={{ num }}&status={{ request.GET.status }}&category={{ request.GET.category }}&sort={{ request.GET.sort }}"
+               class="page-btn"
+               data-tooltip="Страница {{ num }}">
+                {{ num }}
+            </a>
+
+        {% endif %}
+
+    {% endfor %}
+
+    {% if signals.has_next %}
+        <a href="?page={{ signals.next_page_number }}&status={{ request.GET.status }}&category={{ request.GET.category }}&sort={{ request.GET.sort }}"
+           class="page-btn"
+           data-tooltip="Следваща страница">
+            ▶
+        </a>
+    {% endif %}
+
+</div>
+
+<!-- ================= POPUP ================= -->
+
+<div id="deletePopup" class="varna-popup-overlay" style="display:none;">
+<div class="varna-popup popup-error">
+
+<div class="varna-popup-icon">⚠</div>
+
+<div class="varna-popup-title">
+Сигурен ли си?
+</div>
+
+<div class="varna-popup-text">
+Това действие ще изтрие сигнала.
+</div>
+
+<form method="POST" id="deleteForm">
+{% csrf_token %}
+
+<div class="popup-actions">
+
+<button type="submit" class="btn-danger">
+Изтрий
+</button>
+
+<button type="button" class="btn-neutral"
+onclick="closeDeletePopup()">
+Отказ
+</button>
+
+</div>
+
+</form>
+
+</div>
+</div>
+
+<script>
+function openDeletePopup(id){
+document.getElementById("deleteForm").action =
+"/signals/" + id + "/admin-delete/";
+
+document.getElementById("deletePopup").style.display = "flex";
+}
+
+function closeDeletePopup(){
+document.getElementById("deletePopup").style.display = "none";
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+
+    const tooltip = document.createElement("div");
+    tooltip.className = "custom-tooltip";
+    document.body.appendChild(tooltip);
+
+    const targets = document.querySelectorAll('[data-tooltip]');
+
+    targets.forEach(el => {
+
+        el.addEventListener('mouseenter', () => {
+            tooltip.textContent = el.getAttribute('data-tooltip');
+            tooltip.style.opacity = '1';
+        });
+
+        el.addEventListener('mousemove', (e) => {
+            tooltip.style.left = e.clientX + 'px';
+            tooltip.style.top = e.clientY + 'px';
+        });
+
+        el.addEventListener('mouseleave', () => {
+            tooltip.style.opacity = '0';
+        });
+
+    });
+
+});
+</script>
+
+</body>
+</html>

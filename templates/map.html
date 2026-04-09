@@ -1,0 +1,223 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <title>Система за подаване на сигнали – Община Варна</title>
+
+    <link rel="stylesheet" href="{% static 'css/map.css' %}">
+
+    <link rel="stylesheet"
+          href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+
+    <link rel="stylesheet"
+          href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css"/>
+
+    <link rel="stylesheet"
+          href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css"/>
+</head>
+<body>
+
+<div class="top-bar">
+    <div class="top-bar-title">
+        <a href="{% url 'index' %}" class="logo-link">
+            <img src="/media/logo/og-varna.png"
+                 alt="Община Варна"
+                 class="varna-logo">
+        </a>
+
+        <div class="brand-text-container">
+            <span>ВАРНА НА ФОКУС</span>
+            <span class="sub-title-text">Твоят регион ⚲ Твоят глас</span>
+        </div>
+
+        <a href="{% url 'news' %}"
+           class="nav-btn"
+           data-tooltip="Новини от общината">
+            <img src="/media/buttons/news.png" alt="Новини">
+        </a>
+
+        <a href="{% url 'contact' %}"
+           class="nav-btn"
+           data-tooltip="Контакти">
+
+            <img src="/media/buttons/contact.png" alt="Контакти">
+
+        </a>
+
+    </div>
+
+    <div class="top-bar-actions">
+        <div class="weather-inline">
+            <div class="weather-top">
+                <span class="weather-icon">☀️</span>
+                <span class="weather-temp">--°C</span>
+            </div>
+            <div class="weather-desc">—</div>
+        </div>
+        {% if user.is_authenticated %}
+            <a href="{% url 'profile' %}"
+               class="nav-btn"
+               data-tooltip="Моят профил">
+                <img src="/media/buttons/profile.png" alt="">
+            </a>
+
+            <form method="post" action="{% url 'logout' %}">
+                {% csrf_token %}
+                <button type="submit"
+                        class="nav-btn"
+                        data-tooltip="Изход">
+                    <img src="/media/buttons/log_out.png" alt="">
+                </button>
+            </form>
+        {% else %}
+            <a href="{% url 'login' %}"
+               class="nav-btn"
+               data-tooltip="Вход">
+                <img src="/media/buttons/log_in.png" alt="">
+            </a>
+
+            <a href="{% url 'register' %}"
+               class="nav-btn"
+               data-tooltip="Регистрация">
+                <img src="/media/buttons/registration.png" alt="">
+            </a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="map-container">
+    <div id="map"></div>
+    <div class="map-legend">
+        <div class="legend-title">☰ Статус на сигналите</div>
+
+        <div class="legend-item">
+            <span class="legend-dot dot-open"></span>
+            <span>Отворен</span>
+        </div>
+
+        <div class="legend-item">
+            <span class="legend-dot dot-progress"></span>
+            <span>В процес</span>
+        </div>
+
+        <div class="legend-item">
+            <span class="legend-dot dot-resolved"></span>
+            <span>Решен</span>
+        </div>
+
+        <div class="legend-item">
+            <span class="legend-dot dot-rejected"></span>
+            <span>Отхвърлен</span>
+        </div>
+    </div>
+
+    {% if user.is_authenticated and user.role.name == 'CITIZEN' %}
+        <a href="{% url 'signals:create_signal' %}"
+           class="floating-btn btn-left-create"
+           data-tooltip="Подай сигнал">
+            <img src="/media/buttons/create_signal.png" alt="">
+        </a>
+
+        <a href="{% url 'signals:my_signals' %}"
+           class="floating-btn btn-left-my"
+           data-tooltip="Моите сигнали">
+            <img src="/media/buttons/my_signals.png" alt="">
+        </a>
+    {% endif %}
+
+    <div class="floating-btn btn-left-middle"
+         onclick="toggleFilter()"
+         data-tooltip="Филтриране">
+        <img src="/media/buttons/filter.png" alt="">
+    </div>
+    {% if user.is_authenticated and user.role.name == "MUNICIPAL_ADMIN" or user.role.name == "SUPER_ADMIN" %}
+    <a href="{% url 'signals:all_signals' %}"
+       class="floating-btn btn-left-admin"
+       data-tooltip="Всички сигнали">
+
+        <img src="/media/buttons/all_signals.png" alt="All signals">
+
+    </a>
+    {% endif %}
+
+    <!-- FILTER PANEL -->
+    <div class="filter-panel" id="filterPanel">
+
+        <div class="filter-result" id="filterResult"></div>
+
+        <label>Статус</label>
+        <select id="statusSelect">
+            <option value="ALL">Всички</option>
+            <option value="OPEN">Отворени</option>
+            <option value="IN_PROGRESS">В процес</option>
+            <option value="RESOLVED">Решени</option>
+            <option value="REJECTED">Отхвърлени</option>
+        </select>
+
+        <label>Категория</label>
+        <select id="categorySelect">
+            <option value="ALL">Всички</option>
+        </select>
+
+        <label>Период</label>
+        <div class="date-wrapper">
+            <input type="date" id="dateFrom">
+            <span>—</span>
+            <input type="date" id="dateTo">
+        </div>
+
+        <label>Близки сигнали</label>
+
+        <button id="getLocationBtn"
+            class="filter-reset-btn" onclick="showUserLocation()">
+            🔍︎ Намери локация
+        </button>
+
+        <input type="range"
+               id="distanceRange"
+               min="1"
+               max="20"
+               value="5"
+               disabled>
+
+        <div id="distanceValue" class="distance-value">
+            5 км
+        </div>
+
+        <div id="dateError" class="date-error" style="display:none;">
+            Невалиден период – началната дата е след крайната.
+        </div>
+
+        <button class="filter-reset-btn" onclick="resetFilters()">
+            Изчисти филтрите
+        </button>
+
+    </div>
+
+    <a class="floating-btn btn-right-location"
+       onclick="showUserLocation()"
+       data-tooltip="Локация">
+        <img src="/media/buttons/get_location.png" alt="">
+    </a>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+<script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
+<script>
+const STATIC_URL = "{% static '' %}";
+</script>
+<script src="{% static 'js/map.js' %}"></script>
+
+<script>
+const IS_ADMIN = {{ user.is_authenticated|yesno:"true,false" }}
+    {% if user.is_authenticated and user.role.name == "MUNICIPAL_ADMIN" %}
+        && true;
+    {% else %}
+        && false;
+    {% endif %}
+</script>
+
+</body>
+</html>

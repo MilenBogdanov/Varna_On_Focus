@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+<meta charset="UTF-8">
+<title>{{ title }}</title>
+</head>
+
+<body style="margin:0; padding:0; background:#f4f7fb; font-family:Segoe UI, Arial, sans-serif;">
+
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f7fb; padding:40px 0;">
+<tr>
+<td align="center">
+
+<table width="600" cellpadding="0" cellspacing="0"
+       style="background:#ffffff; border-radius:16px; overflow:hidden;">
+
+<!-- HEADER -->
+<tr>
+<td align="center"
+    style="background:linear-gradient(135deg,#1e88e5,#1565c0); padding:35px 20px;">
+
+    <!-- Glow container -->
+    <div style="
+        background:#ffffff;
+        display:inline-block;
+        padding:14px;
+        border-radius:50%;
+        box-shadow:0 0 25px rgba(255,255,255,0.8);
+        margin-bottom:15px;
+    ">
+        <img src="cid:logo_image"
+             width="90"
+             style="display:block;">
+    </div>
+
+    <div style="color:#ffffff; font-size:20px; font-weight:600;">
+        Община Варна
+    </div>
+
+    <div style="color:#e3f2fd; font-size:13px; margin-top:6px;">
+        Изх. № {{ outgoing_number }}
+    </div>
+
+</td>
+</tr>
+
+<!-- BLUE SEPARATOR -->
+<tr>
+<td style="height:5px; background:#0d47a1;"></td>
+</tr>
+
+<!-- CONTENT -->
+<tr>
+<td style="padding:40px 35px; color:#333; font-size:15px; line-height:1.6;">
+    {% block content %}{% endblock %}
+    {% if custom_content %}
+        {{ custom_content|safe }}
+    {% endif %}
+</td>
+</tr>
+
+<!-- FOOTER -->
+<tr>
+<td style="background:#f1f4f8; padding:25px; font-size:12px; color:#666; text-align:center; line-height:1.6;">
+    Това е автоматично генерирано съобщение от системата на Община Варна.<br>
+    Моля, не отговаряйте на този имейл.<br><br>
+
+    За контакт:<br>
+    E-mail: <strong>varnamunicipality1@gmail.com</strong><br>
+    Телефон: <strong>+359876251510</strong>
+</td>
+</tr>
+
+</table>
+
+</td>
+</tr>
+</table>
+
+</body>
+</html>

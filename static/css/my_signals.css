@@ -1,0 +1,469 @@
+/* ====================================================== MY SIGNALS – ENTERPRISE STYLE (ISOLATED) ====================================================== */
+:root {
+    --primary: #1e88e5;
+    --primary-dark: #0d47a1;
+    --primary-light: rgba(21, 101, 192, 0.08);
+    --bg-gradient: linear-gradient(135deg, #1e88e5 0%, #1565c0 45%, #0d47a1 100%);
+    --panel: #ffffff;
+    --border: #e1e7ef;
+    --text: #1f2d3d;
+    --muted: #6b7c93;
+}
+
+/* ================= PAGE ================= */
+body {
+    margin: 0;
+    font-family: "Segoe UI", Tahoma, sans-serif;
+    background: var(--bg-gradient);
+    background-attachment: fixed;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    color: var(--text);
+}
+
+.page-wrapper {
+    min-height: 100vh;
+    padding: 50px 25px;
+    background: transparent;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+}
+
+/* ================= CARD ================= */
+.signals-card {
+    max-width: 1200px;
+    width: 100%;
+    margin: 0 auto;
+    background: var(--panel);
+    padding: 45px 55px;
+    border-radius: 24px;
+    box-shadow: 0 30px 70px rgba(0, 0, 0, 0.25), 0 8px 20px rgba(0, 0, 0, 0.1);
+}
+
+/* ================= HEADER ================= */
+.signals-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 35px;
+}
+
+.signals-header h2 {
+	margin: 0;
+	font-size: 28px;
+	font-weight: 600;
+	color: var(--primary-dark);
+}
+
+/* ================= BUTTONS ================= */
+.small-btn {
+	padding: 9px 16px;
+	font-size: 13px;
+	border-radius: 10px;
+	font-weight: 500;
+}
+
+.btn-primary {
+	background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+	color: white;
+	border: none;
+	cursor: pointer;
+	transition: 0.25s ease;
+}
+
+.btn-primary:hover {
+	transform: translateY(-2px);
+	box-shadow: 0 12px 25px rgba(21, 101, 192, 0.3);
+}
+
+.btn-secondary {
+	border: 1px solid var(--border);
+	background: white;
+	color: var(--primary-dark);
+	text-decoration: none;
+	transition: 0.2s ease;
+}
+
+.btn-secondary:hover {
+	background: var(--primary-light);
+}
+
+/* ================= FILTER BAR ================= */
+.filter-bar {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 16px;
+	align-items: center;
+	justify-content: center;
+	margin-bottom: 35px;
+	padding: 20px 24px;
+	background: var(--primary-light);
+	border-radius: 18px;
+	border: 1px solid var(--border);
+}
+
+.filter-bar select,
+.filter-bar input[type="date"] {
+	padding: 9px 14px;
+	border-radius: 12px;
+	border: 1px solid var(--border);
+	background: white;
+	font-size: 14px;
+	transition: 0.2s ease;
+}
+
+.filter-bar select:hover,
+.filter-bar input[type="date"]:hover {
+	border-color: var(--primary);
+}
+
+.filter-bar select:focus,
+.filter-bar input[type="date"]:focus {
+	outline: none;
+	border-color: var(--primary);
+	box-shadow: 0 0 0 3px rgba(21, 101, 192, 0.15);
+}
+
+.date-wrapper {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.date-wrapper span {
+	color: var(--muted);
+	font-size: 13px;
+}
+
+/* ================= SIGNAL LIST ================= */
+.signals-list {
+	display: flex;
+	flex-direction: column;
+	gap: 18px;
+}
+
+.signal-item {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: 22px 26px;
+	border-radius: 22px;
+	border: 1px solid var(--border);
+	background: white;
+	transition: 0.3s ease;
+}
+
+.signal-item.clickable:hover {
+	transform: translateY(-5px);
+	box-shadow: 0 20px 45px rgba(0, 0, 0, 0.08);
+	border-color: var(--primary-light);
+}
+
+/* LEFT SIDE */
+.signal-title {
+	font-weight: 600;
+	font-size: 16px;
+	margin-bottom: 8px;
+}
+
+.signal-meta {
+	display: flex;
+	gap: 16px;
+	font-size: 13px;
+	color: var(--muted);
+}
+
+.signal-date {
+	opacity: 0.8;
+}
+
+/* ================= STATUS BADGES ================= */
+.status-badge {
+	padding: 6px 14px;
+	border-radius: 30px;
+	font-size: 12px;
+	font-weight: 600;
+	letter-spacing: 0.4px;
+}
+
+/* OPEN */
+.status-open {
+	background: #e3f2fd;
+	color: #1565c0;
+}
+
+/* IN PROGRESS */
+.status-in_progress {
+	background: #fff8e1;
+	color: #f57c00;
+}
+
+/* RESOLVED */
+.status-resolved {
+	background: #e8f5e9;
+	color: #2e7d32;
+}
+
+/* REJECTED */
+.status-rejected {
+	background: #ffebee;
+	color: #c62828;
+}
+
+/* ================= ACTION BUTTONS ================= */
+.signal-actions {
+	display: flex;
+	gap: 14px;
+	align-items: center;
+}
+
+.icon-btn {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 44px;
+	height: 44px;
+	border-radius: 14px;
+	border: 1px solid var(--border);
+	background: white;
+	font-size: 17px;
+	cursor: pointer;
+	transition: 0.25s ease;
+}
+
+/* EDIT BUTTON */
+.edit-btn {
+	color: var(--primary-dark);
+}
+
+.edit-btn:hover {
+	background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+	color: white;
+	transform: translateY(-2px);
+	box-shadow: 0 12px 25px rgba(21, 101, 192, 0.3);
+}
+
+/* DELETE BUTTON */
+.delete-btn {
+	border: 1px solid #ffd6d6;
+	color: #c62828;
+}
+
+.delete-btn:hover {
+	background: #c62828;
+	color: white;
+	transform: translateY(-2px);
+	box-shadow: 0 12px 25px rgba(198, 40, 40, 0.3);
+}
+
+/* ================= PAGINATION ================= */
+.pagination {
+	margin-top: 35px;
+	display: flex;
+	gap: 10px;
+	justify-content: center;
+	align-items: center;
+}
+
+.pagination a,
+.pagination span {
+	min-width: 42px;
+	padding: 9px 15px;
+	border-radius: 16px;
+	font-size: 14px;
+	font-weight: 500;
+	border: 1px solid var(--border);
+	background: white;
+	text-decoration: none;
+	text-align: center;
+	transition: 0.25s ease;
+	color: var(--text);
+}
+
+.pagination a:hover {
+	background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+	color: white;
+	border-color: var(--primary);
+	transform: translateY(-2px);
+	box-shadow: 0 10px 20px rgba(21, 101, 192, 0.25);
+}
+
+.active-page {
+	background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+	color: white;
+	border-color: var(--primary);
+	box-shadow: 0 8px 18px rgba(21, 101, 192, 0.35);
+}
+
+/* ========================================= MODAL OVERLAY – PREMIUM ========================================= */
+.modal-overlay {
+	position: fixed;
+	inset: 0;
+	background: rgba(15, 23, 42, 0.55);
+	backdrop-filter: blur(10px);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	opacity: 0;
+	pointer-events: none;
+	transition: 0.3s ease;
+	z-index: 9999;
+}
+
+.modal-overlay.active {
+	opacity: 1;
+	pointer-events: auto;
+}
+
+/* ========================================= MODAL BOX BASE ========================================= */
+.modal-box {
+	background: white;
+	padding: 42px 48px;
+	border-radius: 30px;
+	width: 100%;
+	max-width: 500px;
+	box-shadow: 0 40px 80px rgba(0, 0, 0, 0.25);
+	transform: translateY(30px) scale(0.92);
+	transition: 0.35s cubic-bezier(.2, .8, .2, 1);
+}
+
+.modal-overlay.active .modal-box {
+	transform: translateY(0) scale(1);
+}
+
+/* ========================================= TITLE & TEXT ========================================= */
+.modal-box h3 {
+	margin: 0 0 20px 0;
+	font-size: 24px;
+	font-weight: 700;
+}
+
+.modal-box p {
+	font-size: 15px;
+	line-height: 1.6;
+	margin: 0;
+}
+
+/* ========================================= ERROR MODAL (RED) ========================================= */
+.error-modal {
+	border-left: 6px solid #c62828;
+}
+
+.error-modal h3 {
+	color: #c62828;
+}
+
+.error-modal p {
+	color: #5f1d1d;
+}
+
+/* ========================================= DELETE CONFIRM MODAL (STRONG RED) ========================================= */
+.modal-box:not(.error-modal) {
+	border-left: 6px solid #b71c1c;
+}
+
+.modal-box:not(.error-modal) h3 {
+	color: #b71c1c;
+}
+
+.modal-box:not(.error-modal) p {
+	color: #4a1c1c;
+}
+
+/* ========================================= ACTION BUTTONS ========================================= */
+.modal-actions {
+	margin-top: 32px;
+	display: flex;
+	justify-content: flex-end;
+	gap: 16px;
+}
+
+/* Cancel */
+.modal-actions .btn-secondary {
+	padding: 10px 20px;
+	border-radius: 16px;
+	border: 1px solid #f3c2c2;
+	background: #fff5f5;
+	color: #8a2a2a;
+	font-weight: 500;
+	transition: 0.2s ease;
+}
+
+.modal-actions .btn-secondary:hover {
+	background: #ffe5e5;
+}
+
+/* DELETE BUTTON – AGGRESSIVE RED */
+.modal-actions .btn-primary {
+	padding: 11px 26px;
+	border-radius: 16px;
+	border: none;
+	font-weight: 700;
+	font-size: 14px;
+	background: linear-gradient(135deg, #e53935, #b71c1c);
+	color: white;
+	box-shadow: 0 14px 30px rgba(183, 28, 28, 0.35);
+	transition: 0.25s ease;
+}
+
+.modal-actions .btn-primary:hover {
+	transform: translateY(-3px);
+	box-shadow: 0 20px 45px rgba(183, 28, 28, 0.45);
+}
+
+.header-actions {
+	display: flex;
+	gap: 10px;
+	align-items: center;
+}
+
+/* ================= HEADER ROUND IMAGE BUTTONS ================= */
+
+.image-style-actions {
+    display: flex;
+    gap: 18px;
+    align-items: center;
+}
+
+/* Копиран enterprise стил от profile */
+
+.image-style-actions .image-btn {
+    width: 62px;
+    height: 62px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(
+        145deg,
+        #ffffff,
+        #eef4fb
+    );
+    border: 2px solid rgba(30,136,229,0.25);
+    box-shadow:
+        0 8px 18px rgba(13,71,161,0.12),
+        inset 0 1px 0 rgba(255,255,255,0.8);
+    transition: all 0.25s ease;
+}
+
+/* Иконата */
+.image-style-actions .image-btn img {
+    width: 28px;
+    height: 28px;
+    object-fit: contain;
+}
+
+/* Hover */
+.image-style-actions .image-btn:hover {
+    transform: translateY(-4px) scale(1.06);
+    box-shadow:
+        0 18px 35px rgba(13,71,161,0.25);
+    border-color: var(--primary);
+}
+
+/* Active */
+.image-style-actions .image-btn:active {
+    transform: scale(0.95);
+}

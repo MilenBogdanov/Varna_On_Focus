@@ -1,0 +1,17 @@
+/* ======================================================
+   EDIT NEWS – SAME AS CREATE NEWS
+====================================================== */
+
+@import url("/static/css/create_news.css");
+
+/* ===== ONLY SMALL DIFFERENCES ===== */
+
+/* title override */
+.news-title::after {
+    content: "Редактиране на съществуваща новина";
+}
+
+/* optional: subtle edit indicator */
+.news-title {
+    color: var(--primary-dark);
+}

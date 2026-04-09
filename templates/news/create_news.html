@@ -1,0 +1,274 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+<meta charset="UTF-8">
+<title>Създай новина</title>
+
+<link rel="stylesheet" href="{% static 'css/create_news.css' %}">
+
+<link rel="stylesheet"
+href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+</head>
+
+<body>
+
+<div class="news-layout">
+
+<!-- LEFT -->
+<div class="news-form-panel">
+
+<a href="/news/" class="btn-back">
+    ← Назад
+</a>
+<h2 class="news-title">Създай новина</h2>
+
+<form method="POST" class="news-form">
+{% csrf_token %}
+
+{{ form.as_p }}
+
+<input type="hidden" name="polygon" id="polygonInput">
+
+<div class="form-actions">
+    <button type="submit" class="btn-primary">
+        Публикувай
+    </button>
+
+    <button type="button" onclick="resetPolygon()" class="btn-secondary">
+        Изчисти координати
+    </button>
+</div>
+
+</form>
+
+</div>
+
+<!-- MAP -->
+<div class="map-panel">
+
+<div class="map-hint">
+⚲ Кликни върху картата, за да очертаеш зона
+</div>
+
+<div id="map"></div>
+
+<div class="btn-reset-location" data-tooltip="Изчисти зоната">
+    <div class="floating-btn" onclick="resetPolygon()">
+        <img src="/media/buttons/clear.png" alt="Clear">
+    </div>
+</div>
+
+</div>
+
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
+
+<script>
+
+let map = L.map('map').setView([43.214,27.914],9)
+
+L.tileLayer(
+'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
+).addTo(map)
+
+let points = []
+let layer = null
+let varnaFeature = null
+
+/* ================= LOAD VARNA BOUNDARY ================= */
+
+fetch("{% static 'geo/bulgaria_regions.geojson' %}")
+.then(res => res.json())
+.then(data => {
+
+    varnaFeature = data.features.find(f =>
+        f.properties.adm1_name1 === "Варна"
+    )
+
+    // overlay за други области
+    L.geoJSON(data, {
+        style: function(feature){
+
+            if(feature.properties.adm1_name1 === "Варна"){
+                return { opacity:0, fillOpacity:0 }
+            }
+
+            return {
+                color:"#c62828",
+                weight:1,
+                fillColor:"#c62828",
+                fillOpacity:0.18
+            }
+        }
+    }).addTo(map)
+
+    // outline на Варна
+    const varnaLayer = L.geoJSON(varnaFeature,{
+        style:{
+            color:"#8e24aa",
+            weight:3,
+            fillOpacity:0
+        }
+    }).addTo(map)
+
+    map.fitBounds(varnaLayer.getBounds())
+})
+
+/* ================= CHECK ================= */
+
+function isInsideVarna(lat, lng){
+
+    if(!varnaFeature) return false
+
+    const point = turf.point([lng, lat])
+    return turf.booleanPointInPolygon(point, varnaFeature)
+}
+
+/* ================= POPUP (same as create_signal) ================= */
+
+function showPopup(type, title, message) {
+    if (document.getElementById("varnaPopupOverlay")) return;
+
+    const overlay = document.createElement("div");
+    overlay.id = "varnaPopupOverlay";
+    overlay.className = "varna-popup-overlay";
+
+    const isError = type === "error";
+
+    overlay.innerHTML = `
+        <div class="varna-popup ${isError ? 'popup-error' : 'popup-success'}">
+
+            <div class="varna-popup-icon">
+                ${isError ? '⚠' : '✔'}
+            </div>
+
+            <div class="varna-popup-title">
+                ${title}
+            </div>
+
+            <div class="varna-popup-text">
+                ${message}
+            </div>
+
+            <button class="varna-popup-btn ${isError ? 'btn-error' : 'btn-success'}">
+                ${isError ? 'Разбрах' : 'Продължи'}
+            </button>
+        </div>
+    `;
+
+    document.body.appendChild(overlay);
+
+    overlay.querySelector(".varna-popup-btn")
+        .addEventListener("click", function(){
+            overlay.remove();
+        });
+}
+
+/* ================= ICON ================= */
+
+function getNewsMarkerIcon(){
+    return L.divIcon({
+        className: "",
+        html: `
+            <div style="
+                position:relative;
+                width:30px;
+                height:30px;
+                transform:rotate(-45deg);
+            ">
+                <div style="
+                    width:100%;
+                    height:100%;
+                    background:#8e24aa;
+                    border-radius:50% 50% 50% 0;
+                    border:3px solid white;
+                "></div>
+                <div style="
+                    position:absolute;
+                    width:10px;
+                    height:10px;
+                    background:white;
+                    border-radius:50%;
+                    top:10px;
+                    left:10px;
+                "></div>
+            </div>
+        `,
+        iconSize: [30,30],
+        iconAnchor: [15,30]
+    })
+}
+
+/* ================= CLICK ================= */
+
+map.on("click", function(e){
+
+    const lat = e.latlng.lat
+    const lng = e.latlng.lng
+
+    // 🚫 извън Варна
+    if(!isInsideVarna(lat, lng)){
+        showPopup(
+            "error",
+            "Избери друга локация!",
+            "Новина може да бъде създадена само в <strong>Регион Варна.</strong>"
+        );
+        return;
+    }
+
+    // скриваме hint
+    const hint = document.querySelector(".map-hint")
+    if(hint) hint.style.display = "none"
+
+    points.push([lat, lng])
+
+    if(layer){
+        map.removeLayer(layer)
+    }
+
+    if(points.length === 1){
+        layer = L.marker(points[0], {
+            icon: getNewsMarkerIcon()
+        }).addTo(map)
+    }
+    else if(points.length === 2){
+        layer = L.polyline(points,{
+            color:"#8e24aa",
+            weight:4
+        }).addTo(map)
+    }
+    else{
+        layer = L.polygon(points,{
+            color:"#8e24aa",
+            fillOpacity:0.3
+        }).addTo(map)
+    }
+
+    document.getElementById("polygonInput").value =
+        JSON.stringify(points)
+})
+
+/* ================= RESET ================= */
+
+function resetPolygon(){
+
+    points = []
+
+    if(layer){
+        map.removeLayer(layer)
+        layer = null
+    }
+
+    document.getElementById("polygonInput").value = ""
+
+    const hint = document.querySelector(".map-hint")
+    if(hint) hint.style.display = "block"
+}
+
+</script>
+
+</body>
+</html>

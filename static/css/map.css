@@ -1,0 +1,700 @@
+:root{
+    --primary:#1e88e5;
+    --secondary:#1565c0;
+    --bg:#f4f6f9;
+}
+
+body{
+    margin:0;
+    font-family:"Segoe UI",Tahoma,sans-serif;
+    background:var(--bg);
+    display:flex;
+    flex-direction:column;
+    height:100vh;
+}
+
+/* ================= HEADER ================= */
+
+.top-bar{
+    height:95px;
+    background:linear-gradient(135deg,var(--primary),var(--secondary));
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0 40px;
+    color:white;
+    box-shadow:0 6px 18px rgba(0,0,0,0.25);
+}
+
+.top-bar-title{
+    font-size:26px;
+    font-weight:700;
+    letter-spacing:0.5px;
+    display:flex;
+    align-items:center;
+    gap:20px;
+}
+
+/* ЛОГО */
+.varna-logo{
+    height:80px;          /* по-голямо */
+    width:auto;
+    background:none;      /* махаме фон */
+    box-shadow:none;      /* махаме shadow */
+    border-radius:0;      /* махаме заобляне */
+    display:block;
+}
+
+
+.top-bar-actions{
+    display:flex;
+    gap:20px;
+}
+
+/* ================= BUTTONS ================= */
+
+.nav-btn,
+.floating-btn{
+    width:60px;
+    height:60px;
+    border-radius:50%;
+    background:white;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    box-shadow:0 8px 22px rgba(0,0,0,0.25);
+    cursor:pointer;
+    border:none;
+    position:relative;
+    transition:all 0.25s ease;
+}
+
+.nav-btn:hover,
+.floating-btn:hover{
+    transform:translateY(-4px) scale(1.08);
+    box-shadow:0 15px 35px rgba(0,0,0,0.35);
+}
+
+.nav-btn img,
+.floating-btn img{
+    width:43px !important;
+    height:43px !important;
+    object-fit:contain !important;
+}
+
+/* ================= MAP ================= */
+
+.map-container{
+    position:relative;
+    flex:1;
+}
+
+#map{
+    width:100%;
+    height:100%;
+}
+
+/* ================= FLOATING BUTTON POSITIONS ================= */
+
+.floating-btn{
+    position:absolute;
+    z-index:1000;
+}
+
+.btn-top-right{ top:20px; right:20px; }
+.btn-bottom-right{ bottom:20px; right:20px; }
+.btn-left-middle{ top:150px; left:20px; }
+/* Под филтъра */
+.btn-left-create{
+    top:230px;
+    left:20px;
+}
+
+.btn-left-my{
+    top:310px;
+    left:20px;
+}
+/* ================= FILTER PANEL ================= */
+
+.filter-panel{
+    position:absolute;
+
+    top:120px;
+    left:90px;
+
+    width:320px;
+    max-width:90vw;
+
+    background: rgba(255,255,255,0.95);
+    backdrop-filter: blur(18px);
+
+    padding:24px 22px;
+    border-radius:20px;
+
+    box-shadow:0 25px 60px rgba(0,0,0,0.25);
+
+    z-index:1200;
+
+    transform:translateX(-120%); /* 👉 скрит вляво */
+    opacity:0;
+
+    transition:all 0.35s ease;
+}
+
+.filter-panel.show{
+    transform:translateX(0);
+    opacity:1;
+}
+
+@media (max-width:768px){
+
+    .filter-panel{
+        left:10px;
+        top:100px;
+        width:90%;
+        transform:translateY(20px);
+    }
+
+    .filter-panel.show{
+        transform:translateY(0);
+    }
+}
+
+/* ===== CENTER CONTENT ===== */
+
+.filter-panel label{
+    font-size:12px;
+    font-weight:600;
+    margin-bottom:6px;
+    display:block;
+    color:#1e3a5f;
+    letter-spacing:0.5px;
+}
+
+/* ===== SELECTS ===== */
+
+.filter-panel select{
+    width:100%;
+    padding:10px 12px;
+    margin-bottom:16px;
+    border-radius:12px;
+    border:1px solid rgba(0,0,0,0.08);
+    background:white;
+    font-size:13px;
+    transition:all 0.2s ease;
+    outline:none;
+}
+
+.filter-panel select:hover{
+    border-color:#1e88e5;
+}
+
+.filter-panel select:focus{
+    border-color:#1e88e5;
+    box-shadow:0 0 0 3px rgba(30,136,229,0.2);
+}
+
+/* ===== DATE RANGE ===== */
+
+.date-wrapper{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:6px;
+    margin-bottom:12px;
+}
+
+.date-wrapper input[type="date"]{
+    width:120px;
+    padding:6px 8px;
+    border-radius:10px;
+    border:1px solid rgba(0,0,0,0.08);
+    background:white;
+    font-size:12px;
+    transition:0.2s ease;
+}
+
+.date-wrapper input[type="date"]:hover{
+    border-color:#1e88e5;
+}
+
+.date-wrapper input[type="date"]:focus{
+    outline:none;
+    border-color:#1e88e5;
+    box-shadow:0 0 0 3px rgba(30,136,229,0.2);
+}
+
+.date-wrapper span{
+    font-weight:600;
+    color:#1565c0;
+}
+
+/* ===== DATE ERROR ===== */
+
+.date-error{
+    font-size:12px;
+    color:#c62828;
+    margin-top:-4px;
+    margin-bottom:10px;
+    text-align:center;
+    font-weight:500;
+}
+
+/* ===== SMOOTH APPEARANCE ===== */
+
+.filter-panel *{
+    transition:0.2s ease;
+}
+
+/* ================= CURSOR TOOLTIP ================= */
+
+.custom-tooltip{
+    position:fixed;
+    background:#1c1c1c;
+    color:#fff;
+    padding:5px 9px;
+    font-size:11px;
+    border-radius:6px;
+    pointer-events:none;
+    white-space:nowrap;
+    z-index:99999;
+    opacity:0;
+    transform:translate(12px, 12px);
+    transition:opacity 0.15s ease;
+}
+
+/* ===== CUSTOM POPUP DESIGN ===== */
+
+.leaflet-popup-content-wrapper{
+    border-radius:18px;
+    box-shadow:0 20px 50px rgba(0,0,0,0.3);
+    padding:0;
+}
+
+.leaflet-popup-content{
+    margin:0;
+}
+
+.custom-popup{
+    padding:20px;
+    min-width:260px;
+}
+
+.popup-title{
+    font-size:16px;
+    font-weight:700;
+    margin-bottom:12px;
+    color:#1e3a5f;
+}
+
+.popup-row{
+    display:flex;
+    justify-content:space-between;
+    font-size:13px;
+    margin-bottom:6px;
+}
+
+.popup-label{
+    font-weight:600;
+    color:#555;
+}
+
+.popup-status{
+    font-weight:600;
+}
+
+.status-open{ color:#1565c0; }
+.status-in_progress{ color:#f57c00; }
+.status-resolved{ color:#2e7d32; }
+.status-rejected{ color:#c62828; }
+
+.popup-actions{
+    display:flex;
+    gap:10px;
+    margin-top:16px;
+}
+
+.popup-btn{
+    flex:1;
+    text-align:center;
+    padding:9px;
+    border-radius:12px;
+
+    background:linear-gradient(135deg,#1e88e5,#1565c0);
+
+    color:#ffffff !important;
+    font-size:13px;
+    font-weight:600;
+    text-decoration:none !important;
+
+    transition:0.2s ease;
+}
+
+.popup-btn:hover{
+    transform:translateY(-2px);
+    box-shadow:0 8px 20px rgba(30,136,229,0.4);
+}
+
+/* ===== ADMIN BUTTON ===== */
+
+.popup-admin{
+    background:linear-gradient(135deg,#0d47a1,#1e88e5);
+    box-shadow:0 6px 18px rgba(13,71,161,0.35);
+}
+
+.popup-admin:hover{
+    box-shadow:0 10px 25px rgba(13,71,161,0.45);
+}
+
+.custom-pulse {
+    position: relative;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+}
+
+.custom-pulse::after {
+    content: "";
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: inherit;
+    opacity: 0.6;
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); opacity: 0.6; }
+    70% { transform: scale(2.5); opacity: 0; }
+    100% { opacity: 0; }
+}
+
+/* ================= CUSTOM TOOLTIP ================= */
+
+.custom-tooltip{
+    position:fixed;
+    background:#1c1c1c;
+    color:#fff;
+    padding:6px 10px;
+    font-size:11px;
+    border-radius:8px;
+    pointer-events:none;
+    white-space:nowrap;
+    z-index:99999;
+    opacity:0;
+    transform:translate(12px,12px);
+    transition:opacity 0.15s ease, transform 0.15s ease;
+    box-shadow:0 6px 18px rgba(0,0,0,0.3);
+}
+
+
+.brand-text-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    line-height: 1.1;
+}
+
+
+.sub-title-text {
+    font-size: 14px;
+    font-weight: 400;
+    opacity: 0.85;
+    letter-spacing: 0.4px;
+    margin-top: 2px;
+}
+
+.btn-right-location{
+    right:40px;
+    bottom:50px;
+}
+
+
+/* ================= FILTER RESULT ================= */
+
+.filter-result{
+    text-align:center;
+    font-size:13px;
+    font-weight:600;
+    color:#1565c0;
+
+    margin-bottom:14px;
+
+    padding:6px 10px;
+
+    background:rgba(30,136,229,0.08);
+    border-radius:10px;
+
+    letter-spacing:0.3px;
+}
+
+
+/* ================= RESET FILTER BUTTON ================= */
+
+.filter-reset-btn{
+
+    width:100%;
+    margin-top:10px;
+
+    padding:10px 12px;
+
+    border:none;
+    border-radius:12px;
+
+    font-size:13px;
+    font-weight:600;
+
+    cursor:pointer;
+
+    color:white;
+
+    background:linear-gradient(135deg,#1e88e5,#1565c0);
+
+    box-shadow:0 6px 16px rgba(30,136,229,0.35);
+
+    transition:all 0.2s ease;
+
+}
+
+/* hover */
+
+.filter-reset-btn:hover{
+
+    transform:translateY(-2px);
+
+    box-shadow:0 10px 24px rgba(30,136,229,0.45);
+
+    background:linear-gradient(135deg,#42a5f5,#1e88e5);
+
+}
+
+/* click */
+
+.filter-reset-btn:active{
+
+    transform:translateY(0);
+
+    box-shadow:0 4px 10px rgba(30,136,229,0.3);
+
+}
+
+.btn-left-admin{
+    position:absolute;
+    left:20px;
+    bottom:350px;
+}
+
+/* ================= MAP LEGEND PRO ================= */
+
+.map-legend{
+    position:absolute;
+    bottom:20px;
+    left:20px;
+
+    padding:16px 18px;
+    border-radius:20px;
+
+    background: rgba(255,255,255,0.07);
+    backdrop-filter: blur(30px) saturate(200%);
+    -webkit-backdrop-filter: blur(26px) saturate(190%);
+
+    border: 1px solid rgba(255,255,255,0.35);
+
+    box-shadow:
+        0 25px 60px rgba(0,0,0,0.25),
+        inset 0 1px 0 rgba(255,255,255,0.5);
+
+    font-size:13px;
+    z-index:1200;
+
+    min-width:180px;
+
+    transition:0.3s ease;
+
+    overflow: hidden;
+}
+
+.map-legend::before{
+    content:"";
+    position:absolute;
+    inset:0;
+
+    background: linear-gradient(
+        to bottom,
+        rgba(255,255,255,0.30),
+        rgba(255,255,255,0.05) 40%,
+        transparent 70%
+    );
+
+    pointer-events:none;
+}
+
+.map-legend:hover{
+    transform: translateY(-4px) scale(1.02);
+
+    box-shadow:
+        0 35px 80px rgba(0,0,0,0.35),
+        inset 0 1px 0 rgba(255,255,255,0.7);
+}
+
+/* ===== TITLE ===== */
+
+.legend-title{
+    font-weight: 800;
+    font-size: 15px;
+    margin-bottom: 5px;
+
+    color: #08306b;
+
+    letter-spacing: 0.5px;
+
+    /* 💎 прави го по-четим върху glass */
+    text-shadow:
+        0 1px 2px rgba(255,255,255,0.7),
+        0 2px 6px rgba(13,71,161,0.25);
+}
+
+
+.legend-item span{
+    text-shadow: 0 1px 2px rgba(255,255,255,0.6);
+}
+
+/* ===== ITEMS ===== */
+
+.legend-item{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    margin-bottom:8px;
+
+    padding:4px 6px;
+    border-radius:8px;
+
+    transition:0.2s ease;
+}
+
+.legend-item:hover{
+    background:rgba(30,136,229,0.08);
+    transform:translateX(3px);
+}
+
+/* ===== DOT ===== */
+
+.legend-dot{
+    width:12px;
+    height:12px;
+    border-radius:50%;
+    position:relative;
+}
+
+/* pulse animation */
+.legend-dot::after{
+    content:"";
+    position:absolute;
+    inset:0;
+    border-radius:50%;
+    background:inherit;
+    opacity:0.6;
+    animation:pulseLegend 1.8s infinite;
+}
+
+/* ===== COLORS ===== */
+
+.dot-open{
+    background:#1565c0;
+    box-shadow:0 0 8px rgba(21,101,192,0.6);
+}
+
+.dot-progress{
+    background:#f57c00;
+    box-shadow:0 0 8px rgba(245,124,0,0.6);
+}
+
+.dot-resolved{
+    background:#2e7d32;
+    box-shadow:0 0 8px rgba(46,125,50,0.6);
+}
+
+.dot-rejected{
+    background:#c62828;
+    box-shadow:0 0 8px rgba(198,40,40,0.6);
+}
+
+/* ===== ANIMATION ===== */
+
+@keyframes pulseLegend{
+    0%{ transform:scale(1); opacity:0.6; }
+    70%{ transform:scale(2.2); opacity:0; }
+    100%{ opacity:0; }
+}
+
+/* ================= DISTANCE SLIDER ================= */
+
+#distanceRange{
+    width:100%;
+    margin-top:10px;
+    margin-bottom:6px;
+    cursor:pointer;
+}
+
+#distanceRange:disabled{
+    opacity:0.4;
+    cursor:not-allowed;
+}
+
+.distance-value{
+    text-align:center;
+    font-weight:600;
+    color:#1565c0;
+    font-size:13px;
+    margin-bottom:10px;
+}
+
+
+.weather-inline{
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+
+    line-height:1.1;
+
+    color: rgba(255,255,255,0.95);
+
+    text-shadow:
+        0 1px 2px rgba(0,0,0,0.4);
+
+    transition:0.25s ease;
+}
+
+/* горен ред */
+.weather-top{
+    display:flex;
+    align-items:center;
+    gap:6px;
+
+    font-size:16px;
+    font-weight:700;
+}
+
+/* иконка */
+.weather-icon{
+    font-size:18px;
+}
+
+/* температура */
+.weather-temp{
+    font-size:16px;
+}
+
+/* описание */
+.weather-desc{
+    font-size:12px;
+    opacity:0.85;
+    margin-top:2px;
+}
+
+.weather-inline:hover{
+    opacity:0.9;
+    transform:translateY(-1px);
+}

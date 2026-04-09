@@ -1,0 +1,485 @@
+/* ============================= */
+/* FULL SCREEN GRADIENT */
+/* ============================= */
+
+body {
+    margin: 0;
+    font-family: "Segoe UI", Tahoma, sans-serif;
+    background: linear-gradient(
+        135deg,
+        #1e88e5 0%,
+        #1565c0 45%,
+        #0d47a1 100%
+    );
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+/* ============================= */
+/* WRAPPER */
+/* ============================= */
+
+.auth-wrapper {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* ============================= */
+/* CARD */
+/* ============================= */
+
+.auth-card {
+    position: relative;
+    background: #ffffff;
+    width: 440px;
+    padding: 45px 40px 40px 40px;
+    border-radius: 22px;
+    box-shadow:
+        0 30px 70px rgba(0, 0, 0, 0.25),
+        0 8px 20px rgba(0, 0, 0, 0.08);
+    animation: fadeIn 0.4s ease-in-out;
+}
+
+/* ============================= */
+/* BACK BUTTON (TOP LEFT) */
+/* ============================= */
+
+.auth-back-btn {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+
+    font-size: 13px;
+    text-decoration: none;
+    color: #1565c0;
+    font-weight: 500;
+
+    padding: 6px 12px;
+    border-radius: 8px;
+    background: rgba(21, 101, 192, 0.08);
+
+    transition: 0.2s ease;
+}
+
+.auth-back-btn:hover {
+    background: rgba(21, 101, 192, 0.18);
+    transform: translateX(-3px);
+}
+
+/* ============================= */
+/* HEADER */
+/* ============================= */
+
+.auth-header {
+    text-align: center;
+    margin-bottom: 28px;
+}
+
+.auth-header img {
+    width: 75px;
+    margin-bottom: 10px;
+}
+
+.auth-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #1565c0;
+}
+
+.auth-title span {
+    display: block;
+    font-size: 13px;
+    font-weight: 400;
+    color: #555;
+    margin-top: 3px;
+}
+
+/* ============================= */
+/* HEADING */
+/* ============================= */
+
+.auth-heading {
+    text-align: center;
+    margin-bottom: 28px;
+    font-size: 24px;
+    font-weight: 600;
+    color: #222;
+}
+
+/* ============================= */
+/* FORM */
+/* ============================= */
+
+form p {
+    margin-bottom: 20px;
+}
+
+label {
+    display: block;
+    font-size: 14px;
+    margin-bottom: 6px;
+    font-weight: 500;
+    color: #333;
+}
+
+input {
+    width: 93%;
+    padding: 13px 14px;
+    border-radius: 12px;
+    border: 1px solid #ddd;
+    font-size: 14px;
+    transition: 0.2s ease;
+    background: #fafafa;
+}
+
+input:focus {
+    outline: none;
+    border-color: #1565c0;
+    background: #ffffff;
+    box-shadow: 0 0 0 3px rgba(21, 101, 192, 0.15);
+}
+
+/* ============================= */
+/* BUTTONS */
+/* ============================= */
+
+.form-actions {
+    margin-top: 25px;
+    display: flex;
+    gap: 10px;
+}
+
+.btn-primary {
+    flex: 1;
+    background: linear-gradient(135deg, #1e88e5, #1565c0);
+    border: none;
+    padding: 13px;
+    color: white;
+    border-radius: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.25s ease;
+    font-size: 14px;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(21, 101, 192, 0.4);
+}
+
+.btn-secondary {
+    background: #f0f2f5;
+    padding: 13px;
+    border-radius: 12px;
+    text-decoration: none;
+    color: #333;
+    font-weight: 500;
+    text-align: center;
+    transition: 0.2s ease;
+}
+
+.btn-secondary:hover {
+    background: #e0e4ea;
+}
+
+/* ============================= */
+/* LINKS */
+/* ============================= */
+
+a {
+    color: #1565c0;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+/* ============================= */
+/* DJANGO MESSAGE STYLES */
+/* ============================= */
+
+.alert-wrapper {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.alert {
+    padding: 13px 18px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 500;
+    text-align: center;
+    max-width: 85%;
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+/* SUCCESS (светло синьо) */
+.alert.success {
+    background: #e3f2fd;
+    color: #1565c0;
+    border: 1px solid #bbdefb;
+}
+
+/* ERROR */
+.alert.error {
+    background: #ffebee;
+    color: #c62828;
+    border: 1px solid #ffcdd2;
+}
+
+/* INFO */
+.alert.info {
+    background: #e3f2fd;
+    color: #0d47a1;
+    border: 1px solid #bbdefb;
+}
+
+/* WARNING */
+.alert.warning {
+    background: #fff8e1;
+    color: #ef6c00;
+    border: 1px solid #ffe0b2;
+}
+
+/* ============================= */
+/* ANIMATION */
+/* ============================= */
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(15px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ============================= */
+/* AUTH LINKS (CENTERED) */
+/* ============================= */
+
+.auth-links {
+    margin-top: 22px;
+    text-align: center;
+    font-size: 14px;
+}
+
+.auth-link {
+    display: block;
+    margin-bottom: 14px;
+    color: #1565c0;
+    font-weight: 500;
+    transition: 0.2s ease;
+}
+
+.auth-link:hover {
+    color: #0d47a1;
+}
+
+.auth-register {
+    color: #555;
+}
+
+.auth-link-strong {
+    color: #1565c0;
+    font-weight: 600;
+    margin-left: 4px;
+    position: relative;
+    transition: 0.2s ease;
+}
+
+/* nice underline animation */
+.auth-link-strong::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: -2px;
+    width: 0%;
+    height: 2px;
+    background: #1565c0;
+    transition: width 0.25s ease;
+}
+
+.auth-link-strong:hover::after {
+    width: 100%;
+}
+
+/* ============================= */
+/* CHANGE PASSWORD – WIDE MODE */
+/* ============================= */
+
+.change-password-form {
+    width: 100%;
+}
+
+.change-password-form {
+    max-width: 720px;
+    margin: 0 auto;
+}
+
+.auth-card:has(.change-password-form) {
+    width: 720px;
+}
+
+/* ============================= */
+/* PASSWORD INFO MODAL */
+/* ============================= */
+
+.password-modal {
+    display: none;
+    position: fixed;
+    z-index: 999;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.4);
+    justify-content: center;
+    align-items: center;
+}
+
+.password-modal-content {
+    background: white;
+    width: 420px;
+    padding: 30px;
+    border-radius: 18px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    animation: fadeIn 0.25s ease;
+}
+
+.password-modal-content h3 {
+    margin-top: 0;
+    color: #1565c0;
+}
+
+.password-modal-content ul {
+    padding-left: 18px;
+    line-height: 1.6;
+    font-size: 14px;
+}
+
+.password-modal-close {
+    float: right;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 16px;
+}
+
+/* ============================= */
+/* ROUND HOME BUTTON (AUTH) */
+/* ============================= */
+
+.auth-home-btn {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+}
+
+/* използваме същия enterprise стил */
+.image-btn {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(
+        145deg,
+        #ffffff,
+        #eef4fb
+    );
+    border: 2px solid rgba(30,136,229,0.25);
+    box-shadow:
+        0 8px 18px rgba(13,71,161,0.12),
+        inset 0 1px 0 rgba(255,255,255,0.8);
+    transition: all 0.25s ease;
+}
+
+.image-btn img {
+    width: 26px;
+    height: 26px;
+    object-fit: contain;
+}
+
+.image-btn:hover {
+    transform: translateY(-4px) scale(1.06);
+    box-shadow:
+        0 18px 35px rgba(13,71,161,0.25);
+    border-color: #1e88e5;
+}
+
+.image-btn:active {
+    transform: scale(0.95);
+}
+
+/* ============================= */
+/* DEACTIVATE WIDE MODE */
+/* ============================= */
+
+.deactivate-form {
+    max-width: 720px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.auth-card:has(.deactivate-form) {
+    width: 720px;
+}
+
+.danger-icon {
+    font-size: 52px;
+    color: #c62828;
+    margin-bottom: 15px;
+}
+
+.danger-question {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 12px;
+}
+
+.danger-box {
+    background: #fff5f5;
+    border: 1px solid #ffcdd2;
+    border-radius: 18px;
+    padding: 25px;
+    margin-bottom: 35px;
+    text-align: left;
+    color: #8a2a2a;
+}
+
+.danger-box ul {
+    margin-top: 10px;
+    padding-left: 18px;
+    line-height: 1.7;
+}
+
+.danger-actions {
+    gap: 18px;
+}
+
+.btn-danger-confirm {
+    flex: 1;
+    background: linear-gradient(135deg, #e53935, #b71c1c);
+    border: none;
+    padding: 15px;
+    color: white;
+    border-radius: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.25s ease;
+}
+
+.btn-danger-confirm:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 15px 30px rgba(183, 28, 28, 0.4);
+}

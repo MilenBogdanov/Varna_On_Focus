@@ -1,0 +1,117 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <title>Управление на сигнал | Enterprise Blue</title>
+    <link rel="stylesheet" href="{% static 'css/manage_signal.css' %}">
+</head>
+<body>
+
+<div class="layout">
+
+    <div class="info-panel">
+
+        <h2 class="page-title">Управление на сигнал</h2>
+
+        {% if messages %}
+        <div id="successPopup" class="varna-popup-overlay">
+            <div class="varna-popup popup-success">
+                <div class="varna-popup-icon">✓</div>
+                <div class="varna-popup-title">Успешно!</div>
+                <div class="varna-popup-text">
+                    {% for message in messages %}
+                        {{ message }}
+                    {% endfor %}
+                </div>
+                <button class="varna-popup-btn btn-success" onclick="closePopup()">
+                    Разбрах
+                </button>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="signal-details">
+            <div class="detail-item">
+                <strong>Заглавие</strong>
+                <span>{{ signal.title }}</span>
+            </div>
+            <div class="detail-item">
+                <strong>Категория</strong>
+                <span>{{ signal.category }}</span>
+            </div>
+            <div class="detail-item">
+                <strong>Описание</strong>
+                <span>{{ signal.description }}</span>
+            </div>
+            <div class="detail-item">
+                <strong>Текущ статус</strong>
+                <span class="status-badge {{ signal.status|lower }}">
+                    {{ signal.get_status_display }}
+                </span>
+            </div>
+        </div>
+
+        <hr style="border: 0; border-top: 1px solid var(--border); margin-bottom: 30px;">
+
+        <h3 class="section-subtitle">Промяна на статус</h3>
+        <form method="post" class="status-form">
+            {% csrf_token %}
+            {{ form.as_p }}
+
+            <button type="submit" class="btn-primary" style="width: 100%;">
+                Обнови статуса
+            </button>
+        </form>
+        <a href="{% url 'map' %}" class="btn-secondary">
+            ⬅ Назад към картата
+        </a>
+    </div>
+
+    <div class="comments-panel">
+
+        <div class="comments-header">
+            <h3 class="section-subtitle" style="margin: 0;">История На Коментари</h3>
+            <a href="{% url 'signals:signal_detail' signal.id %}#comments"
+               class="add-comment-btn">
+               + Добави коментар
+            </a>
+        </div>
+
+        <div class="comments-container">
+            {% if comments %}
+                {% for comment in comments %}
+                    <div class="comment-row {% if comment.user.id == request.user.id %}my-comment{% else %}other-comment{% endif %}">
+                        <div class="comment-bubble">
+                            <span class="comment-meta">
+                                {{ comment.user.full_name }} • {{ comment.created_at|date:"d.m.Y H:i" }}
+                            </span>
+                            <div class="comment-text">
+                                {{ comment.content }}
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div style="text-align: center; color: var(--muted); margin-top: 40px;">
+                    <p>Няма регистрирани коментари към този сигнал.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+</div>
+
+<script>
+
+function closePopup(){
+    const popup=document.getElementById("successPopup");
+    if(popup){
+        popup.style.display="none";
+    }
+}
+
+</script>
+
+</body>
+</html>

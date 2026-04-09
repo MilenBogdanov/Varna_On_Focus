@@ -1,0 +1,283 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+<meta charset="UTF-8">
+<title>Редактирай новина</title>
+
+<link rel="stylesheet" href="{% static 'css/edit_news.css' %}">
+<link rel="stylesheet"
+href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+
+</head>
+
+<body>
+
+<div class="news-layout">
+
+<!-- LEFT -->
+<div class="news-form-panel">
+
+<a href="/news/" class="btn-back">
+    ← Назад
+</a>
+
+<h2 class="news-title">Редактирай новина</h2>
+
+<form method="POST" class="news-form">
+{% csrf_token %}
+
+{{ form.as_p }}
+
+<input type="hidden" id="polygon" name="polygon">
+
+<div class="form-actions">
+    <button type="submit" class="btn-primary">
+        Запази промените
+    </button>
+
+    <button type="button" onclick="resetMap()" class="btn-secondary">
+        Изчисти координати
+    </button>
+</div>
+
+</form>
+
+</div>
+
+<!-- MAP -->
+<div class="map-panel">
+
+<div class="map-hint">
+⚲ Кликни върху картата, за да редактираш зона
+</div>
+
+<div id="map"></div>
+
+<div class="btn-reset-location" data-tooltip="Изчисти зоната">
+    <div class="floating-btn" onclick="resetMap()">
+        <img src="/media/buttons/clear.png" alt="Clear">
+    </div>
+</div>
+
+</div>
+
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
+
+<script>
+
+function getNewsMarkerIcon(){
+    return L.divIcon({
+        className: "",
+        html: `
+            <div style="
+                position:relative;
+                width:30px;
+                height:30px;
+                transform:rotate(-45deg);
+            ">
+                <div style="
+                    width:100%;
+                    height:100%;
+                    background:#8e24aa;
+                    border-radius:50% 50% 50% 0;
+                    border:3px solid white;
+                "></div>
+                <div style="
+                    position:absolute;
+                    width:10px;
+                    height:10px;
+                    background:white;
+                    border-radius:50%;
+                    top:10px;
+                    left:10px;
+                "></div>
+            </div>
+        `,
+        iconSize: [30,30],
+        iconAnchor: [15,30]
+    })
+}
+
+/* ================= INIT ================= */
+
+let map = L.map('map').setView([43.214,27.914], 9);
+
+L.tileLayer(
+'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
+).addTo(map);
+
+let points = JSON.parse('{{ points_json|escapejs }}');
+let layer = null;
+let varnaFeature = null;
+
+/* ================= LOAD VARNA ================= */
+
+fetch("{% static 'geo/bulgaria_regions.geojson' %}")
+.then(res => res.json())
+.then(data => {
+
+    varnaFeature = data.features.find(f =>
+        f.properties.adm1_name1 === "Варна"
+    );
+
+    // overlay
+    L.geoJSON(data, {
+        interactive:false,
+        style: f => f.properties.adm1_name1 === "Варна"
+            ? { opacity:0, fillOpacity:0 }
+            : {
+                color:"#c62828",
+                weight:1,
+                fillColor:"#c62828",
+                fillOpacity:0.18
+            }
+    }).addTo(map);
+
+    // outline
+    const varnaLayer = L.geoJSON(varnaFeature,{
+        style:{ color:"#8e24aa", weight:3, fillOpacity:0 }
+    }).addTo(map);
+
+    const bounds = varnaLayer.getBounds();
+
+    map.fitBounds(bounds);
+    map.setMaxBounds(bounds);
+
+    /* 🔥 DRAW CURRENT POINTS */
+    if(points.length){
+        draw();
+    }
+
+});
+
+/* ================= VALIDATION ================= */
+
+function isInsideVarna(lat, lng){
+    if(!varnaFeature) return false;
+
+    return turf.booleanPointInPolygon(
+        turf.point([lng, lat]),
+        varnaFeature
+    );
+}
+
+/* ================= DRAW ================= */
+
+function draw(){
+
+    if(layer){
+        map.removeLayer(layer);
+    }
+
+    if(points.length === 1){
+
+        layer = L.marker(points[0], {
+            icon: getNewsMarkerIcon()
+        }).addTo(map);
+        map.setView(points[0], 15);
+
+    }
+    else if(points.length === 2){
+
+        layer = L.polyline(points,{
+            color:"#8e24aa"
+        }).addTo(map);
+
+        map.fitBounds(layer.getBounds());
+    }
+    else if(points.length > 2){
+
+        layer = L.polygon(points,{
+            color:"#8e24aa",
+            fillOpacity:0.3
+        }).addTo(map);
+
+        map.fitBounds(layer.getBounds());
+    }
+
+    document.getElementById("polygon").value =
+        JSON.stringify(points);
+}
+
+function showPopup(type, title, message) {
+
+    if (document.getElementById("varnaPopupOverlay")) return;
+
+    const overlay = document.createElement("div");
+    overlay.id = "varnaPopupOverlay";
+    overlay.className = "varna-popup-overlay";
+
+    const isError = type === "error";
+
+    overlay.innerHTML = `
+        <div class="varna-popup ${isError ? 'popup-error' : 'popup-success'}">
+
+            <div class="varna-popup-icon">
+                ${isError ? '⚠' : '✔'}
+            </div>
+
+            <div class="varna-popup-title">
+                ${title}
+            </div>
+
+            <div class="varna-popup-text">
+                ${message}
+            </div>
+
+            <button class="varna-popup-btn ${isError ? 'btn-error' : 'btn-success'}">
+                ${isError ? 'Разбрах' : 'Продължи'}
+            </button>
+        </div>
+    `;
+
+    document.body.appendChild(overlay);
+
+    overlay.querySelector(".varna-popup-btn")
+        .addEventListener("click", function(){
+            overlay.remove();
+        });
+}
+
+/* ================= CLICK ================= */
+
+map.on("click", function(e){
+
+    const lat = e.latlng.lat;
+    const lng = e.latlng.lng;
+
+    if(!isInsideVarna(lat, lng)){
+        showPopup(
+            "error",
+            "Избери друга локация!",
+            "Новина може да бъде редактирана само в <strong>Регион Варна.</strong>"
+        );
+        return;
+    }
+
+    points.push([lat, lng]);
+
+    draw();
+});
+
+/* ================= RESET ================= */
+
+function resetMap(){
+
+    points = [];
+
+    if(layer){
+        map.removeLayer(layer);
+        layer = null;
+    }
+
+    document.getElementById("polygon").value = "";
+}
+
+</script>
+
+</body>
+</html>

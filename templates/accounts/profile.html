@@ -1,0 +1,330 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <title>Моят профил</title>
+    <link rel="stylesheet" href="{% static 'css/profile.css' %}">
+</head>
+<body>
+
+<div class="profile-container">
+
+     {% for message in messages %}
+        {% if "profile" in message.tags %}
+            <div class="profile-alert {{ message.tags }}">
+                {{ message }}
+            </div>
+        {% endif %}
+    {% endfor %}
+
+    <!-- ================= HEADER ================= -->
+    <div class="profile-header">
+        <div class="profile-left">
+            <div class="avatar-circle">
+                {{ initials }}
+            </div>
+
+            <div class="profile-text">
+                <h2 class="profile-name">
+                    {% if request.user.full_name %}
+                        {{ request.user.full_name }}
+                    {% else %}
+                        {{ request.user.email }}
+                    {% endif %}
+
+                    <span class="edit-name-btn"
+                          title="Редакция на име"
+                          onclick="openEditNameModal()">✎</span>
+                </h2>
+
+                <span class="role-badge">
+                    {{ request.user.role.get_display_name }}
+                </span>
+            </div>
+        </div>
+
+        <div class="profile-right">
+            <div class="profile-actions-top">
+
+                <!-- Смяна на парола -->
+                <a href="{% url 'custom_password_change' %}"
+                   class="image-btn"
+                   title="Смяна на парола">
+
+                    <img src="/media/buttons/change_pass.png"
+                         alt="Смяна на парола">
+                </a>
+
+                <!-- Деактивирай -->
+                <a href="{% url 'delete_account' %}"
+                   class="image-btn danger"
+                   title="Деактивирай профил">
+
+                    <img src="/media/buttons/deactivate_profile.png"
+                         alt="Деактивирай профил">
+                </a>
+
+                <!-- Към картата -->
+                <a href="{% url 'map' %}"
+                   class="image-btn home"
+                   title="Към картата">
+
+                    <img src="/media/buttons/home.png"
+                         alt="Към картата">
+                </a>
+
+            </div>
+        </div>
+    </div>
+
+    {% if request.user.role.name == "CITIZEN" %}
+    <!-- ================= HERO ================= -->
+    <div class="signals-hero">
+        <div class="signals-hero-left">
+            <h2>Твоите сигнали</h2>
+            <p>
+                Това е твоят личен контролен панел.
+                Проследявай статуса на подадените сигнали в реално време.
+            </p>
+
+            <a href="{% url 'signals:my_signals' %}" class="hero-btn">
+                Виж всички мои сигнали
+            </a>
+        </div>
+
+        <div class="signals-hero-right">
+            <div class="signals-total">
+                {{ my_stats.total }}
+            </div>
+            <span>Общо подадени</span>
+        </div>
+    </div>
+
+
+    <!-- ================= KPI DASHBOARD ================= -->
+    <div class="kpi-dashboard">
+
+        <div class="kpi-card">
+            <div class="kpi-value">{{ my_stats.resolved }}</div>
+            <div class="kpi-label">Решени сигнали</div>
+        </div>
+
+        <div class="kpi-card">
+            <div class="kpi-value">{{ resolution_rate }}%</div>
+            <div class="kpi-label">Успеваемост</div>
+        </div>
+
+        <div class="kpi-card">
+            <div class="kpi-value">{{ my_stats.open }}</div>
+            <div class="kpi-label">Чакат действие</div>
+        </div>
+
+    </div>
+
+
+    <!-- ================= PROGRESS ================= -->
+    <div class="progress-section">
+
+        <h3>Общ напредък</h3>
+
+        <div class="progress-bar">
+            <div class="progress-fill"
+                 style="width: {{ resolution_rate }}%">
+            </div>
+        </div>
+
+        <div class="progress-text">
+            {{ resolution_rate }}% от сигналите са решени
+        </div>
+    </div>
+
+
+    <!-- ================= INSIGHT ================= -->
+    <div class="insight-box">
+
+        <strong>𝒊 | Анализ:</strong>
+
+        {% if resolution_rate >= 70 %}
+            Отлична активност! Повечето ти сигнали са обработени.
+        {% elif resolution_rate >= 40 %}
+            Добър прогрес. Част от сигналите все още се обработват.
+        {% else %}
+            Има активни сигнали, които чакат решение.
+        {% endif %}
+
+    </div>
+
+
+    <!-- ================= МОИТЕ СИГНАЛИ ================= -->
+    <h3 class="section-title">Разпределение на моите сигнали</h3>
+
+    <div class="stats-grid">
+        <div class="stat-card blue">
+            <h3>{{ my_stats.total }}</h3>
+            <p>Общо мои</p>
+        </div>
+        <div class="stat-card open">
+            <h3>{{ my_stats.open }}</h3>
+            <p>Отворени</p>
+        </div>
+        <div class="stat-card progress">
+            <h3>{{ my_stats.in_progress }}</h3>
+            <p>В процес</p>
+        </div>
+        <div class="stat-card resolved">
+            <h3>{{ my_stats.resolved }}</h3>
+            <p>Решени</p>
+        </div>
+        <div class="stat-card rejected">
+            <h3>{{ my_stats.rejected }}</h3>
+            <p>Отхвърлени</p>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if request.user.role.name != "CITIZEN" %}
+
+    <!-- ================= ADMIN PANEL ================= -->
+    <div class="signals-hero">
+
+        <div class="signals-hero-left">
+            <h2>Административен панел</h2>
+
+            <p>
+                Управлявай съдържанието и сигналите в системата.
+                Използвай бърз достъп до основните функционалности.
+            </p>
+
+            <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;">
+
+                <a href="{% url 'signals:all_signals' %}" class="hero-btn">
+                    Управление на сигнали
+                </a>
+
+                <a href="{% url 'news' %}" class="hero-btn">
+                    Управление на новини
+                </a>
+
+            </div>
+        </div>
+
+        <div class="signals-hero-right">
+            <div class="signals-total">
+                {{ global_stats.total }}
+            </div>
+            <span>Общо сигнали</span>
+        </div>
+
+    </div>
+
+
+    <!-- ================= SYSTEM ANALYZE ================= -->
+    <div class="insight-box">
+
+        <strong>𝒊 | Системен анализ:</strong>
+
+        {% if global_stats.open > global_stats.resolved %}
+            В системата има значителен брой сигнали, които чакат обработка.
+        {% elif global_stats.resolved > global_stats.open %}
+            Системата функционира ефективно и сигналите се обработват своевременно.
+        {% else %}
+            Състоянието на системата е балансирано.
+        {% endif %}
+
+    </div>
+
+    {% endif %}
+
+    <!-- ================= ВСИЧКИ СИГНАЛИ ================= -->
+    <h3 class="section-title">Статистика за всички сигнали</h3>
+
+    <div class="stats-grid">
+        <div class="stat-card blue"><h3>{{ global_stats.total }}</h3><p>Общо</p></div>
+        <div class="stat-card open"><h3>{{ global_stats.open }}</h3><p>Отворени</p></div>
+        <div class="stat-card progress"><h3>{{ global_stats.in_progress }}</h3><p>В процес</p></div>
+        <div class="stat-card resolved"><h3>{{ global_stats.resolved }}</h3><p>Решени</p></div>
+        <div class="stat-card rejected"><h3>{{ global_stats.rejected }}</h3><p>Отхвърлени</p></div>
+    </div>
+
+
+    <!-- ================= PROFILE INFO (ПО-НАДОЛУ) ================= -->
+    <div class="recent-section">
+        <h3>Профилна информация</h3>
+
+        <div class="recent-list">
+            <div class="recent-item"><div><strong>Пълно име</strong></div><span>{{ request.user.full_name }}</span></div>
+            <div class="recent-item"><div><strong>Имейл</strong></div><span>{{ request.user.email }}</span></div>
+            <div class="recent-item"><div><strong>Регистриран на</strong></div><span>{{ request.user.created_at|date:"d.m.Y H:i" }}</span></div>
+            <div class="recent-item"><div><strong>Роля</strong></div><span>{{ request.user.role.get_display_name }}</span></div>
+            <div class="recent-item"><div><strong>Имейл потвърден</strong></div>
+                <span>
+                    {% if request.user.is_email_verified %}
+                        Потвърден
+                    {% else %}
+                        Непотвърден
+                    {% endif %}
+                </span>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
+<!-- ================= EDIT NAME MODAL ================= -->
+
+<div id="editNameModal" class="profile-modal">
+    <div class="profile-modal-content" onclick="event.stopPropagation()">
+
+        <span class="profile-modal-close" onclick="closeEditNameModal()">✕</span>
+
+        <h3>Редакция на име</h3>
+
+        <form method="post" action="{% url 'edit_full_name' %}">
+            {% csrf_token %}
+
+            <input type="text"
+                   name="full_name"
+                   value="{{ request.user.full_name }}"
+                   placeholder="Въведете ново име"
+                   required>
+
+            <div class="modal-buttons">
+                <button type="submit" class="btn btn-primary">
+                    Запази
+                </button>
+
+                <button type="button"
+                        class="btn btn-danger"
+                        onclick="closeEditNameModal()">
+                    Отказ
+                </button>
+            </div>
+        </form>
+
+    </div>
+</div>
+
+<script>
+function openEditNameModal() {
+    document.getElementById("editNameModal").style.display = "flex";
+}
+
+function closeEditNameModal() {
+    document.getElementById("editNameModal").style.display = "none";
+}
+
+document.addEventListener("keydown", function(e) {
+    if (e.key === "Escape") {
+        closeEditNameModal();
+    }
+});
+
+document.getElementById("editNameModal").addEventListener("click", function() {
+    closeEditNameModal();
+});
+</script>
+
+</body>
+</html>

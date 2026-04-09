@@ -1,0 +1,26 @@
+{% extends "accounts/base_form.html" %}
+
+{% block title %}Реактивация{% endblock %}
+{% block heading %}Реактивиране на профил{% endblock %}
+
+{% block content %}
+
+<form method="POST">
+    {% csrf_token %}
+
+    <p>
+        Въведете кода, изпратен на вашия имейл,
+        за да реактивирате профила си.
+    </p>
+
+    <label>Код за реактивация</label>
+    <input type="text" name="code" required>
+
+    <div class="form-actions">
+        <button type="submit" class="btn-primary">
+            Активирай профила
+        </button>
+    </div>
+</form>
+
+{% endblock %}

@@ -1,0 +1,55 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/forms.css' %}">
+</head>
+<body>
+
+<div class="auth-wrapper">
+
+    <div class="auth-card">
+
+        <a href="{% url 'map' %}"
+           class="auth-home-btn image-btn"
+           title="Към картата">
+
+            <img src="/media/buttons/home.png"
+                 alt="Към картата">
+        </a>
+
+        <div class="auth-header">
+            <img src="/media/logo/og-varna.png" alt="Община Варна">
+            <div class="auth-title">
+                Система за подаване на сигнали
+                <span>Община Варна</span>
+            </div>
+        </div>
+
+        <h2 class="auth-heading">
+            {% block heading %}{% endblock %}
+        </h2>
+
+        {% if messages %}
+            {% for message in messages %}
+                {% if "auth" in message.tags %}
+                    <div class="alert-wrapper">
+                        <div class="alert {{ message.tags }}">
+                            {{ message }}
+                        </div>
+                    </div>
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+
+        {% block content %}
+        {% endblock %}
+
+    </div>
+
+</div>
+
+</body>
+</html>

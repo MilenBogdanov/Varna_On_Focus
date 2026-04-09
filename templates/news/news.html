@@ -1,0 +1,650 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <title>Новини – Варна на фокус</title>
+
+    <link rel="stylesheet" href="{% static 'css/news.css' %}">
+    <link rel="stylesheet"
+        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+</head>
+<body>
+
+<div class="top-bar">
+
+    <div class="top-bar-title">
+
+        <a href="{% url 'index' %}"
+           style="display:flex;align-items:center;text-decoration:none;">
+            <img src="/media/logo/og-varna.png"
+                 alt="Община Варна"
+                 class="varna-logo">
+        </a>
+
+        <div class="brand-text-container">
+            <span>ВАРНА НА ФОКУС</span>
+            <span class="sub-title-text">
+                Най-новите новини от Варна и Региона
+            </span>
+        </div>
+
+        <a href="{% url 'news' %}"
+           class="nav-btn"
+           data-tooltip="Новини от общината">
+
+            <img src="/media/buttons/news.png" alt="Новини">
+
+        </a>
+        <a href="{% url 'contact' %}"
+           class="nav-btn"
+           data-tooltip="Контакти">
+
+            <img src="/media/buttons/contact.png" alt="Контакти">
+
+        </a>
+
+    </div>
+
+
+    <!-- ACTIONS -->
+
+    <div class="top-bar-actions">
+        <!-- 🌤️ WEATHER -->
+        <div class="weather-inline">
+            <div class="weather-top">
+                <span class="weather-icon">☀️</span>
+                <span class="weather-temp">--°C</span>
+            </div>
+            <div class="weather-desc">—</div>
+        </div>
+
+        {% if user.is_authenticated %}
+            {% if user.role.name == "MUNICIPAL_ADMIN" or user.role.name == "SUPER_ADMIN" %}
+
+            <!-- CREATE NEWS BUTTON -->
+            <a href="{% url 'create_news' %}"
+               class="nav-btn"
+               data-tooltip="Създай новина">
+
+                <img src="/media/buttons/create_news.png"
+                     alt="Създай новина">
+
+            </a>
+
+            {% endif %}
+        {% endif %}
+
+        <!-- MAP BUTTON -->
+        <a href="{% url 'map' %}"
+           class="nav-btn"
+           data-tooltip="Към картата">
+
+            <img src="/media/buttons/map.png"
+                 alt="Карта">
+
+        </a>
+
+    </div>
+
+</div>
+
+<div class="news-filters">
+
+<form method="GET" class="filter-form">
+
+<div class="filter-group">
+<label>Търсене</label>
+<input type="text"
+       name="search"
+       placeholder="Заглавие или текст..."
+       value="{{ request.GET.search }}">
+</div>
+
+<div class="filter-group">
+<label>Категория</label>
+<select name="type">
+
+<option value="">Всички</option>
+
+{% for value,label in source_types %}
+<option value="{{ value }}"
+{% if request.GET.type == value %}selected{% endif %}>
+{{ label }}
+</option>
+{% endfor %}
+
+</select>
+</div>
+
+<div class="filter-group">
+<label>От дата</label>
+<input type="date"
+        id="fromDate"
+       name="from_date"
+       value="{{ request.GET.from_date }}"
+       max="{{ today }}">
+</div>
+
+<div class="filter-group">
+<label>До дата</label>
+<input type="date"
+       id="toDate"
+       name="to_date"
+       value="{{ request.GET.to_date }}"
+       max="{{ today }}">
+</div>
+
+<div class="filter-group">
+<button type="submit" class="filter-btn">
+Филтрирай
+</button>
+</div>
+
+<div class="filter-group">
+<a href="{% url 'news' %}" class="filter-reset">
+Изчисти
+</a>
+</div>
+
+</form>
+
+</div>
+
+<!-- NEWS LIST -->
+<main class="news-container">
+
+{% if news_list %}
+
+    {% for news in news_list %}
+
+    <article class="news-card">
+
+        {% if news.source_type == "EMERGENCY" %}
+        <img src="/media/news/emergency.svg" class="news-image">
+
+        {% elif news.source_type == "WATER_URGENT" %}
+        <img src="/media/news/water_urgent.svg" class="news-image">
+
+        {% elif news.source_type == "WATER_PLANNED" %}
+        <img src="/media/news/water_planned.svg" class="news-image">
+
+        {% elif news.source_type == "ELEC_URGENT" %}
+        <img src="/media/news/elec_urgent.svg" class="news-image">
+
+        {% elif news.source_type == "ELEC_PLANNED" %}
+        <img src="/media/news/elec_planned.svg" class="news-image">
+
+        {% elif news.source_type == "ROAD_WORKS" %}
+        <img src="/media/news/road_works.svg" class="news-image">
+
+        {% elif news.source_type == "TRAFFIC" %}
+        <img src="/media/news/traffic_change.svg" class="news-image">
+
+        {% elif news.source_type == "MUNICIPAL" %}
+        <img src="/media/news/municipal.svg" class="news-image">
+
+        {% else %}
+        <img src="/media/news/others.svg" class="news-image">
+        {% endif %}
+
+
+        <div class="news-content">
+
+            <div class="news-date">
+                <img src="/media/icons/calendar.svg" class="meta-icon">
+                {{ news.created_at|date:"d F Y | H:i" }}
+            </div>
+
+            <div class="news-type">
+                {{ news.get_source_type_display }}
+            </div>
+
+
+            <h2 class="news-title">
+                {{ news.title }}
+            </h2>
+
+            {% if user.is_authenticated %}
+                {% if user.role.name == "MUNICIPAL_ADMIN" or user.role.name == "SUPER_ADMIN" %}
+
+            <div class="news-actions">
+
+                <a href="{% url 'edit_news' news.id %}" class="news-action-btn edit-btn" title="Редактирай">
+                    ✎
+                </a>
+
+                <button onclick="confirmDelete({{ news.id }})"
+                        class="news-action-btn delete-btn"
+                        title="Изтрий">
+                    ✖
+                </button>
+
+            </div>
+
+                    {% endif %}
+            {% endif %}
+
+
+            <p class="news-excerpt">
+                {{ news.content|truncatewords:20 }}
+            </p>
+
+
+            <button class="read-more-btn"
+                data-type="{{ news.get_source_type_display }}"
+                onclick="openNewsModal({{ news.id }}, this)">
+               Прочети повече
+            </button>
+
+        </div>
+
+    </article>
+
+    {% endfor %}
+
+{% else %}
+
+<div class="no-news">
+
+    <img src="/media/buttons/news.png"
+         alt="Няма новини"
+         style="width:80px;opacity:0.5;margin-bottom:20px;">
+
+
+    <h2>В момента няма публикувани новини.</h2>
+
+    <p>
+        Очаквайте скоро най-важното от община Варна тук.
+    </p>
+
+    <br>
+
+    <a href="{% url 'map' %}"
+       class="read-more-btn"
+       style="display:inline-block;">
+
+       Обратно към картата
+
+    </a>
+
+</div>
+
+{% endif %}
+
+</main>
+
+{% if news_list.paginator.num_pages > 1 %}
+
+<div class="news-pagination">
+
+    {% if news_list.has_previous %}
+        <a href="?page={{ news_list.previous_page_number }}&search={{ request.GET.search }}&type={{ request.GET.type }}&from_date={{ request.GET.from_date }}&to_date={{ request.GET.to_date }}"
+           class="page-btn">
+            ◀
+        </a>
+    {% endif %}
+
+    {% for num in news_list.paginator.page_range %}
+
+        {% if news_list.number == num %}
+
+            <span class="page-btn active">
+                {{ num }}
+            </span>
+
+        {% elif num > news_list.number|add:'-3' and num < news_list.number|add:'3' %}
+
+            <a href="?page={{ num }}&search={{ request.GET.search }}&type={{ request.GET.type }}&from_date={{ request.GET.from_date }}&to_date={{ request.GET.to_date }}"
+               class="page-btn">
+                {{ num }}
+            </a>
+
+        {% endif %}
+
+    {% endfor %}
+
+    {% if news_list.has_next %}
+        <a href="?page={{ news_list.next_page_number }}&search={{ request.GET.search }}&type={{ request.GET.type }}&from_date={{ request.GET.from_date }}&to_date={{ request.GET.to_date }}"
+           class="page-btn">
+            ▶
+        </a>
+    {% endif %}
+
+</div>
+
+{% endif %}
+
+<div id="newsModal" class="news-modal">
+
+    <div class="news-modal-content">
+
+        <div class="modal-header">
+
+            <h2 id="modalTitle"></h2>
+
+            <span class="news-modal-close"
+                  onclick="closeNewsModal()">✕</span>
+
+        </div>
+
+        <div class="modal-meta">
+
+            <span class="modal-date">
+                <img src="/media/icons/calendar.svg" class="meta-icon">
+                <span id="modalDate"></span>
+            </span>
+            <span id="modalType" class="modal-type-badge"></span>
+
+        </div>
+
+        <div class="modal-body">
+
+            <div class="modal-text">
+                <p id="modalContent"></p>
+            </div>
+
+            <div class="modal-map-wrapper">
+                <div id="modalMap"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+
+<div id="cursorTooltip" class="custom-tooltip"></div>
+
+
+
+<script>
+
+document.addEventListener('DOMContentLoaded', function() {
+
+    const tooltip = document.getElementById('cursorTooltip');
+    const tooltipTargets = document.querySelectorAll('[data-tooltip]');
+
+    tooltipTargets.forEach(target => {
+
+        target.addEventListener('mouseenter', () => {
+
+            tooltip.textContent = target.getAttribute('data-tooltip');
+            tooltip.style.opacity = '1';
+
+        });
+
+        target.addEventListener('mousemove', (e) => {
+
+            tooltip.style.left = e.clientX + 'px';
+            tooltip.style.top = e.clientY + 'px';
+
+        });
+
+        target.addEventListener('mouseleave', () => {
+
+            tooltip.style.opacity = '0';
+
+        });
+
+    });
+
+});
+
+function getNewsMarkerIcon(){
+
+    const color = "#8e24aa";
+
+    return L.divIcon({
+        className: "",
+        html: `
+            <div style="
+                position:relative;
+                width:30px;
+                height:30px;
+                transform:rotate(-45deg);
+            ">
+                <div style="
+                    width:100%;
+                    height:100%;
+                    background:${color};
+                    border-radius:50% 50% 50% 0;
+                    border:3px solid white;
+                    box-shadow:
+                        0 8px 18px rgba(0,0,0,0.35),
+                        0 0 0 3px rgba(255,255,255,0.6);
+                "></div>
+
+                <div style="
+                    position:absolute;
+                    width:10px;
+                    height:10px;
+                    background:white;
+                    border-radius:50%;
+                    top:10px;
+                    left:10px;
+                "></div>
+            </div>
+        `,
+        iconSize:[30,30],
+        iconAnchor:[15,30],
+        popupAnchor:[0,-30]
+    });
+
+}
+
+let modalMap;
+
+function openNewsModal(newsId, button){
+
+    fetch("/api/map/news/")
+    .then(res => res.json())
+    .then(data => {
+
+        const news = data.find(n => n.id === newsId);
+
+        if(!news) return;
+
+        document.getElementById("modalTitle").innerText = news.title;
+        const date = new Date(news.created_at);
+
+        document.getElementById("modalDate").innerText =
+            date.toLocaleDateString("bg-BG",{
+                day:"numeric",
+                month:"long",
+                year:"numeric"
+            }) + " | " +
+            date.toLocaleTimeString("bg-BG",{
+                hour:"2-digit",
+                minute:"2-digit"
+            });
+
+        document.getElementById("modalContent").innerText = news.content;
+        document.getElementById("modalType").innerText =
+            button.dataset.type;
+
+        document.getElementById("newsModal").style.display = "flex";
+
+        setTimeout(initModalMap,100);
+
+        function initModalMap(){
+
+            if(modalMap){
+                modalMap.remove();
+            }
+
+            modalMap = L.map("modalMap").setView([43.214,27.914],13);
+
+            L.tileLayer(
+                "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                { attribution:"© OpenStreetMap" }
+            ).addTo(modalMap);
+
+            if(news.coordinates && news.coordinates.length){
+
+                let layer;
+
+                /* ---------- MARKER ---------- */
+
+                if(news.coordinates.length === 1){
+
+                    const point = news.coordinates[0];
+
+                    layer = L.marker(point,{
+                        icon:getNewsMarkerIcon()
+                    }).addTo(modalMap);
+
+                    modalMap.setView(point, 16);
+
+                }
+
+                /* ---------- LINE ---------- */
+
+                else if(news.coordinates.length === 2){
+
+                    layer = L.polyline(news.coordinates,{
+                        color:"#8e24aa",
+                        weight:4
+                    }).addTo(modalMap);
+
+                    modalMap.fitBounds(layer.getBounds(),{
+                        padding:[60,60]
+                    });
+
+                }
+
+                /* ---------- POLYGON ---------- */
+
+                else{
+
+                    layer = L.polygon(news.coordinates,{
+                        color:"#8e24aa",
+                        fillOpacity:0.3
+                    }).addTo(modalMap);
+
+                    modalMap.fitBounds(layer.getBounds(),{
+                        padding:[60,60]
+                    });
+
+                }
+
+            }
+
+            /* ---------- NO LOCATION ---------- */
+
+            else{
+
+                document.getElementById("modalMap").innerHTML =
+                    "<div class='no-location'>Няма избрана локация</div>";
+
+            }
+
+        }
+
+    });
+
+}
+
+function closeNewsModal(){
+
+    document.getElementById("newsModal").style.display = "none";
+
+}
+
+document.addEventListener("DOMContentLoaded", function(){
+
+    const fromInput = document.getElementById("fromDate");
+    const toInput = document.getElementById("toDate");
+
+    const today = new Date().toISOString().split("T")[0];
+
+    // забранява бъдещи дни
+    fromInput.max = today;
+    toInput.max = today;
+
+    function updateLimits(){
+
+        const fromValue = fromInput.value;
+        const toValue = toInput.value;
+
+        // ако има from_date → забранява по-ранни в to_date
+        if(fromValue){
+            toInput.min = fromValue;
+        } else {
+            toInput.min = "";
+        }
+
+        // ако има to_date → забранява по-късни в from_date
+        if(toValue){
+            fromInput.max = toValue;
+        } else {
+            fromInput.max = today;
+        }
+
+        // ако from_date > to_date → reset
+        if(fromValue && toValue && fromValue > toValue){
+            toInput.value = "";
+        }
+
+    }
+
+    fromInput.addEventListener("change", updateLimits);
+    toInput.addEventListener("change", updateLimits);
+
+    // важно: изпълнява се и при load
+    updateLimits();
+
+});
+
+function confirmDelete(newsId){
+
+    console.log("DELETE CLICKED", newsId);
+
+    const overlay = document.createElement("div");
+    overlay.className = "varna-popup-overlay";
+
+    overlay.innerHTML = `
+        <div class="varna-popup popup-error">
+
+            <div class="varna-popup-icon">⚠</div>
+
+            <div class="varna-popup-title">
+                Сигурен ли си?
+            </div>
+
+            <div class="varna-popup-text">
+                Това действие ще изтрие новината завинаги.
+            </div>
+
+            <div style="display:flex;gap:12px;justify-content:center;">
+
+                <button onclick="deleteNews(${newsId})"
+                        class="btn-danger">
+                    Изтрий
+                </button>
+
+                <button onclick="this.closest('.varna-popup-overlay').remove()"
+                        class="btn-neutral">
+                    Отказ
+                </button>
+
+            </div>
+
+        </div>
+    `;
+
+    document.body.appendChild(overlay);
+}
+
+function deleteNews(newsId){
+    window.location.href = `/news/delete/${newsId}/`;
+}
+</script>
+<script src="{% static 'js/news.js' %}"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+
+</body>
+</html>

@@ -1,0 +1,272 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <title>Контакти – Община Варна</title>
+
+    <link rel="stylesheet" href="{% static 'css/contact.css' %}">
+</head>
+<body>
+
+<!-- ================= HEADER ================= -->
+
+<div class="top-bar">
+
+    <div class="top-bar-title">
+
+        <a href="{% url 'index' %}">
+            <img src="/media/logo/og-varna.png" class="varna-logo">
+        </a>
+
+        <div class="brand-text-container">
+            <span>ВАРНА НА ФОКУС</span>
+            <span class="sub-title-text">Свържете се с нас</span>
+        </div>
+
+        <!-- LEFT BUTTONS -->
+        <a href="{% url 'news' %}" class="nav-btn" data-tooltip="Новини">
+            <img src="/media/buttons/news.png">
+        </a>
+
+        <a href="{% url 'contact' %}" class="nav-btn" data-tooltip="Контакти">
+            <img src="/media/buttons/contact.png">
+        </a>
+
+    </div>
+
+    <!-- RIGHT BUTTON -->
+    <div class="top-bar-actions">
+        <div class="weather-inline">
+            <div class="weather-top">
+                <span class="weather-icon">☀️</span>
+                <span class="weather-temp">--°C</span>
+            </div>
+            <div class="weather-desc">—</div>
+        </div>
+
+        <a href="{% url 'map' %}" class="nav-btn" data-tooltip="Към картата">
+            <img src="/media/buttons/map.png">
+        </a>
+    </div>
+
+</div>
+
+<div class="contact-container">
+
+    <div class="contact-card split">
+
+        <!-- LEFT SIDE -->
+        <div class="contact-form">
+
+            <div class="contact-title">
+                Контакт с общината
+            </div>
+
+            <form method="post">
+                {% csrf_token %}
+
+                <label>Имейл</label>
+                <input type="email"
+                       name="email"
+                       value="{{ request.user.email }}"
+                       placeholder="example@email.com"
+                       {% if user.is_authenticated %}readonly{% endif %}
+                       required>
+
+                <label>Категория</label>
+                <select name="category" id="categorySelect" required>
+                    <option value="">Избери...</option>
+                    <option value="question">Въпрос</option>
+                    <option value="complaint">Оплакване</option>
+                    <option value="suggestion">Предложение</option>
+                    <option value="other">Друго</option>
+                </select>
+
+                <input type="text"
+                       name="custom_category"
+                       id="customCategory"
+                       placeholder="Опишете категория..."
+                       style="display:none; margin-top:10px;">
+
+                <label>Тема</label>
+                <input type="text"
+                       name="subject"
+                       placeholder="Въведете тема..."
+                       minlength="3"
+                       maxlength="120"
+                       required>
+
+                <label>Съобщение</label>
+                <textarea name="message"
+                          rows="6"
+                          placeholder="Вашето съобщение..."
+                          minlength="10"
+                          maxlength="1000"
+                          required></textarea>
+
+                <button type="submit" class="contact-btn">
+                    Изпрати съобщение
+                </button>
+
+            </form>
+
+        </div>
+
+        <!-- RIGHT SIDE -->
+        <div class="contact-visual">
+            <img src="/media/contact/contact-illustration.png" alt="contact">
+            <div class="contact-info">
+
+                <div class="info-item">
+                    <span>⚲</span>
+                    <div>
+                        <strong>Локация</strong>
+                        <p>Варна ЦентърОдесос, бул. „8-ми Приморски полк“ 43, 9002 Варна</p>
+                    </div>
+                </div>
+
+                <div class="info-item">
+                    <span>☎</span>
+                    <div>
+                        <strong>Телефон</strong>
+                        <p>+359876251510</p>
+                    </div>
+                </div>
+
+                <div class="info-item">
+                    <span>✉</span>
+                    <div>
+                        <strong>Имейл</strong>
+                        <p>varnamunicipality1@gmail.com</p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+<!-- ================= SUCCESS POPUP ================= -->
+
+{% if success %}
+<script>
+    const overlay = document.createElement("div");
+    overlay.className = "varna-popup-overlay";
+
+    overlay.innerHTML = `
+        <div class="varna-popup popup-success">
+
+            <div class="varna-popup-icon">✔</div>
+
+            <div class="varna-popup-title">
+                Съобщението е изпратено!
+            </div>
+
+            <div class="varna-popup-text">
+                Ще се свържем с вас възможно най-скоро.
+            </div>
+
+            <button class="varna-popup-btn">
+                Продължи
+            </button>
+
+        </div>
+    `;
+
+    document.body.appendChild(overlay);
+
+    overlay.querySelector(".varna-popup-btn")
+        .addEventListener("click", function(){
+            overlay.remove();
+        });
+</script>
+{% endif %}
+
+<!-- ================= TOOLTIP + VALIDATION ================= -->
+
+<script>
+
+// ===== TOOLTIP (1:1 с map) =====
+const tooltip = document.createElement("div");
+tooltip.className = "custom-tooltip";
+document.body.appendChild(tooltip);
+
+document.addEventListener("mouseover", function(e){
+    const target = e.target.closest("[data-tooltip]");
+    if(!target) return;
+
+    tooltip.textContent = target.getAttribute("data-tooltip");
+    tooltip.style.opacity = "1";
+});
+
+document.addEventListener("mousemove", function(e){
+    tooltip.style.left = (e.clientX + 14) + "px";
+    tooltip.style.top = (e.clientY + 14) + "px";
+});
+
+document.addEventListener("mouseout", function(e){
+    if(e.target.closest("[data-tooltip]")){
+        tooltip.style.opacity = "0";
+    }
+});
+
+
+// ===== VALIDATION + BUTTON CONTROL =====
+const form = document.querySelector("form");
+
+form.addEventListener("submit", function(e){
+
+    const email = form.email.value.trim();
+    const subject = form.subject.value.trim();
+    const message = form.message.value.trim();
+
+    // EMAIL
+    if(!email.includes("@")){
+        alert("Моля въведете валиден имейл.");
+        e.preventDefault();
+        return;
+    }
+
+    // SUBJECT
+    if(subject.length < 3){
+        alert("Темата трябва да е поне 3 символа.");
+        e.preventDefault();
+        return;
+    }
+
+    // MESSAGE
+    if(message.length < 10){
+        alert("Съобщението трябва да е поне 10 символа.");
+        e.preventDefault();
+        return;
+    }
+
+    // ✅ disable button САМО ако всичко е ок
+    const btn = form.querySelector("button");
+    btn.disabled = true;
+    btn.innerText = "Изпращане...";
+
+});
+
+const categorySelect = document.getElementById("categorySelect");
+const customCategory = document.getElementById("customCategory");
+
+categorySelect.addEventListener("change", function(){
+
+    if(this.value === "other"){
+        customCategory.style.display = "block";
+        customCategory.required = true;
+    } else {
+        customCategory.style.display = "none";
+        customCategory.required = false;
+    }
+
+});
+</script>
+<script src="{% static 'js/contact.js' %}"></script>
+
+</body>
+</html>

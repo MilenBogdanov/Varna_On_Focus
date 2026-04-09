@@ -1,0 +1,289 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <title>Детайли на сигнал</title>
+
+    <link rel="stylesheet"
+          href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+
+    <link rel="stylesheet" href="{% static 'css/signal_detail.css' %}">
+</head>
+<body>
+
+<div class="layout">
+
+    <!-- LEFT PANEL -->
+    <div class="form-panel">
+        <div class="form-panel-inner">
+
+            <h2>{{ signal.title }}</h2>
+
+            <div class="info-card">
+                <div><strong>Категория:</strong> {{ signal.category }}</div>
+                <div class="status-row">
+                    <strong>Статус:</strong>
+                    <span class="status-badge status-{{ signal.status|lower }}">
+                        {{ signal.get_status_display }}
+                    </span>
+                </div>
+                <div><strong>Адрес:</strong> {{ signal.address }}</div>
+                <div><strong>Подаден от:</strong> {{ signal.user.full_name }}</div>
+                <div><strong>Дата:</strong> {{ signal.created_at }}</div>
+            </div>
+
+            <div class="description-section">
+                <h3>Описание</h3>
+                <p>{{ signal.description }}</p>
+            </div>
+
+            <div class="tab-buttons">
+
+                {% if signal.latitude and signal.longitude %}
+                <button class="tab-btn active" onclick="showLocation(this)">
+                    ⚲ Локация
+                </button>
+                {% endif %}
+
+                <button class="tab-btn" onclick="showImages(this)">
+                    ⛶ Снимки
+                </button>
+
+                <button id="commentsTabBtn" class="tab-btn" onclick="showComments(this)">
+                    ✉ Коментари
+                </button>
+
+            </div>
+
+            <div class="action-row">
+                {% if can_manage %}
+                <a href="{% url 'signals:manage_signal' signal.id %}"
+                   class="btn-admin">
+                    ⚙ Управление
+                </a>
+                {% endif %}
+
+                <a href="{% url 'map' %}"
+                   class="btn-back">
+                    ⬅ Назад
+                </a>
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- RIGHT PANEL -->
+    <div class="right-panel">
+
+        {% if signal.latitude and signal.longitude %}
+        <div id="locationSection" class="content-panel active">
+            <div id="map"></div>
+        </div>
+        {% endif %}
+
+        <div id="imagesSection" class="content-panel">
+            {% if signal.images.exists %}
+                <div class="image-grid">
+                    {% for image in signal.images.all %}
+                        <img src="{{ image.image.url }}" class="signal-image">
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-text">Няма качени снимки.</div>
+            {% endif %}
+        </div>
+
+        <div id="commentsSection" class="content-panel">
+            <div class="comments-wrapper">
+
+                {% if comments %}
+                    {% for comment in comments %}
+                        <div class="comment-row
+                            {% if comment.user.id == request.user.id %}
+                                my-comment
+                            {% else %}
+                                other-comment
+                            {% endif %}
+                        ">
+                            <div class="comment-bubble">
+                                <div class="comment-meta">
+                                    <span>{{ comment.user.full_name }}</span>
+                                    <span>{{ comment.created_at }}</span>
+                                </div>
+                                {{ comment.content }}
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="empty-text">Няма коментари.</div>
+                {% endif %}
+
+                {% if request.user.is_authenticated %}
+                <form method="post" class="comment-input-wrapper">
+                    {% csrf_token %}
+
+                    <textarea name="content"
+                              class="comment-input"
+                              placeholder="Напишете коментар..."
+                              required></textarea>
+
+                    <button type="submit" class="comment-send">
+                        ➤
+                    </button>
+                </form>
+                {% endif %}
+
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<div id="imageModal" class="image-modal">
+    <img id="modalImage">
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+let map;
+let mapInitialized = false;
+
+/* ================= CUSTOM STATUS PIN ================= */
+
+function getMarkerIcon(status) {
+
+    const colors = {
+        "OPEN": "#1565c0",
+        "IN_PROGRESS": "#f57c00",
+        "RESOLVED": "#2e7d32",
+        "REJECTED": "#c62828"
+    };
+
+    const color = colors[status] || "#1565c0";
+
+    return L.divIcon({
+        className: "",
+        html: `
+            <div style="
+                position:relative;
+                width:30px;
+                height:30px;
+                transform:rotate(-45deg);
+            ">
+                <div style="
+                    width:100%;
+                    height:100%;
+                    background:${color};
+                    border-radius:50% 50% 50% 0;
+                    border:3px solid white;
+                    box-shadow:
+                        0 8px 18px rgba(0,0,0,0.35),
+                        0 0 0 3px rgba(255,255,255,0.6);
+                "></div>
+
+                <div style="
+                    position:absolute;
+                    width:10px;
+                    height:10px;
+                    background:white;
+                    border-radius:50%;
+                    top:10px;
+                    left:10px;
+                "></div>
+            </div>
+        `,
+        iconSize: [30, 30],
+        iconAnchor: [15, 30],
+        popupAnchor: [0, -30]
+    });
+}
+
+/* ================= INIT MAP ================= */
+
+document.addEventListener("DOMContentLoaded", function(){
+    if (document.getElementById("locationSection")) {
+        initMap();
+    }
+});
+
+function initMap(){
+    if (mapInitialized) return;
+
+    const lat = Number("{{ signal.latitude|stringformat:'f' }}");
+    const lng = Number("{{ signal.longitude|stringformat:'f' }}");
+    const status = "{{ signal.status }}";
+
+    if (!lat || !lng) return;
+
+    map = L.map('map').setView([lat, lng], 16);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    L.marker([lat, lng], {
+        icon: getMarkerIcon(status)
+    }).addTo(map);
+
+    mapInitialized = true;
+}
+
+/* ================= TAB LOGIC (НЕ ПИПАМ) ================= */
+
+function activate(id, btn){
+    document.querySelectorAll(".content-panel")
+        .forEach(el => el.classList.remove("active"));
+
+    document.getElementById(id)?.classList.add("active");
+
+    document.querySelectorAll(".tab-btn")
+        .forEach(b => b.classList.remove("active"));
+
+    btn.classList.add("active");
+}
+
+function showLocation(btn){ activate("locationSection", btn); }
+function showImages(btn){ activate("imagesSection", btn); }
+function showComments(btn){ activate("commentsSection", btn); }
+
+/* ================= OPEN COMMENTS AFTER REDIRECT ================= */
+
+document.addEventListener("DOMContentLoaded", function(){
+
+    if(window.location.hash === "#comments"){
+
+        const btn = document.getElementById("commentsTabBtn");
+
+        if(btn){
+            showComments(btn);
+        }
+
+        const wrapper = document.querySelector(".comments-wrapper");
+
+        if(wrapper){
+            wrapper.scrollTop = wrapper.scrollHeight;
+        }
+    }
+
+});
+
+/* ================= IMAGE MODAL (НЕ ПИПАМ) ================= */
+
+const modal = document.getElementById("imageModal");
+const modalImg = document.getElementById("modalImage");
+
+document.addEventListener("click", function(e){
+    if(e.target.classList.contains("signal-image")){
+        modal.classList.add("active");
+        modalImg.src = e.target.src;
+    }
+});
+
+modal.addEventListener("click", () => modal.classList.remove("active"));
+</script>
+
+</body>
+</html>

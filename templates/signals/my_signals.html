@@ -1,0 +1,256 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <title>Моите сигнали</title>
+    <link rel="stylesheet" href="{% static 'css/my_signals.css' %}">
+</head>
+<body>
+
+<div class="page-wrapper">
+    <div class="signals-card">
+
+        <!-- HEADER -->
+        <div class="signals-header">
+            <h2>Моите сигнали</h2>
+
+            <div class="header-actions image-style-actions">
+
+                <!-- Моят профил -->
+                <a href="{% url 'profile' %}"
+                   class="image-btn"
+                   title="Моят профил">
+
+                    <img src="/media/buttons/profile.png"
+                         alt="Моят профил">
+                </a>
+
+                <!-- Към картата -->
+                <a href="{% url 'map' %}"
+                   class="image-btn home"
+                   title="Към картата">
+
+                    <img src="/media/buttons/home.png"
+                         alt="Към картата">
+                </a>
+
+            </div>
+        </div>
+
+        <!-- FILTERS -->
+        <form method="get" class="filter-bar" id="filterForm">
+
+            <select name="status">
+                <option value="">Всички статуси</option>
+                <option value="OPEN" {% if request.GET.status == "OPEN" %}selected{% endif %}>Отворен</option>
+                <option value="IN_PROGRESS" {% if request.GET.status == "IN_PROGRESS" %}selected{% endif %}>В процес</option>
+                <option value="RESOLVED" {% if request.GET.status == "RESOLVED" %}selected{% endif %}>Решен</option>
+                <option value="REJECTED" {% if request.GET.status == "REJECTED" %}selected{% endif %}>Отхвърлен</option>
+            </select>
+
+            <select name="category">
+                <option value="">Всички категории</option>
+                {% for cat in categories %}
+                    <option value="{{ cat.id }}"
+                        {% if request.GET.category == cat.id|stringformat:"s" %}selected{% endif %}>
+                        {{ cat.name }}
+                    </option>
+                {% endfor %}
+            </select>
+
+            <div class="date-wrapper">
+                <input type="date" name="date_from" value="{{ request.GET.date_from }}">
+                <span>—</span>
+                <input type="date" name="date_to" value="{{ request.GET.date_to }}">
+            </div>
+
+            <select name="ordering">
+                <option value="">Най-скорошни</option>
+                <option value="oldest" {% if request.GET.ordering == "oldest" %}selected{% endif %}>Най-стари</option>
+                <option value="az" {% if request.GET.ordering == "az" %}selected{% endif %}>А-Я</option>
+                <option value="za" {% if request.GET.ordering == "za" %}selected{% endif %}>Я-А</option>
+            </select>
+
+            <button type="submit" class="btn-primary small-btn">
+                Филтрирай
+            </button>
+
+            <button type="button"
+                    class="btn-secondary small-btn"
+                    onclick="clearFilters()">
+                Изчисти
+            </button>
+
+        </form>
+
+        <!-- SIGNAL LIST -->
+        {% if signals %}
+            <div class="signals-list">
+
+                {% for signal in signals %}
+                <div class="signal-item clickable"
+                     onclick="window.location.href='{% url 'signals:signal_detail' signal.id %}'">
+
+                    <div class="signal-main">
+                        <div class="signal-title">
+                            {{ signal.title }}
+                        </div>
+
+                        <div class="signal-meta">
+                            <span class="status-badge status-{{ signal.status|lower }}">
+                                {{ signal.get_status_display }}
+                            </span>
+
+                            <span class="signal-date">
+                                {{ signal.created_at|date:"d.m.Y H:i" }}
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="signal-actions">
+
+                        {% if signal.status == 'OPEN' %}
+                            <a href="{% url 'signals:edit_signal' signal.id %}"
+                               class="icon-btn edit-btn"
+                               data-tooltip="Редакция"
+                               onclick="event.stopPropagation();">
+                                ✎
+                            </a>
+                        {% endif %}
+
+                        {% if signal.status == 'OPEN' %}
+                            <button type="button"
+                                    class="icon-btn delete-btn"
+                                    data-tooltip="Изтриване"
+                                    data-url="{% url 'signals:delete_signal' signal.id %}"
+                                    onclick="event.stopPropagation(); openDeleteModal(this)">
+                                ✖
+                            </button>
+                        {% endif %}
+
+                    </div>
+
+                </div>
+                {% endfor %}
+
+            </div>
+
+            <!-- PAGINATION -->
+            {% if page_obj.has_other_pages %}
+            <div class="pagination">
+
+                {% if page_obj.has_previous %}
+                    <a href="?{{ request.GET.urlencode }}&page={{ page_obj.previous_page_number }}">◀</a>
+                {% endif %}
+
+                {% for num in page_obj.paginator.page_range %}
+                    {% if page_obj.number == num %}
+                        <span class="active-page">{{ num }}</span>
+                    {% else %}
+                        <a href="?{{ request.GET.urlencode }}&page={{ num }}">{{ num }}</a>
+                    {% endif %}
+                {% endfor %}
+
+                {% if page_obj.has_next %}
+                    <a href="?{{ request.GET.urlencode }}&page={{ page_obj.next_page_number }}">▶</a>
+                {% endif %}
+
+            </div>
+            {% endif %}
+
+        {% else %}
+            <div class="empty-text">
+                Нямате подадени сигнали.
+            </div>
+        {% endif %}
+
+    </div>
+</div>
+
+<!-- DELETE MODAL -->
+<div id="deleteModal" class="modal-overlay">
+    <div class="modal-box">
+        <h3>Потвърждение</h3>
+        <p>Сигурни ли сте, че искате да изтриете този сигнал?</p>
+
+        <div class="modal-actions">
+            <button class="btn-secondary" onclick="closeDeleteModal()">Отказ</button>
+            <form id="deleteForm" method="post">
+                {% csrf_token %}
+                <button type="submit" class="btn-primary">Изтрий</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+function openDeleteModal(button){
+    const modal = document.getElementById("deleteModal");
+    const form = document.getElementById("deleteForm");
+    form.action = button.dataset.url;
+    modal.classList.add("active");
+}
+
+function closeDeleteModal(){
+    document.getElementById("deleteModal").classList.remove("active");
+}
+
+window.addEventListener("click", function(e){
+    const modal = document.getElementById("deleteModal");
+    if(e.target === modal){
+        closeDeleteModal();
+    }
+});
+
+function clearFilters(){
+    window.location.href = window.location.pathname;
+}
+
+function closeErrorModal(){
+    const modal = document.getElementById("errorModal");
+    if(modal){
+        modal.classList.remove("active");
+    }
+}
+</script>
+
+{% if messages %}
+    {% for message in messages %}
+        {% if "signals" in message.tags %}
+
+        <div id="messageModal" class="modal-overlay active">
+            <div class="modal-box
+                {% if message.tags == 'error signals' %}
+                    error-modal
+                {% endif %}
+            ">
+
+                <h3>
+                    {% if message.tags == 'success signals' %}
+                        Успех
+                    {% elif message.tags == 'error signals' %}
+                        Грешка
+                    {% else %}
+                        Съобщение
+                    {% endif %}
+                </h3>
+
+                <p>{{ message }}</p>
+
+                <div class="modal-actions">
+                    <button class="btn-primary"
+                            onclick="this.closest('.modal-overlay').classList.remove('active')">
+                        Разбрах
+                    </button>
+                </div>
+
+            </div>
+        </div>
+
+        {% endif %}
+    {% endfor %}
+{% endif %}
+
+</body>
+</html>

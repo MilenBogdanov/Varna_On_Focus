@@ -1,0 +1,46 @@
+{% extends "accounts/base_form.html" %}
+
+{% block title %}Деактивиране на профил{% endblock %}
+{% block heading %}Деактивиране на профил{% endblock %}
+
+{% block content %}
+
+<div class="deactivate-form">
+
+    <div class="danger-icon">
+        ⚠
+    </div>
+
+    <p class="danger-question">
+        Сигурни ли сте, че искате да деактивирате профила си?
+    </p>
+
+    <div class="danger-box">
+        <strong>Важно:</strong>
+        <ul>
+            <li>Ще загубите достъп до профила си.</li>
+            <li>Няма да можете да подавате нови сигнали.</li>
+            <li>Ще е необходима имейл реактивация за възстановяване на достъпа.</li>
+        </ul>
+    </div>
+
+    <form method="POST" action="{% url 'confirm_delete_account' %}">
+        {% csrf_token %}
+
+        <div class="form-actions danger-actions">
+
+            <button type="submit" class="btn-danger-confirm">
+                Деактивирай профила
+            </button>
+
+            <a href="{% url 'profile' %}" class="btn-secondary">
+                Отказ
+            </a>
+
+        </div>
+
+    </form>
+
+</div>
+
+{% endblock %}

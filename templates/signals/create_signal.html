@@ -1,0 +1,472 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <title>Подай сигнал</title>
+
+    <link rel="stylesheet"
+          href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+
+    <link rel="stylesheet" href="{% static 'css/create_signal.css' %}">
+</head>
+<body>
+
+<div class="layout">
+
+    <!-- LEFT PANEL -->
+    <div class="form-panel">
+
+        <!-- ================= ALERTS ================= -->
+        {% if messages %}
+        <div class="alerts-container">
+            {% for message in messages %}
+                {% if "signals" in message.tags and "error" in message.tags %}
+                    <div class="alert alert-error">
+                        {{ message }}
+                    </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+        {% endif %}
+        <!-- ========================================== -->
+
+        <h2 class="form-title">
+            Подай нов сигнал
+        </h2>
+
+        <form method="post"
+              enctype="multipart/form-data"
+              class="signal-form">
+
+            {% csrf_token %}
+
+            <div class="form-fields">
+                {{ form.as_p }}
+            </div>
+
+            <!-- IMAGE UPLOAD -->
+            <div class="image-upload-wrapper">
+
+                <label class="upload-label">
+                    Снимки (до 5 броя)
+                </label>
+
+                <label for="imageInput" class="custom-file-upload">
+                    🔗 Избери снимки
+                </label>
+
+                <input type="file"
+                       name="images"
+                       id="imageInput"
+                       accept="image/*"
+                       multiple
+                       hidden>
+
+                <span id="fileCount" class="file-count">
+                    Няма избрани файлове
+                </span>
+
+                <div id="imagePreview"
+                     class="image-preview">
+                </div>
+
+                <div id="imageWarning"
+                     class="image-warning">
+                </div>
+
+            </div>
+
+            <div class="form-actions">
+                <button type="submit"
+                        class="btn-primary">
+                    Запази
+                </button>
+
+                <a href="{% url 'map' %}"
+                   class="btn-secondary">
+                    ⬅ Назад
+                </a>
+            </div>
+
+        </form>
+
+    </div>
+
+    <div class="map-panel">
+
+        <div class="map-hint">
+            ⚲ Кликни върху картата, за да избереш локация
+        </div>
+
+        <div id="map"></div>
+
+        <a class="floating-btn btn-right-location"
+           onclick="handleLocationClick(event)"
+           data-tooltip="Моята локация">
+            <img src="/media/buttons/get_location.png" alt="">
+        </a>
+
+    </div>
+
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
+
+<script>
+let map = null;
+let marker = null;
+let latInput = null;
+let lngInput = null;
+let varnaFeature = null;
+
+function getCreatePinIcon() {
+
+    return L.divIcon({
+        className: "",
+        html: `
+            <div style="
+                position:relative;
+                width:30px;
+                height:30px;
+                transform:rotate(-45deg);
+            ">
+                <div style="
+                    width:100%;
+                    height:100%;
+                    background:#1565c0;
+                    border-radius:50% 50% 50% 0;
+                    border:3px solid white;
+                    box-shadow:
+                        0 8px 18px rgba(0,0,0,0.35),
+                        0 0 0 3px rgba(255,255,255,0.6);
+                "></div>
+
+                <div style="
+                    position:absolute;
+                    width:10px;
+                    height:10px;
+                    background:white;
+                    border-radius:50%;
+                    top:10px;
+                    left:10px;
+                "></div>
+            </div>
+        `,
+        iconSize: [30, 30],
+        iconAnchor: [15, 30],
+    });
+}
+
+function useMyLocation(){
+
+    if(!navigator.geolocation){
+        showPopup(
+            "error",
+            "Геолокацията не се поддържа",
+            "Вашият браузър не поддържа GPS."
+        );
+        return;
+    }
+
+    navigator.geolocation.getCurrentPosition(function(position){
+
+        const lat = position.coords.latitude;
+        const lng = position.coords.longitude;
+
+        if (!isInsideVarna(lat, lng)) {
+            showPopup(
+                "error",
+                "Локацията е извън региона",
+                "Сигнал може да бъде подаден само в <strong>Регион Варна.</strong>"
+            );
+            return;
+        }
+
+        const latlng = [lat, lng];
+
+        latInput.value = lat.toFixed(6);
+        lngInput.value = lng.toFixed(6);
+
+        if(marker){
+            marker.setLatLng(latlng);
+        } else{
+            marker = L.marker(latlng,{
+                icon: getCreatePinIcon()
+            }).addTo(map);
+        }
+
+        marker.bindTooltip("Избрана GPS локация");
+
+        map.setView(latlng, 16);
+
+    }, function(){
+
+        showPopup(
+            "error",
+            "Неуспешно взимане на локация",
+            "Моля позволете достъп до вашата локация."
+        );
+
+    });
+}
+
+function isInsideVarna(lat, lng) {
+
+        if (!varnaFeature) return false;
+
+        const point = turf.point([lng, lat]);
+        return turf.booleanPointInPolygon(point, varnaFeature);
+    }
+
+document.addEventListener("DOMContentLoaded", function(){
+
+
+    {% for message in messages %}
+    {% if "signals" in message.tags and "success" in message.tags %}
+            showPopup(
+                "success",
+                "Сигналът е създаден успешно!",
+                "Вашият сигнал беше регистриран в системата."
+            );
+        {% endif %}
+    {% endfor %}
+
+    /* ================= REQUIRED STAR AUTO ================= */
+    document.querySelectorAll(".signal-form input[required], .signal-form textarea[required], .signal-form select[required]")
+        .forEach(function(input) {
+            const label = document.querySelector("label[for='" + input.id + "']");
+            if (label && !label.innerHTML.includes("*")) {
+                label.innerHTML += ' <span style="color:#c62828;font-weight:700;">*</span>';
+            }
+        });
+
+
+    /* ================= MAP ================= */
+
+    map = L.map('map').setView([43.214, 27.914], 9);
+
+    L.tileLayer(
+        'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+        { attribution: '&copy; OpenStreetMap contributors' }
+    ).addTo(map);
+
+    latInput = document.getElementById("id_latitude");
+    lngInput = document.getElementById("id_longitude");
+
+    fetch("{% static 'geo/bulgaria_regions.geojson' %}")
+    .then(res => res.json())
+    .then(data => {
+
+        varnaFeature = data.features.find(f =>
+            f.properties.adm1_name1 === "Варна"
+        );
+
+        if (!varnaFeature) {
+            alert("Не е намерен Регион Варна в GeoJSON файла.");
+            return;
+        }
+
+        L.geoJSON(data, {
+            style: function(feature) {
+
+                if (feature.properties.adm1_name1 === "Варна") {
+                    return { opacity: 0, fillOpacity: 0 };
+                }
+
+                return {
+                    color: "#c62828",
+                    weight: 1,
+                    fillColor: "#c62828",
+                    fillOpacity: 0.18
+                };
+            }
+        }).addTo(map);
+
+        const varnaLayer = L.geoJSON(varnaFeature, {
+            style: {
+                color: "#1565c0",
+                weight: 3,
+                fillOpacity: 0,
+                opacity: 1
+            }
+        }).addTo(map);
+
+        map.fitBounds(varnaLayer.getBounds());
+    });
+
+    map.on('click', function(e) {
+
+        const lat = e.latlng.lat;
+        const lng = e.latlng.lng;
+
+        if (!isInsideVarna(lat, lng)) {
+            showPopup(
+                "error",
+                "Избери друга локация!",
+                "Сигнал може да бъде подаден само в <strong>Регион Варна.</strong>"
+            );
+            return;
+        }
+
+        latInput.value = lat.toFixed(6);
+        lngInput.value = lng.toFixed(6);
+
+        if (marker) {
+            marker.setLatLng(e.latlng);
+        } else {
+            marker = L.marker(e.latlng, {
+                icon: getCreatePinIcon()
+            }).addTo(map);
+        }
+    });
+
+    function validateManualCoords() {
+
+        const lat = parseFloat(latInput.value);
+        const lng = parseFloat(lngInput.value);
+
+        if (isNaN(lat) || isNaN(lng)) return;
+
+        if (!isInsideVarna(lat, lng)) {
+            alert("Координатите трябва да са в Регион Варна.");
+            latInput.value = "";
+            lngInput.value = "";
+        }
+    }
+
+    latInput.addEventListener("change", validateManualCoords);
+    lngInput.addEventListener("change", validateManualCoords);
+
+    /* ================= IMAGE UPLOAD ================= */
+
+    const imageInput = document.getElementById("imageInput");
+    const previewContainer = document.getElementById("imagePreview");
+    const warningBox = document.getElementById("imageWarning");
+    const fileCount = document.getElementById("fileCount");
+
+    let dataTransfer = new DataTransfer();
+
+    function updateFileCount() {
+        fileCount.textContent =
+            dataTransfer.files.length > 0
+                ? dataTransfer.files.length + " избрани файла"
+                : "Няма избрани файлове";
+    }
+
+    function showWarning(message) {
+        warningBox.textContent = message;
+        warningBox.classList.add("active");
+
+        setTimeout(() => {
+            warningBox.classList.remove("active");
+            warningBox.textContent = "";
+        }, 4000);
+    }
+
+    imageInput.addEventListener("change", function () {
+
+        const files = Array.from(this.files);
+
+        if (files.length + dataTransfer.files.length > 5) {
+            showWarning("Можете да качите максимум 5 снимки.");
+            return;
+        }
+
+        files.forEach(file => {
+
+            if (!file.type.startsWith("image/")) return;
+
+            dataTransfer.items.add(file);
+
+            const reader = new FileReader();
+
+            reader.onload = function (e) {
+
+                const wrapper = document.createElement("div");
+                wrapper.classList.add("preview-item");
+
+                const img = document.createElement("img");
+                img.src = e.target.result;
+                img.classList.add("preview-thumb");
+
+                const removeBtn = document.createElement("button");
+                removeBtn.innerHTML = "×";
+                removeBtn.classList.add("remove-btn");
+
+                removeBtn.addEventListener("click", function () {
+
+                    const fileList = Array.from(dataTransfer.files);
+                    const index = fileList.findIndex(f =>
+                        f.name === file.name && f.size === file.size
+                    );
+
+                    if (index > -1) {
+                        dataTransfer.items.remove(index);
+                    }
+
+                    imageInput.files = dataTransfer.files;
+                    wrapper.remove();
+                    updateFileCount();
+                });
+
+                wrapper.appendChild(img);
+                wrapper.appendChild(removeBtn);
+                previewContainer.appendChild(wrapper);
+            };
+
+            reader.readAsDataURL(file);
+        });
+
+        imageInput.files = dataTransfer.files;
+        updateFileCount();
+    });
+});
+
+function handleLocationClick(e){
+    e.stopPropagation();
+
+    useMyLocation();
+}
+function showPopup(type, title, message) {
+    if (document.getElementById("varnaPopupOverlay")) return;
+
+    const overlay = document.createElement("div");
+    overlay.id = "varnaPopupOverlay";
+    overlay.className = "varna-popup-overlay";
+
+    const isError = type === "error";
+
+    overlay.innerHTML = `
+        <div class="varna-popup ${isError ? 'popup-error' : 'popup-success'}">
+
+            <div class="varna-popup-icon">
+                ${isError ? '⚠' : '✔'}
+            </div>
+
+            <div class="varna-popup-title">
+                ${title}
+            </div>
+
+            <div class="varna-popup-text">
+                ${message}
+            </div>
+
+            <button class="varna-popup-btn ${isError ? 'btn-error' : 'btn-success'}">
+                ${isError ? 'Разбрах' : 'Продължи'}
+            </button>
+        </div>
+    `;
+
+    document.body.appendChild(overlay);
+
+    overlay.querySelector(".varna-popup-btn")
+        .addEventListener("click", function(){
+            overlay.remove();
+        });
+}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,343 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Редакция на сигнал</title>
+    <link rel="stylesheet" href="{% static 'css/edit_signal.css' %}">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+</head>
+<body>
+
+<div class="edit-container">
+
+    <div class="edit-header">
+        <div class="edit-header-left">
+            <h2>Редакция на сигнал</h2>
+            <br>
+            <span class="status-badge status-{{ signal.status|lower }}">
+                Статус: {{ signal.get_status_display }}
+            </span>
+        </div>
+
+        <a href="{% url 'signals:my_signals' %}" class="btn-secondary">
+            ⬅ Назад
+        </a>
+    </div>
+
+
+
+    <div class="edit-layout">
+
+        <div class="edit-form-panel">
+
+            <form method="post" enctype="multipart/form-data" class="signal-form" id="editSignalForm">
+                {% csrf_token %}
+                <div class="form-fields">
+                    {{ form.as_p }}
+                </div>
+
+                <h3 class="section-title">Снимки към сигнала</h3>
+
+                <div class="image-grid" id="existingImages">
+                    {% if images %}
+                        {% for img in images %}
+                            <div class="image-box">
+                                <img src="{{ img.image.url }}" alt="Signal Image">
+                                <label class="delete-checkbox" title="Маркирай за премахване">
+                                    ×
+                                    <input type="checkbox" name="delete_images" value="{{ img.id }}">
+                                </label>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="no-images">Няма качени снимки към този сигнал.</p>
+                    {% endif %}
+                </div>
+
+                <div class="image-upload-wrapper">
+                    <label class="upload-label">Добави нови снимки (макс. 5 общо)</label>
+
+                    <label for="imageInput" class="custom-file-upload">
+                        🔗 Избери снимки
+                    </label>
+
+                    <input type="file"
+                           name="new_images"
+                           id="imageInput"
+                           accept="image/*"
+                           multiple
+                           hidden>
+
+                    <span id="fileCount" class="file-count">Няма избрани нови файлове</span>
+
+                    <div id="imagePreview" class="image-preview"></div>
+                    <div id="imageWarning" class="image-warning"></div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary">
+                        Запази промените
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <div class="map-wrapper">
+            <div class="map-hint">
+                ⚲ Кликни или премести пина, за да промениш локацията
+            </div>
+            <div id="map"></div>
+        </div>
+
+    </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function(){
+
+    /* ================= POPUP SYSTEM (FIXED) ================= */
+    function showPopup(type, title, message) {
+        if (document.getElementById("varnaPopupOverlay")) return;
+
+        const overlay = document.createElement("div");
+        overlay.id = "varnaPopupOverlay";
+        overlay.className = "varna-popup-overlay";
+
+        const isError = type === "error";
+
+        // ТУК Е МАГИЯТА: Тези класове трябва да съвпадат с твоя CSS
+        const popupClass = isError ? 'popup-error' : 'popup-success';
+        const btnClass = isError ? 'btn-error' : 'btn-success';
+        const icon = isError ? '⚠' : '✔'; // Иконата за успех
+
+        overlay.innerHTML = `
+            <div class="varna-popup ${popupClass}">
+                <div class="varna-popup-icon">${icon}</div>
+                <div class="varna-popup-title">${title}</div>
+                <div class="varna-popup-text">${message}</div>
+                <button class="varna-popup-btn ${btnClass}">Разбрах</button>
+            </div>`;
+
+        document.body.appendChild(overlay);
+        overlay.querySelector(".varna-popup-btn").addEventListener("click", () => overlay.remove());
+    }
+
+    function showEditSuccessPopup(message) {
+        if (document.getElementById("varnaPopupOverlay")) return;
+
+        const overlay = document.createElement("div");
+        overlay.id = "varnaPopupOverlay";
+        overlay.className = "varna-popup-overlay";
+
+        overlay.innerHTML = `
+            <div class="varna-popup popup-success">
+                <div class="varna-popup-icon">✔</div>
+                <div class="varna-popup-title">Успешна редакция</div>
+                <div class="varna-popup-text">${message}</div>
+                <button class="varna-popup-btn btn-success">Продължи</button>
+            </div>
+        `;
+
+        document.body.appendChild(overlay);
+        overlay.querySelector(".varna-popup-btn")
+        .addEventListener("click", () => {
+            window.location.href = "{% url 'signals:my_signals' %}";
+        });
+    }
+
+    /* ================= PIN DESIGN ================= */
+    function getEditPinIcon() {
+
+        return L.divIcon({
+            className: "",
+            html: `
+                <div style="
+                    position:relative;
+                    width:30px;
+                    height:30px;
+                    transform:rotate(-45deg);
+                ">
+
+                    <div style="
+                        width:100%;
+                        height:100%;
+                        background:#1565c0;
+                        border-radius:50% 50% 50% 0;
+                        border:3px solid white;
+                        box-shadow:0 8px 18px rgba(0,0,0,0.35);
+                    "></div>
+
+                    <div style="
+                        position:absolute;
+                        width:8px;
+                        height:8px;
+                        background:white;
+                        border-radius:50%;
+                        top:9px;
+                        left:9px;
+                    "></div>
+
+                </div>
+            `,
+            iconSize: [30, 30],
+            iconAnchor: [14, 29]
+        });
+    }
+
+    /* ================= MAP LOGIC ================= */
+    const initialLat = Number("{{ signal.latitude|stringformat:'f' }}") || 43.2047;
+    const initialLng = Number("{{ signal.longitude|stringformat:'f' }}") || 27.9105;
+    const map = L.map('map').setView([initialLat, initialLng], 12);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+
+    let marker = L.marker([initialLat, initialLng], {
+        draggable: true,
+        icon: getEditPinIcon()
+    }).addTo(map);
+
+    const latInput = document.getElementById("id_latitude");
+    const lngInput = document.getElementById("id_longitude");
+    let varnaFeature = null;
+
+    fetch("{% static 'geo/bulgaria_regions.geojson' %}")
+    .then(res => res.json())
+    .then(data => {
+        varnaFeature = data.features.find(f => f.properties.adm1_name1 === "Варна");
+        L.geoJSON(data, {
+            style: (f) => f.properties.adm1_name1 === "Варна" ? {opacity:0, fillOpacity:0} : {color:"#c62828", weight:1, fillColor:"#c62828", fillOpacity:0.18}
+        }).addTo(map);
+        if(varnaFeature) {
+            const varnaLayer = L.geoJSON(varnaFeature, {style:{color:"#1565c0", weight:3, fillOpacity:0}}).addTo(map);
+            // Ако искате картата да се мащабира спрямо Варна при зареждане:
+            // map.fitBounds(varnaLayer.getBounds());
+        }
+        setTimeout(() => map.invalidateSize(), 300);
+    });
+
+    function isInsideVarna(lat, lng) {
+        if (!varnaFeature) return true;
+        return turf.booleanPointInPolygon(turf.point([lng, lat]), varnaFeature);
+    }
+
+    function updateMarker(lat, lng) {
+        if (!isInsideVarna(lat, lng)) {
+            showPopup("error", "Невалидна локация", "Сигнал може да бъде редактиран само в <strong>Регион Варна.</strong>");
+            marker.setLatLng([initialLat, initialLng]);
+            return;
+        }
+        marker.setLatLng([lat, lng]);
+        if(latInput) latInput.value = lat.toFixed(6);
+        if(lngInput) lngInput.value = lng.toFixed(6);
+    }
+
+    map.on("click", (e) => updateMarker(e.latlng.lat, e.latlng.lng));
+    marker.on("dragend", () => updateMarker(marker.getLatLng().lat, marker.getLatLng().lng));
+
+    /* ================= NEW IMAGES LOGIC (MAX 5 TOTAL) ================= */
+    const imageInput = document.getElementById("imageInput");
+    const previewContainer = document.getElementById("imagePreview");
+    const fileCount = document.getElementById("fileCount");
+    const imageWarning = document.getElementById("imageWarning");
+    const uploadLabel = document.querySelector(".custom-file-upload");
+    const MAX_TOTAL_IMAGES = 5;
+
+    let dataTransfer = new DataTransfer();
+
+    function getTotalCount() {
+        const existingImagesCount = document.querySelectorAll('.image-box img').length;
+        const markedForDeleteCount = document.querySelectorAll('input[name="delete_images"]:checked').length;
+        const newSelectedCount = dataTransfer.files.length;
+        return (existingImagesCount - markedForDeleteCount) + newSelectedCount;
+    }
+
+    function updateUI() {
+        const total = getTotalCount();
+        fileCount.textContent = dataTransfer.files.length + " избрани нови файла";
+        imageInput.files = dataTransfer.files;
+
+        if (total >= MAX_TOTAL_IMAGES) {
+            imageWarning.innerHTML = `⚠ Достигнат е лимитът от ${MAX_TOTAL_IMAGES} снимки.`;
+            uploadLabel.style.opacity = "0.5";
+            uploadLabel.style.pointerEvents = "none";
+            uploadLabel.innerText = "⚠ Лимитът е достигнат";
+        } else {
+            imageWarning.innerHTML = "";
+            uploadLabel.style.opacity = "1";
+            uploadLabel.style.pointerEvents = "auto";
+            uploadLabel.innerText = "🔗 Избери снимки";
+        }
+    }
+
+    imageInput.addEventListener("change", function () {
+        const incomingFiles = Array.from(this.files);
+
+        incomingFiles.forEach(file => {
+            if (!file.type.startsWith("image/")) return;
+
+            if (getTotalCount() >= MAX_TOTAL_IMAGES) {
+                updateUI();
+                return;
+            }
+
+            dataTransfer.items.add(file);
+
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                // Създаваме кутийка, идентична на старата снимка
+                const wrapper = document.createElement("div");
+                wrapper.className = "preview-item"; // Стилът се контролира от CSS
+
+                wrapper.innerHTML = `
+                    <img src="${e.target.result}" class="preview-thumb">
+                    <button type="button" class="remove-btn">×</button>
+                `;
+
+                wrapper.querySelector(".remove-btn").onclick = function() {
+                    const newDT = new DataTransfer();
+                    Array.from(dataTransfer.files).forEach(f => {
+                        if (f !== file) newDT.items.add(f);
+                    });
+                    dataTransfer = newDT;
+                    wrapper.remove();
+                    updateUI();
+                };
+
+                previewContainer.appendChild(wrapper);
+                updateUI();
+            };
+            reader.readAsDataURL(file);
+        });
+        this.value = ""; // Ресет на инпута, за да може да се избира същия файл отново
+    });
+
+    // Слушател за стари снимки
+    document.querySelectorAll('input[name="delete_images"]').forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            updateUI();
+        });
+    });
+
+    /* ================= DJANGO MESSAGES ================= */
+
+    {% if messages %}
+        {% for message in messages %}
+            {% if message.level == 25 %}
+                showEditSuccessPopup("{{ message|escapejs }}");
+            {% elif message.level == 40 %}
+                showPopup("error", "Грешка", "{{ message|escapejs }}");
+            {% endif %}
+        {% endfor %}
+    {% endif %}
+
+    updateUI();
+});
+</script>
+
+</body>
+</html>

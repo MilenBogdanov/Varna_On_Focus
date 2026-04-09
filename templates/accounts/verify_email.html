@@ -1,0 +1,26 @@
+{% extends "accounts/base_form.html" %}
+
+{% block title %}Потвърждение на имейл{% endblock %}
+{% block heading %}Потвърждение на имейл{% endblock %}
+
+{% block content %}
+<form method="post">
+    {% csrf_token %}
+
+    <p>
+        <label>6-цифрен код</label>
+        <input type="text" name="code" maxlength="6" required>
+    </p>
+
+    <div class="form-actions">
+        <button type="submit" class="btn-primary">
+            Потвърди
+        </button>
+    </div>
+</form>
+
+<p>
+    Кодът изтече?
+    <a href="{% url 'resend_code' %}">Изпрати нов код</a>
+</p>
+{% endblock %}

@@ -1,0 +1,270 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="bg">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Варна на фокус – Стани активен гражданин</title>
+
+    <link rel="stylesheet" href="{% static 'css/landing.css' %}">
+
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body>
+
+    <section class="hero-section">
+
+        <div class="hero-overlay"></div>
+
+        <div class="hero-content">
+
+            <img src="/media/logo/og-varna.png"
+                 alt="Община Варна"
+                 class="landing-logo">
+
+            <h1 class="hero-title">
+                Стани <span>активен</span> гражданин
+            </h1>
+
+            <p class="hero-description">
+                Добре дошли във <strong>"Варна на фокус"</strong> – твоят глас
+                в управлението на града. Подай сигнал за проблем, следи неговото развитие
+                в реално време и помогни на нашия град да стане по-чист и по-безопасен.
+            </p>
+
+            <div class="features-mini">
+                <div class="feat">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <span>Локация</span>
+                </div>
+
+                <div class="feat">
+                    <i class="fas fa-camera"></i>
+                    <span>Снимков материал</span>
+                </div>
+
+                <div class="feat">
+                    <i class="fas fa-check-circle"></i>
+                    <span>Директна връзка</span>
+                </div>
+            </div>
+
+            <a href="{% url 'map' %}" class="main-cta-btn">
+                <span>КЪМ КАРТАТА СЪС СИГНАЛИ</span>
+                <i class="fas fa-arrow-right"></i>
+            </a>
+
+            <div class="scroll-hint" onclick="document.getElementById('how-it-works').scrollIntoView({behavior: 'smooth'})" style="cursor: pointer;">
+                <span>Научи повече</span>
+                <br>
+                <i class="fas fa-chevron-down"></i>
+            </div>
+
+        </div>
+    </section>
+
+    <section id="how-it-works" class="info-section">
+        <div class="section-container">
+
+            <h2 class="section-title">
+                Как да помогнеш в <span>4 лесни стъпки</span>?
+            </h2>
+
+            <div class="steps-grid">
+
+                <article class="step-card">
+                    <div class="step-number">1</div>
+                    <div class="step-icon">
+                        <i class="fas fa-user-plus"></i>
+                    </div>
+                    <h3>Направи профил</h3>
+                    <p>Регистрирай се бързо, за да можеш да следиш статуса на твоите сигнали и да получаваш известия.</p>
+                </article>
+
+                <article class="step-card">
+                    <div class="step-number">2</div>
+                    <div class="step-icon">
+                        <i class="fas fa-camera-retro"></i>
+                    </div>
+                    <h3>Заснеми</h3>
+                    <p>Направи ясна снимка на проблема, който си забелязал в твоя квартал или на улицата.</p>
+                </article>
+
+                <article class="step-card">
+                    <div class="step-number">3</div>
+                    <div class="step-icon">
+                        <i class="fas fa-map-marked-alt"></i>
+                    </div>
+                    <h3>Локализирай</h3>
+                    <p>Маркирай точното място върху интерактивната карта и добави описание на ситуацията.</p>
+                </article>
+
+                <article class="step-card">
+                    <div class="step-number">4</div>
+                    <div class="step-icon">
+                        <i class="fas fa-paper-plane"></i>
+                    </div>
+                    <h3>Изпрати</h3>
+                    <p>Твоят сигнал ще бъде автоматично насочен към отговорните служби за обработка.</p>
+                </article>
+
+            </div>
+
+            <div class="cta-bottom-wrapper">
+                <a href="{% url 'register' %}" class="main-cta-btn secondary-cta">
+                    СЪЗДАЙ ПРОФИЛ И ЗАПОЧНИ
+                </a>
+            </div>
+
+        </div>
+    </section>
+
+    <section class="categories-section">
+        <div class="section-container">
+            <div class="section-header">
+                <h2 class="section-title">За какво можеш да <span>сигнализираш</span>?</h2>
+                <p class="section-subtitle">Твоят сигнал се насочва директно към съответната общинска дирекция</p>
+            </div>
+
+            <div class="categories-grid">
+                <div class="category-card">
+                    <div class="card-bg"></div>
+                    <div class="cat-icon-wrapper">
+                        <i class="fas fa-road"></i>
+                    </div>
+                    <h4>Инфраструктура</h4>
+                    <p>Дупки, тротоари, опасни шахти и липсваща пътна маркировка.</p>
+                </div>
+
+                <div class="category-card">
+                    <div class="card-bg"></div>
+                    <div class="cat-icon-wrapper">
+                        <i class="fas fa-lightbulb"></i>
+                    </div>
+                    <h4>Осветление</h4>
+                    <p>Неработещи улични лампи или повредени осветителни тела в парка.</p>
+                </div>
+
+                <div class="category-card">
+                    <div class="card-bg"></div>
+                    <div class="cat-icon-wrapper">
+                        <i class="fas fa-leaf"></i>
+                    </div>
+                    <h4>Екология</h4>
+                    <p>Препълнени контейнери, нерегламентирани сметища и чистота.</p>
+                </div>
+
+                <div class="category-card">
+                    <div class="card-bg"></div>
+                    <div class="cat-icon-wrapper">
+                        <i class="fas fa-tree"></i>
+                    </div>
+                    <h4>Зелени площи</h4>
+                    <p>Поддръжка на паркове, опасни дървета и детски площадки.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="main-footer">
+        <div class="footer-container">
+
+            <div class="footer-col about-city">
+                <img src="/media/logo/og-varna.png" alt="Варна" class="footer-mini-logo">
+                <h3>Варна на фокус</h3>
+                <p>Заедно изграждаме по-добро бъдеще за нашия град. Твоят сигнал има значение.</p>
+            </div>
+
+            <div class="footer-col">
+                <h4>Навигация</h4>
+                <ul>
+                    <li><a href="{% url 'map' %}">Карта на сигналите</a></li>
+                    <li><a href="#how-it-works">Как работи?</a></li>
+                    <li><a href="{% url 'register' %}">Регистрация</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-col">
+                <h4>Контакти</h4>
+                <ul class="contact-info">
+                    <li>
+                        <i class="fas fa-phone"></i>
+                        <a href="tel:+359876251510" style="color: inherit; text-decoration: none;">
+                            +359 876 251 510
+                        </a>
+                    </li>
+                    <li><i class="fas fa-envelope"></i> varnamunicipality1@gmail.com</li>
+                    <li>
+                        <i class="fas fa-map-marker-alt"></i>
+                        <a href="https://www.google.com/maps/search/?api=1&query=Община+Варна+бул.+Осми+приморски+полк+43"
+                           target="_blank"
+                           rel="noopener noreferrer"
+                           style="color: inherit; text-decoration: none; transition: 0.3s;">
+                            бул. „Осми приморски полк“ 43
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="footer-col">
+                <h4>Последвай ни</h4>
+                <div class="social-links">
+                <a href="https://www.facebook.com/livevarna?locale=bg_BG" target="_blank" rel="noopener">
+                    <i class="fab fa-facebook-f"></i>
+                </a>
+                <a href="https://www.instagram.com/oavarna?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==" target="_blank" rel="noopener">
+                    <i class="fab fa-instagram"></i>
+                </a>
+                <a href="https://youtube.com/@obsvarna?si=E9QkeApqj1pyAblG" target="_blank" rel="noopener">
+                    <i class="fab fa-youtube"></i>
+                </a>
+            </div>
+            </div>
+
+        </div>
+
+        <div class="footer-bottom">
+            <p>&copy; 2026 Община Варна. Платформа "Варна на фокус". Всички права запазени.</p>
+        </div>
+    </footer>
+
+<script>
+    const stats = document.querySelectorAll('.stat-number');
+    const speed = 200;
+
+    const startCounters = () => {
+        stats.forEach(counter => {
+            const updateCount = () => {
+                const target = +counter.getAttribute('data-target');
+                const count = +counter.innerText;
+                const inc = target / speed;
+
+                if (count < target) {
+                    counter.innerText = Math.ceil(count + inc);
+                    setTimeout(updateCount, 1);
+                } else {
+                    counter.innerText = target;
+                }
+            };
+            updateCount();
+        });
+    }
+
+    // Стартиране при скрол
+    const observer = new IntersectionObserver((entries) => {
+        if(entries[0].isIntersecting) {
+            startCounters();
+            observer.disconnect(); // Пуска се само веднъж
+        }
+    }, { threshold: 0.5 });
+
+    observer.observe(document.querySelector('.stats-section'));
+</script>
+
+
+</body>
+</html>

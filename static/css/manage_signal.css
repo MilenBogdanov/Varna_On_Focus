@@ -1,0 +1,497 @@
+/* ======================================================
+   ENTERPRISE BLUE – MANAGE SIGNAL (FINAL CLEAN VERSION)
+====================================================== */
+
+:root{
+    --primary:#1565c0;
+    --primary-dark:#0d47a1;
+    --primary-light:#e3f2fd;
+    --bg:#f4f7fb;
+    --border:#e1e7ef;
+    --text:#1f2d3d;
+    --muted:#6b7c93;
+    --white:#ffffff;
+}
+
+/* ======================================================
+   GLOBAL
+====================================================== */
+
+body{
+    margin:0;
+    font-family:"Segoe UI",Tahoma,sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    height:100vh;
+    overflow:hidden;
+}
+
+/* ======================================================
+   GRID LAYOUT
+====================================================== */
+
+.layout{
+    display:grid;
+    grid-template-columns:minmax(460px,36%) 1fr;
+    height:100vh;
+}
+
+/* ======================================================
+   LEFT PANEL
+====================================================== */
+
+.info-panel{
+    background:var(--white);
+    padding:42px 50px;
+    border-right:1px solid var(--border);
+
+    display:flex;
+    flex-direction:column;
+
+    overflow-y:auto;
+}
+
+/* TITLE */
+
+.page-title{
+    font-size:26px;
+    font-weight:700;
+    margin-bottom:28px;
+    color:var(--primary-dark);
+}
+
+/* ======================================================
+   SIGNAL CARD
+====================================================== */
+
+.signal-details{
+
+    background:linear-gradient(135deg,var(--primary-dark),#11459a);
+
+    padding:26px;
+    border-radius:18px;
+    margin-bottom:10px;
+
+    color:white;
+    line-height:1.5;
+
+    box-shadow:0 12px 28px rgba(13,71,161,0.25);
+}
+
+.detail-item{
+    margin-bottom:16px;
+    display:flex;
+    flex-direction:column;
+}
+
+.detail-item:last-child{
+    margin-bottom:0;
+}
+
+.detail-item strong{
+    font-size:11px;
+    text-transform:uppercase;
+    color:rgba(255,255,255,0.65);
+    letter-spacing:0.9px;
+    margin-bottom:4px;
+}
+
+.detail-item span{
+    font-weight:500;
+    font-size:15px;
+}
+
+/* STATUS BADGE */
+
+.status-badge {
+    display: inline-block;
+    width: fit-content;
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+/* Цветове според статуса за Manage Signal */
+.status-badge.open { background: #e3f2fd; color: #1565c0 !important; }
+.status-badge.in_progress { background: #fff3e0; color: #ef6c00 !important; }
+.status-badge.resolved { background: #e8f5e9; color: #2e7d32 !important; }
+.status-badge.rejected { background: #ffebee; color: #c62828 !important; }
+/* ======================================================
+   STATUS FORM
+====================================================== */
+
+.section-subtitle{
+    font-size:15px;
+    font-weight:600;
+    margin-bottom:12px;
+}
+
+.status-form p{
+    display:flex;
+    flex-direction:column;
+    margin-bottom:18px;
+}
+
+.status-form label{
+    font-size:12px;
+    font-weight:600;
+    margin-bottom:6px;
+    color:var(--muted);
+    text-transform:uppercase;
+}
+
+.status-form select,
+.status-form input{
+
+    padding:12px 14px;
+
+    border-radius:10px;
+    border:1px solid var(--border);
+
+    background:#f8fafc;
+    font-size:14px;
+
+    transition:0.2s ease;
+}
+
+.status-form select:focus,
+.status-form input:focus{
+
+    outline:none;
+    border-color:var(--primary);
+
+    background:white;
+
+    box-shadow:0 0 0 3px rgba(21,101,192,0.15);
+}
+
+/* ======================================================
+   COMMENTS PANEL
+====================================================== */
+
+.comments-panel{
+
+    background:#eef3f9;
+
+    padding:42px;
+
+    display:flex;
+    flex-direction:column;
+
+    overflow-y:auto;
+}
+
+/* HEADER */
+
+.comments-header{
+
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+
+    margin-bottom:32px;
+}
+
+.comments-header .section-subtitle{
+    font-size:18px;
+}
+
+/* ======================================================
+   ADD COMMENT BUTTON
+====================================================== */
+
+.add-comment-btn{
+
+    background:linear-gradient(135deg,var(--primary),var(--primary-dark));
+    color:white;
+
+    text-decoration:none;
+
+    padding:10px 18px;
+
+    border-radius:30px;
+
+    font-size:13px;
+    font-weight:600;
+
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+
+    box-shadow:0 6px 16px rgba(21,101,192,0.35);
+
+    transition:0.25s ease;
+}
+
+.add-comment-btn:hover{
+
+    transform:translateY(-2px);
+
+    box-shadow:0 10px 22px rgba(21,101,192,0.45);
+}
+
+/* ======================================================
+   COMMENTS LIST
+====================================================== */
+
+.comments-container{
+
+    display:flex;
+    flex-direction:column;
+
+    gap:16px;
+
+    max-width:820px;
+    width:100%;
+
+    margin:0 auto;
+}
+
+/* ROW */
+
+.comment-row{
+    display:flex;
+    width:100%;
+}
+
+.my-comment{
+    justify-content:flex-end;
+}
+
+.other-comment{
+    justify-content:flex-start;
+}
+
+/* ======================================================
+   COMMENT BUBBLES
+====================================================== */
+
+.comment-bubble{
+
+    max-width:72%;
+
+    padding:15px 18px;
+
+    border-radius:18px;
+
+    font-size:14px;
+    line-height:1.5;
+
+    word-break:break-word;
+
+    transition:0.15s ease;
+
+    box-shadow:0 4px 14px rgba(0,0,0,0.06);
+}
+
+/* MY COMMENT */
+
+.my-comment .comment-bubble{
+
+    background:linear-gradient(135deg,#1e88e5,#1565c0);
+
+    color:white;
+
+    box-shadow:0 6px 16px rgba(21,101,192,0.25);
+}
+
+/* OTHER COMMENT */
+
+.other-comment .comment-bubble{
+
+    background:white;
+
+    border:1px solid #d6dde6;
+
+    color:#1f2d3d;
+}
+
+/* hover effect */
+
+.comment-bubble:hover{
+    transform:translateY(-2px);
+}
+
+/* ======================================================
+   COMMENT META
+====================================================== */
+
+.comment-meta{
+
+    font-size:11px;
+    opacity:0.75;
+
+    margin-bottom:6px;
+
+    font-weight:600;
+}
+
+.comment-text{
+    font-size:14px;
+}
+
+/* ======================================================
+   BUTTONS
+====================================================== */
+
+.btn-primary{
+
+    background:linear-gradient(135deg,var(--primary),var(--primary-dark));
+
+    color:white;
+
+    border:none;
+
+    padding:14px;
+
+    border-radius:10px;
+
+    font-weight:600;
+
+    cursor:pointer;
+
+    width:100%;
+
+    transition:0.2s ease;
+
+    box-shadow:0 6px 16px rgba(21,101,192,0.25);
+}
+
+.btn-primary:hover{
+
+    transform:translateY(-2px);
+
+    box-shadow:0 10px 22px rgba(21,101,192,0.35);
+}
+
+/* SECONDARY BUTTON */
+
+.btn-secondary{
+
+    margin-top:auto;
+
+    text-align:center;
+
+    text-decoration:none;
+
+    color:var(--muted);
+
+    font-size:14px;
+
+    padding:16px 0;
+
+    border-top:1px solid var(--border);
+
+    transition:0.2s ease;
+}
+
+.btn-secondary:hover{
+    color:var(--primary-dark);
+}
+
+/* ======================================================
+   ALERTS
+====================================================== */
+
+.alert{
+
+    padding:12px 14px;
+
+    border-radius:10px;
+
+    font-size:14px;
+
+    margin-bottom:22px;
+
+    background:#e8f5e9;
+
+    color:#1b5e20;
+
+    border:1px solid #c8e6c9;
+}
+
+/* ================= MODERN POPUP (INTEGRATED) ================= */
+
+.varna-popup-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45); /* Малко по-тъмен за по-добър фокус */
+    backdrop-filter: blur(6px); /* Блър ефект на задния план */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+.varna-popup {
+    padding: 32px;
+    width: 380px;
+    border-radius: 22px;
+    text-align: center;
+    box-shadow: 0 30px 70px rgba(0, 0, 0, 0.35);
+    animation: popupScale 0.25s ease;
+}
+
+/* SUCCESS STYLE (По подразбиране за съобщения) */
+.popup-success {
+    background: linear-gradient(145deg, #f4f9ff, #e3f2fd);
+    border: 3px solid var(--primary);
+}
+
+.varna-popup-icon {
+    font-size: 48px;
+    margin-bottom: 12px;
+    display: inline-block;
+    animation: pulseIcon 1.2s infinite;
+}
+
+.varna-popup-title {
+    font-size: 22px;
+    font-weight: 800;
+    margin-bottom: 12px;
+    color: var(--primary-dark);
+}
+
+.varna-popup-text {
+    font-size: 15px;
+    margin-bottom: 24px;
+    color: var(--text);
+    line-height: 1.4;
+}
+
+.varna-popup-btn {
+    border: none;
+    padding: 12px 28px;
+    color: white;
+    border-radius: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.btn-success {
+    background: linear-gradient(135deg, #1e88e5, var(--primary));
+}
+
+.varna-popup-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(21, 101, 192, 0.3);
+}
+
+/* ================= ANIMATIONS ================= */
+
+@keyframes popupScale {
+    from { transform: scale(0.9); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+@keyframes pulseIcon {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.15); }
+    100% { transform: scale(1); }
+}

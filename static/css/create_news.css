@@ -1,0 +1,442 @@
+/* ======================================================
+   CREATE NEWS – CLEAN CENTERED PRO UI
+====================================================== */
+
+:root {
+    --primary: #1565c0;
+    --primary-dark: #0d47a1;
+    --primary-light: #e3f2fd;
+
+    --bg: #f4f7fb;
+    --border: #e1e7ef;
+
+    --text: #1f2d3d;
+    --muted: #6b7c93;
+}
+
+/* ===== GLOBAL ===== */
+
+body {
+    margin: 0;
+    font-family: "Segoe UI", Tahoma, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+}
+
+/* ===== LAYOUT ===== */
+
+.news-layout {
+    display: grid;
+    grid-template-columns: minmax(520px, 42%) 1fr;
+    height: 100vh;
+}
+
+/* ===== LEFT PANEL ===== */
+
+.news-form-panel {
+    padding: 60px 70px;
+    background: #ffffff;
+    border-right: 1px solid var(--border);
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center; /* 🔥 центрира формата вертикално */
+}
+
+/* ===== TITLE ===== */
+
+.news-title {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--primary-dark);
+    margin-bottom: 5px;
+}
+
+.news-title::after {
+    content: "Публикувай важна информация към гражданите";
+    display: block;
+    font-size: 14px;
+    color: var(--muted);
+    margin-top: 8px;
+    margin-bottom: 8px;
+}
+
+/* ===== FORM ===== */
+
+.news-form p {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 20px;
+}
+
+.news-form label {
+    font-size: 11px;
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: var(--muted);
+    text-transform: uppercase;
+}
+
+.news-form input,
+.news-form textarea,
+.news-form select {
+    padding: 13px 14px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    font-size: 14px;
+    background: #ffffff;
+    transition: 0.2s;
+}
+
+.news-form textarea {
+    min-height: 120px;
+}
+
+.news-form input:hover,
+.news-form textarea:hover,
+.news-form select:hover {
+    border-color: #cbd5e1;
+}
+
+.news-form input:focus,
+.news-form textarea:focus,
+.news-form select:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(21,101,192,0.12);
+}
+
+/* ===== BUTTONS ===== */
+
+.form-actions {
+    margin-top: 35px;
+
+    display: flex;
+    justify-content: center; /* 🔥 центриране */
+    align-items: center;
+    gap: 16px;
+}
+
+/* ===== MODERN BUTTONS (FIXED) ===== */
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    color: white;
+    border: none;
+
+    padding: 12px 26px;
+    border-radius: 12px;
+
+    font-weight: 600;
+    cursor: pointer;
+
+    box-shadow: 0 8px 20px rgba(21,101,192,0.25);
+    transition: all 0.25s ease;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 14px 28px rgba(21,101,192,0.35);
+}
+
+/* secondary */
+
+.btn-secondary {
+    background: white;
+    border: 1px solid var(--border);
+
+    padding: 12px 26px;
+    border-radius: 12px;
+
+    font-weight: 500;
+    cursor: pointer;
+
+    transition: all 0.25s ease;
+}
+
+.btn-secondary:hover {
+    background: var(--primary-light);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+}
+
+/* ===== MAP ===== */
+
+.map-panel {
+    position: relative;
+}
+
+#map {
+    width: 100%;
+    height: 100%;
+}
+
+/* ===== MAP HINT ===== */
+
+.map-hint {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+
+    background: rgba(255,255,255,0.92);
+    padding: 14px 24px;
+
+    border-radius: 30px;
+    font-size: 14px;
+    color: var(--primary-dark);
+
+    box-shadow: 0 12px 30px rgba(0,0,0,0.12);
+    transition: 0.3s;
+    pointer-events: none;
+}
+
+.map-panel:hover .map-hint {
+    opacity: 0;
+}
+
+/* ===== FLOATING RESET BUTTON ===== */
+
+.btn-reset-location {
+    position: absolute;
+    right: 30px;
+    bottom: 30px;
+    z-index: 2000;
+}
+
+/* 🔥 FIXED PERFECT CENTER */
+.floating-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    font-size: 34px;
+    font-weight: 500;
+    color: #c62828;
+    line-height: 1;
+    box-shadow: 0 12px 28px rgba(0,0,0,0.25);
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.floating-btn:hover {
+    transform: scale(1.08);
+    background: #fff5f5;
+}
+
+/* ===== TOOLTIP ===== */
+
+.btn-reset-location::after {
+    content: attr(data-tooltip);
+    position: absolute;
+
+    right: 85px;
+    top: 50%;
+    transform: translateY(-50%);
+
+    background: #1f2d3d;
+    color: white;
+
+    font-size: 13px;
+    padding: 7px 11px;
+
+    border-radius: 6px;
+
+    white-space: nowrap;
+
+    opacity: 0;
+    transition: 0.2s;
+}
+
+.btn-reset-location:hover::after {
+    opacity: 1;
+}
+
+.floating-btn img {
+    width: 28px;
+    height: 28px;
+    object-fit: contain;
+
+    transform: scale(1.35);
+    transition: 0.25s ease;
+
+    pointer-events: none;
+}
+.floating-btn:hover img {
+    transform: scale(1.5);
+}
+
+.btn-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+
+    width: fit-content;
+
+    font-size: 14px;
+    font-weight: 600;
+
+    color: #334155;
+
+    padding: 8px 14px;
+    border-radius: 10px;
+
+    background: #f1f5f9;
+
+    text-decoration: none;
+
+    transition: 0.2s;
+}
+
+.btn-back:hover {
+    background: #e2e8f0;
+    transform: translateX(-2px);
+}
+
+/* ===== FIX: MAP HINT VISIBILITY ===== */
+
+.map-hint {
+    z-index: 1500; /* 🔥 над картата */
+}
+
+/* icon */
+.varna-popup-icon {
+    font-size: 40px;
+    margin-bottom: 10px;
+}
+
+/* title */
+.varna-popup-title {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+/* text */
+.varna-popup-text {
+    font-size: 14px;
+    color: var(--muted);
+    margin-bottom: 20px;
+}
+
+/* button */
+.varna-popup-btn {
+    padding: 10px 18px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.btn-error {
+    background: #c62828;
+    color: white;
+}
+
+.btn-success {
+    background: #2e7d32;
+    color: white;
+}
+
+/* ================= POPUP BASE ================= */
+
+.varna-popup-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.55);
+    backdrop-filter: blur(6px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+.varna-popup {
+    padding: 32px;
+    width: 380px;
+    border-radius: 22px;
+    text-align: center;
+    box-shadow: 0 30px 70px rgba(0,0,0,0.45);
+    animation: popupScale 0.25s ease;
+}
+
+/* ERROR */
+
+.popup-error {
+    background: linear-gradient(145deg, #fff5f5, #ffeaea);
+    border: 3px solid #c62828;
+}
+
+.popup-error .varna-popup-title {
+    color: #c62828;
+}
+
+.btn-error {
+    background: linear-gradient(135deg,#c62828,#b71c1c);
+}
+
+/* SUCCESS */
+
+.popup-success {
+    background: linear-gradient(145deg, #f4f9ff, #e3f2fd);
+    border: 3px solid #1565c0;
+}
+
+.popup-success .varna-popup-title {
+    color: #1565c0;
+}
+
+.btn-success {
+    background: linear-gradient(135deg,#1e88e5,#1565c0);
+}
+
+/* COMMON */
+
+.varna-popup-icon {
+    font-size: 48px;
+    margin-bottom: 12px;
+    animation: pulseIcon 1.2s infinite;
+}
+
+.varna-popup-title {
+    font-size: 22px;
+    font-weight: 800;
+    margin-bottom: 12px;
+}
+
+.varna-popup-text {
+    font-size: 15px;
+    margin-bottom: 24px;
+    color: #333;
+}
+
+.varna-popup-btn {
+    border: none;
+    padding: 12px 22px;
+    color: white;
+    border-radius: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.varna-popup-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+}
+
+@keyframes popupScale {
+    from { transform: scale(0.9); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+@keyframes pulseIcon {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.15); }
+    100% { transform: scale(1); }
+}

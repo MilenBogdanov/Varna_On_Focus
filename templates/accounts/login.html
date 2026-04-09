@@ -1,0 +1,40 @@
+{% extends "accounts/base_form.html" %}
+
+{% block title %}Вход{% endblock %}
+{% block heading %}Вход{% endblock %}
+
+{% block content %}
+<form method="post">
+    {% csrf_token %}
+
+    <p>
+        <label>Имейл</label>
+        <input type="email" name="email" required>
+    </p>
+
+    <p>
+        <label>Парола</label>
+        <input type="password" name="password" required>
+    </p>
+
+    <div class="form-actions">
+        <button type="submit" class="btn-primary">
+            Вход ➜
+        </button>
+    </div>
+</form>
+
+<div class="auth-links">
+    <a href="{% url 'forgot_password' %}" class="auth-link">
+        Забравена парола?
+    </a>
+
+    <div class="auth-register">
+        Нямаш акаунт?
+        <a href="{% url 'register' %}" class="auth-link-strong">
+            Регистрация
+        </a>
+    </div>
+</div>
+
+{% endblock %}
