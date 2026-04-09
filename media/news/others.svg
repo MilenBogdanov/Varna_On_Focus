@@ -1,0 +1,28 @@
+<svg viewBox="0 0 600 200" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="otherGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#CBD5F5"/>
+      <stop offset="100%" stop-color="#64748B"/>
+    </linearGradient>
+  </defs>
+
+  <!-- SAME CENTER SYSTEM -->
+  <g transform="translate(300,100) scale(0.32) translate(-256,-256)">
+
+    <!-- BIG CIRCLE -->
+    <circle cx="256" cy="256" r="140" fill="url(#otherGrad)"/>
+
+    <!-- QUESTION MARK (FROM ICON PATH, CLEAN) -->
+    <path d="M278 290h-44v-10c0-20 7-34 22-42
+             8-4 22-12 22-24
+             a22 22 0 0 0-44 0h-44
+             c0-36 30-66 66-66s66 22 66 66
+             c0 28-22 38-22 52z"
+          fill="#0B1220"/>
+
+    <!-- DOT -->
+    <rect x="234" y="320" width="44" height="44" rx="12"
+          fill="#0B1220"/>
+
+  </g>
+</svg>

@@ -1,0 +1,33 @@
+<svg viewBox="0 0 600 200" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- main gradient -->
+    <linearGradient id="munGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#60A5FA"/>
+      <stop offset="100%" stop-color="#2563EB"/>
+    </linearGradient>
+
+    <!-- soft highlight -->
+    <radialGradient id="munLight" cx="40%" cy="30%" r="60%">
+      <stop offset="0%" stop-color="white" stop-opacity="0.5"/>
+      <stop offset="100%" stop-color="white" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- centered & scaled properly -->
+  <g transform="translate(300,100) scale(3.2) translate(-16,-16)">
+
+    <!-- main building -->
+    <path d="M30,25.11H29v-.89a2,2,0,0,0-2-2H26V14.11h1a2,2,0,0,0,2-2v-.89h2a1,1,0,0,0,.43-1.9l-15-7.22a1,1,0,0,0-.86,0L.57,9.32A1,1,0,0,0,1,11.22H3v.89a2,2,0,0,0,2,2H6v8.11H5a2,2,0,0,0-2,2v.89H2a2,2,0,0,0-2,2V29a1,1,0,0,0,1,1H31a1,1,0,0,0,1-1V27.11A2,2,0,0,0,30,25.11Z"
+          fill="url(#munGrad)"/>
+
+    <!-- columns highlight -->
+    <rect x="8" y="14" width="2" height="8" fill="white" opacity="0.7"/>
+    <rect x="12" y="14" width="2" height="8" fill="white" opacity="0.7"/>
+    <rect x="16" y="14" width="2" height="8" fill="white" opacity="0.7"/>
+    <rect x="20" y="14" width="2" height="8" fill="white" opacity="0.7"/>
+
+    <!-- soft light -->
+    <ellipse cx="14" cy="10" rx="10" ry="6" fill="url(#munLight)"/>
+
+  </g>
+</svg>
