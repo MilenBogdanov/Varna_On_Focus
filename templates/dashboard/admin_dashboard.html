@@ -1,0 +1,222 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Админ табла | Varna On Focus</title>
+    <link rel="stylesheet" href="{% static 'css/admin_dashboard.css' %}">
+</head>
+<body>
+
+<div class="top-bar">
+    <div class="top-bar-title">
+        <a href="{% url 'index' %}">
+            <img src="/media/logo/og-varna.png" class="varna-logo" alt="Община Варна">
+        </a>
+
+        <div class="brand-text-container">
+            <span>АДМИН ТАБЛО</span>
+            <span class="sub-title-text">Анализи за сигнали и новини</span>
+        </div>
+    </div>
+
+    <div class="top-bar-actions">
+        <a href="{% url 'map' %}"
+           class="nav-btn"
+           data-tooltip="Към картата">
+            <img src="/media/buttons/map.png" alt="Към картата">
+        </a>
+    </div>
+</div>
+
+<main class="dashboard-layout">
+
+    <section class="hero-cards">
+        <a class="hero-card" href="{% url 'signals:all_signals' %}">
+            <span class="hero-label">Общо сигнали</span>
+            <strong class="hero-value">{{ total_signals }}</strong>
+            <span class="hero-sub">Отвори всички сигнали</span>
+        </a>
+
+        <a class="hero-card violet" href="{% url 'news' %}">
+            <span class="hero-label">Общо новини</span>
+            <strong class="hero-value">{{ total_news }}</strong>
+            <span class="hero-sub">Към всички новини</span>
+        </a>
+
+        <a class="hero-card green" href="{% url 'signals:all_signals' %}?sort=newest">
+            <span class="hero-label">Нови сигнали днес</span>
+            <strong class="hero-value">{{ created_today }}</strong>
+            <span class="hero-sub">Най-новите записи</span>
+        </a>
+
+        <a class="hero-card orange" href="{% url 'news' %}">
+            <span class="hero-label">Нови новини днес</span>
+            <strong class="hero-value">{{ news_today }}</strong>
+            <span class="hero-sub">Преглед на новините</span>
+        </a>
+    </section>
+
+    <section class="grid-two">
+        <article class="panel">
+            <div class="panel-head">
+                <h2>Статуси на сигнали</h2>
+                <a href="{% url 'signals:all_signals' %}" class="panel-link">Управление сигнали</a>
+            </div>
+
+            <div class="bars-list">
+                {% for item in status_breakdown %}
+                    <a class="bar-row"
+                       href="{% url 'signals:all_signals' %}?status={% if item.label == 'Отворени' %}OPEN{% elif item.label == 'В процес' %}IN_PROGRESS{% elif item.label == 'Решени' %}RESOLVED{% else %}REJECTED{% endif %}">
+                        <div class="bar-meta">
+                            <span>{{ item.label }}</span>
+                            <strong>{{ item.count }}</strong>
+                        </div>
+                        <div class="bar-track">
+                            <div class="bar-fill" style="width: {{ item.percent }}%"></div>
+                        </div>
+                        <small>{{ item.percent }}%</small>
+                    </a>
+                {% endfor %}
+            </div>
+        </article>
+
+        <article class="panel">
+            <div class="panel-head">
+                <h2>Типове новини</h2>
+                <a href="{% url 'news' %}" class="panel-link">Управление новини</a>
+            </div>
+
+            <div class="bars-list">
+                {% for item in news_breakdown %}
+                    <a class="bar-row" href="{% url 'news' %}?type={{ item.value }}">
+                        <div class="bar-meta">
+                            <span>{{ item.label }}</span>
+                            <strong>{{ item.count }}</strong>
+                        </div>
+                        <div class="bar-track purple">
+                            <div class="bar-fill purple" style="width: {{ item.percent }}%"></div>
+                        </div>
+                        <small>{{ item.percent }}%</small>
+                    </a>
+                {% endfor %}
+            </div>
+        </article>
+    </section>
+
+    <section class="grid-two">
+        <article class="panel">
+            <h2>Линеен дашборд: 7 дни активност</h2>
+            <div class="line-legend">
+                <span class="dot blue"></span> Сигнали
+                <span class="dot purple"></span> Новини
+            </div>
+
+            <div class="line-chart">
+                {% for day in timeline %}
+                    <div class="line-col">
+                        <div class="line-bars">
+                            <div class="line-bar signal" style="height: {{ day.signals_height }}%" title="Сигнали: {{ day.signals }}"></div>
+                            <div class="line-bar news" style="height: {{ day.news_height }}%" title="Новини: {{ day.news }}"></div>
+                        </div>
+                        <span class="line-date">{{ day.date }}</span>
+                    </div>
+                {% endfor %}
+            </div>
+        </article>
+
+        <article class="panel">
+            <h2>Топ категории сигнали</h2>
+            <ul class="simple-list">
+                {% for row in top_categories %}
+                    <li>
+                        <a href="{% url 'signals:all_signals' %}?category={{ row.category__id }}">
+                            <span>{{ row.category__name }}</span>
+                            <strong>{{ row.total }}</strong>
+                        </a>
+                    </li>
+                {% empty %}
+                    <li class="empty">Няма данни за категории.</li>
+                {% endfor %}
+            </ul>
+
+            <h2 class="mt">Потребители по роля</h2>
+            <ul class="simple-list">
+                <li><span>Граждани</span><strong>{{ citizens_count }}</strong></li>
+                <li><span>Общински администратори</span><strong>{{ municipal_admin_count }}</strong></li>
+                <li><span>Супер администратори</span><strong>{{ super_admin_count }}</strong></li>
+            </ul>
+        </article>
+    </section>
+
+    <section class="panel">
+        <div class="panel-head">
+            <h2>Последни сигнали</h2>
+            <a href="{% url 'signals:all_signals' %}" class="panel-link">Виж всички</a>
+        </div>
+
+        <div class="table-wrap">
+            <table>
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Заглавие</th>
+                    <th>Категория</th>
+                    <th>Статус</th>
+                    <th>Подаден от</th>
+                    <th>Дата</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for signal in recent_signals %}
+                    <tr>
+                        <td>#{{ signal.id }}</td>
+                        <td>
+                            <a class="signal-link" href="{% url 'signals:manage_signal' signal.id %}">
+                                {{ signal.title }}
+                            </a>
+                        </td>
+                        <td>{{ signal.category.name }}</td>
+                        <td><span class="status status-{{ signal.status|lower }}">{{ signal.get_status_display }}</span></td>
+                        <td>{{ signal.user.full_name }}</td>
+                        <td>{{ signal.created_at|date:"d.m.Y H:i" }}</td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="6" class="empty">Все още няма подадени сигнали.</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+</main>
+
+<script>
+    const tooltip = document.createElement("div");
+    tooltip.className = "custom-tooltip";
+    document.body.appendChild(tooltip);
+
+    const targets = document.querySelectorAll("[data-tooltip]");
+
+    targets.forEach((el) => {
+        el.addEventListener("mouseenter", () => {
+            tooltip.textContent = el.getAttribute("data-tooltip");
+            tooltip.style.opacity = "1";
+        });
+
+        el.addEventListener("mousemove", (e) => {
+            tooltip.style.left = e.clientX + "px";
+            tooltip.style.top = e.clientY + "px";
+        });
+
+        el.addEventListener("mouseleave", () => {
+            tooltip.style.opacity = "0";
+        });
+    });
+</script>
+
+</body>
+</html>

@@ -2,9 +2,19 @@ from django.shortcuts import render
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 from django.conf import settings
+from django.contrib.auth.decorators import login_required
 from email.mime.image import MIMEImage
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
+from django.db.models import Count
+from django.utils import timezone
+
+from apps.accounts.decorators import admin_or_superadmin_required
+from apps.accounts.models import User
+from apps.signals.models import Signal
+from apps.core.choices import SignalStatus
+from apps.news.models import News
+from apps.core.choices import NewsSourceType
 
 
 
@@ -16,6 +26,108 @@ def map_view(request):
             'GOOGLE_MAPS_API_KEY': settings.GOOGLE_MAPS_API_KEY
         }
     )
+
+@login_required
+@admin_or_superadmin_required
+def admin_dashboard(request):
+    now = timezone.now()
+    start_today = now.replace(hour=0, minute=0, second=0, microsecond=0)
+
+    total_signals = Signal.objects.count()
+    open_signals = Signal.objects.filter(status=SignalStatus.OPEN).count()
+    in_progress_signals = Signal.objects.filter(status=SignalStatus.IN_PROGRESS).count()
+    resolved_signals = Signal.objects.filter(status=SignalStatus.RESOLVED).count()
+    rejected_signals = Signal.objects.filter(status=SignalStatus.REJECTED).count()
+    created_today = Signal.objects.filter(created_at__gte=start_today).count()
+    total_news = News.objects.count()
+    news_today = News.objects.filter(created_at__gte=start_today).count()
+
+    citizens_count = User.objects.filter(role__name="CITIZEN").count()
+    municipal_admin_count = User.objects.filter(role__name="MUNICIPAL_ADMIN").count()
+    super_admin_count = User.objects.filter(role__name="SUPER_ADMIN").count()
+
+    top_categories = (
+        Signal.objects.values("category__id", "category__name")
+        .annotate(total=Count("id"))
+        .order_by("-total", "category__name")[:6]
+    )
+
+    status_breakdown_raw = [
+        ("Отворени", open_signals),
+        ("В процес", in_progress_signals),
+        ("Решени", resolved_signals),
+        ("Отхвърлени", rejected_signals),
+    ]
+
+    status_breakdown = []
+    for label, count in status_breakdown_raw:
+        percent = (count / total_signals * 100) if total_signals else 0
+        status_breakdown.append(
+            {"label": label, "count": count, "percent": round(percent, 1)}
+        )
+
+    news_by_type_map = dict(
+        News.objects.values_list("source_type")
+        .annotate(total=Count("id"))
+    )
+    news_breakdown = []
+    for value, label in NewsSourceType.choices:
+        count = news_by_type_map.get(value, 0)
+        percent = (count / total_news * 100) if total_news else 0
+        news_breakdown.append(
+            {"value": value, "label": label, "count": count, "percent": round(percent, 1)}
+        )
+
+    timeline = []
+    timeline_max = 1
+    for i in range(6, -1, -1):
+        day_start = (now - timedelta(days=i)).replace(hour=0, minute=0, second=0, microsecond=0)
+        day_end = day_start + timedelta(days=1)
+
+        signals_count_day = Signal.objects.filter(
+            created_at__gte=day_start, created_at__lt=day_end
+        ).count()
+        news_count_day = News.objects.filter(
+            created_at__gte=day_start, created_at__lt=day_end
+        ).count()
+
+        timeline_max = max(timeline_max, signals_count_day, news_count_day)
+        timeline.append(
+            {
+                "date": day_start.strftime("%d.%m"),
+                "signals": signals_count_day,
+                "news": news_count_day,
+            }
+        )
+
+    for row in timeline:
+        row["signals_height"] = int((row["signals"] / timeline_max) * 100) if timeline_max else 0
+        row["news_height"] = int((row["news"] / timeline_max) * 100) if timeline_max else 0
+
+    recent_signals = (
+        Signal.objects.select_related("category", "user")
+        .order_by("-created_at")[:10]
+    )
+
+    context = {
+        "total_signals": total_signals,
+        "open_signals": open_signals,
+        "in_progress_signals": in_progress_signals,
+        "resolved_signals": resolved_signals,
+        "rejected_signals": rejected_signals,
+        "created_today": created_today,
+        "total_news": total_news,
+        "news_today": news_today,
+        "citizens_count": citizens_count,
+        "municipal_admin_count": municipal_admin_count,
+        "super_admin_count": super_admin_count,
+        "top_categories": top_categories,
+        "status_breakdown": status_breakdown,
+        "news_breakdown": news_breakdown,
+        "timeline": timeline,
+        "recent_signals": recent_signals,
+    }
+    return render(request, "dashboard/admin_dashboard.html", context)
 
 def contact(request):
 

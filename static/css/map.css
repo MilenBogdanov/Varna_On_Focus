@@ -485,6 +485,12 @@ body{
     bottom:350px;
 }
 
+.btn-left-dashboard{
+    position:absolute;
+    left:20px;
+    bottom:270px;
+}
+
 /* ================= MAP LEGEND PRO ================= */
 
 .map-legend{
