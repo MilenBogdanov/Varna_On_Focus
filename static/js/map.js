@@ -83,8 +83,20 @@ document.addEventListener("mouseout", function(e){
 function initMap() {
 
     map = L.map('map').setView([43.214, 27.914], 12);
+    const bgBounds = L.latLngBounds(
+        [41.2, 22.3],
+        [44.3, 28.7]
+    );
+    map.setMaxBounds(bgBounds);
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+    map.on('drag', function () {
+        map.panInsideBounds(bgBounds, { animate: false });
+    });
+
+    map.setMinZoom(7);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png',{
+        maxZoom: 19,
         attribution:'&copy; OpenStreetMap contributors'
     }).addTo(map);
 
@@ -116,7 +128,7 @@ function initMap() {
             }
         }).addTo(map);
 
-        L.geoJSON(varnaFeature,{
+        const varnaLayer = L.geoJSON(varnaFeature,{
             style:{
                 color:"#1565c0",
                 weight:3,
@@ -124,6 +136,9 @@ function initMap() {
                 opacity:1
             }
         }).addTo(map);
+
+        map.fitBounds(varnaLayer.getBounds());
+        map.setZoom(10);
 
     });
 
