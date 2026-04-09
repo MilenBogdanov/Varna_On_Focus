@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Админ табла | Varna On Focus</title>
     <link rel="stylesheet" href="{% static 'css/admin_dashboard.css' %}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
 
@@ -17,14 +18,12 @@
 
         <div class="brand-text-container">
             <span>АДМИН ТАБЛО</span>
-            <span class="sub-title-text">Анализи за сигнали и новини</span>
+            <span class="sub-title-text">Интерактивни анализи за сигнали и новини</span>
         </div>
     </div>
 
     <div class="top-bar-actions">
-        <a href="{% url 'map' %}"
-           class="nav-btn"
-           data-tooltip="Към картата">
+        <a href="{% url 'map' %}" class="nav-btn" data-tooltip="Към картата">
             <img src="/media/buttons/map.png" alt="Към картата">
         </a>
     </div>
@@ -36,47 +35,45 @@
         <a class="hero-card" href="{% url 'signals:all_signals' %}">
             <span class="hero-label">Общо сигнали</span>
             <strong class="hero-value">{{ total_signals }}</strong>
-            <span class="hero-sub">Отвори всички сигнали</span>
+            <span class="hero-sub">Преглед и управление</span>
         </a>
 
         <a class="hero-card violet" href="{% url 'news' %}">
             <span class="hero-label">Общо новини</span>
             <strong class="hero-value">{{ total_news }}</strong>
-            <span class="hero-sub">Към всички новини</span>
+            <span class="hero-sub">Редакция на публикации</span>
         </a>
 
         <a class="hero-card green" href="{% url 'signals:all_signals' %}?sort=newest">
             <span class="hero-label">Нови сигнали днес</span>
             <strong class="hero-value">{{ created_today }}</strong>
-            <span class="hero-sub">Най-новите записи</span>
+            <span class="hero-sub">Фокус върху последните</span>
         </a>
 
         <a class="hero-card orange" href="{% url 'news' %}">
             <span class="hero-label">Нови новини днес</span>
             <strong class="hero-value">{{ news_today }}</strong>
-            <span class="hero-sub">Преглед на новините</span>
+            <span class="hero-sub">Дневен редакционен поток</span>
         </a>
     </section>
 
     <section class="grid-two">
         <article class="panel">
             <div class="panel-head">
-                <h2>Статуси на сигнали</h2>
-                <a href="{% url 'signals:all_signals' %}" class="panel-link">Управление сигнали</a>
+                <h2>Разпределение по статуси</h2>
+                <a href="{% url 'signals:all_signals' %}" class="panel-link">Към сигнали</a>
             </div>
 
-            <div class="bars-list">
+            <div class="chart-shell">
+                <canvas id="statusChart" aria-label="Статуси на сигнали" role="img"></canvas>
+            </div>
+
+            <div class="chart-links">
                 {% for item in status_breakdown %}
-                    <a class="bar-row"
+                    <a class="chart-link-row"
                        href="{% url 'signals:all_signals' %}?status={% if item.label == 'Отворени' %}OPEN{% elif item.label == 'В процес' %}IN_PROGRESS{% elif item.label == 'Решени' %}RESOLVED{% else %}REJECTED{% endif %}">
-                        <div class="bar-meta">
-                            <span>{{ item.label }}</span>
-                            <strong>{{ item.count }}</strong>
-                        </div>
-                        <div class="bar-track">
-                            <div class="bar-fill" style="width: {{ item.percent }}%"></div>
-                        </div>
-                        <small>{{ item.percent }}%</small>
+                        <span>{{ item.label }}</span>
+                        <strong>{{ item.count }} ({{ item.percent }}%)</strong>
                     </a>
                 {% endfor %}
             </div>
@@ -85,110 +82,127 @@
         <article class="panel">
             <div class="panel-head">
                 <h2>Типове новини</h2>
-                <a href="{% url 'news' %}" class="panel-link">Управление новини</a>
+                <a href="{% url 'news' %}" class="panel-link">Към новини</a>
             </div>
 
-            <div class="bars-list">
+            <div class="chart-shell">
+                <canvas id="newsChart" aria-label="Типове новини" role="img"></canvas>
+            </div>
+
+            <div class="chart-links">
                 {% for item in news_breakdown %}
-                    <a class="bar-row" href="{% url 'news' %}?type={{ item.value }}">
-                        <div class="bar-meta">
-                            <span>{{ item.label }}</span>
-                            <strong>{{ item.count }}</strong>
-                        </div>
-                        <div class="bar-track purple">
-                            <div class="bar-fill purple" style="width: {{ item.percent }}%"></div>
-                        </div>
-                        <small>{{ item.percent }}%</small>
+                    <a class="chart-link-row" href="{% url 'news' %}?type={{ item.value }}">
+                        <span>{{ item.label }}</span>
+                        <strong>{{ item.count }} ({{ item.percent }}%)</strong>
                     </a>
                 {% endfor %}
             </div>
         </article>
     </section>
 
-    <section class="grid-two">
-        <article class="panel">
-            <h2>Линеен дашборд: 7 дни активност</h2>
-            <div class="line-legend">
-                <span class="dot blue"></span> Сигнали
-                <span class="dot purple"></span> Новини
+    <section class="grid-two uneven">
+        <article class="panel wide-panel">
+            <div class="panel-head">
+                <h2>Линеен тренд за последните 7 дни</h2>
+                <span class="muted-note">Сигнали спрямо новини</span>
             </div>
-
-            <div class="line-chart">
-                {% for day in timeline %}
-                    <div class="line-col">
-                        <div class="line-bars">
-                            <div class="line-bar signal" style="height: {{ day.signals_height }}%" title="Сигнали: {{ day.signals }}"></div>
-                            <div class="line-bar news" style="height: {{ day.news_height }}%" title="Новини: {{ day.news }}"></div>
-                        </div>
-                        <span class="line-date">{{ day.date }}</span>
-                    </div>
-                {% endfor %}
+            <div class="chart-shell large">
+                <canvas id="timelineChart" aria-label="7-дневен тренд" role="img"></canvas>
             </div>
         </article>
 
         <article class="panel">
-            <h2>Топ категории сигнали</h2>
-            <ul class="simple-list">
-                {% for row in top_categories %}
-                    <li>
-                        <a href="{% url 'signals:all_signals' %}?category={{ row.category__id }}">
-                            <span>{{ row.category__name }}</span>
-                            <strong>{{ row.total }}</strong>
-                        </a>
-                    </li>
-                {% empty %}
-                    <li class="empty">Няма данни за категории.</li>
-                {% endfor %}
-            </ul>
+            <h2>Потребители по роля</h2>
+            <div class="chart-shell compact">
+                <canvas id="rolesChart" aria-label="Потребители по роля" role="img"></canvas>
+            </div>
 
-            <h2 class="mt">Потребители по роля</h2>
-            <ul class="simple-list">
-                <li><span>Граждани</span><strong>{{ citizens_count }}</strong></li>
-                <li><span>Общински администратори</span><strong>{{ municipal_admin_count }}</strong></li>
-                <li><span>Супер администратори</span><strong>{{ super_admin_count }}</strong></li>
-            </ul>
+            <h2 class="mt">Топ категории сигнали</h2>
+            <div class="chart-shell compact">
+                <canvas id="categoryChart" aria-label="Топ категории" role="img"></canvas>
+            </div>
         </article>
     </section>
 
-    <section class="panel">
+    <section class="panel enterprise-panel">
         <div class="panel-head">
-            <h2>Последни сигнали</h2>
-            <a href="{% url 'signals:all_signals' %}" class="panel-link">Виж всички</a>
+            <h2>Навигационен център</h2>
+            <span class="muted-note">Меню за ключови операции</span>
         </div>
 
-        <div class="table-wrap">
-            <table>
-                <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Заглавие</th>
-                    <th>Категория</th>
-                    <th>Статус</th>
-                    <th>Подаден от</th>
-                    <th>Дата</th>
-                </tr>
-                </thead>
-                <tbody>
-                {% for signal in recent_signals %}
-                    <tr>
-                        <td>#{{ signal.id }}</td>
-                        <td>
-                            <a class="signal-link" href="{% url 'signals:manage_signal' signal.id %}">
-                                {{ signal.title }}
-                            </a>
-                        </td>
-                        <td>{{ signal.category.name }}</td>
-                        <td><span class="status status-{{ signal.status|lower }}">{{ signal.get_status_display }}</span></td>
-                        <td>{{ signal.user.full_name }}</td>
-                        <td>{{ signal.created_at|date:"d.m.Y H:i" }}</td>
-                    </tr>
-                {% empty %}
-                    <tr>
-                        <td colspan="6" class="empty">Все още няма подадени сигнали.</td>
-                    </tr>
-                {% endfor %}
-                </tbody>
-            </table>
+        <div class="enterprise-layout">
+            <nav class="enterprise-sidebar" aria-label="Основна административна навигация">
+                <a class="enterprise-menu-item active" href="{% url 'signals:all_signals' %}">
+                    <span class="menu-icon">✎</span>
+                    <span class="menu-copy">
+                        <strong>Оперативен панел</strong>
+                        <small>Обработка на активни сигнали</small>
+                    </span>
+                    <span class="menu-badge">{{ total_signals }}</span>
+                </a>
+
+                <a class="enterprise-menu-item" href="{% url 'signals:all_signals' %}?sort=newest">
+                    <span class="menu-icon">⚠</span>
+                    <span class="menu-copy">
+                        <strong>Входящ поток</strong>
+                        <small>Най-нови сигнали за деня</small>
+                    </span>
+                    <span class="menu-badge">{{ created_today }}</span>
+                </a>
+
+                <a class="enterprise-menu-item" href="{% url 'news' %}">
+                    <span class="menu-icon">𝒊</span>
+                    <span class="menu-copy">
+                        <strong>Новинарски модул</strong>
+                        <small>Публикации и категории новини</small>
+                    </span>
+                    <span class="menu-badge">{{ total_news }}</span>
+                </a>
+
+                <a class="enterprise-menu-item" href="{% url 'map' %}">
+                    <span class="menu-icon">🗺</span>
+                    <span class="menu-copy">
+                        <strong>ГИС карта</strong>
+                        <small>Локации, клъстери и проверка на терен</small>
+                    </span>
+                    <span class="menu-badge">Карта</span>
+                </a>
+            </nav>
+
+            <div class="enterprise-content">
+                <div class="ops-grid">
+                    <a class="ops-card" href="{% url 'signals:all_signals' %}?status=OPEN">
+                        <span class="ops-title">Приоритет: Отворени сигнали</span>
+                        <strong>Незабавна реакция</strong>
+                        <p>Влез директно в отворените случаи и действай незабавно.</p>
+                    </a>
+                    <a class="ops-card" href="{% url 'signals:all_signals' %}?status=IN_PROGRESS">
+                        <span class="ops-title">Контрол на изпълнение</span>
+                        <strong>Сигнали в процес</strong>
+                        <p>Проследявай прогреса и избягвай забавяния при текущата обработка.</p>
+                    </a>
+                    <a class="ops-card" href="{% url 'news' %}">
+                        <span class="ops-title">Комуникация с гражданите</span>
+                        <strong>Управление на новини</strong>
+                        <p>Синхронизирай официалните публикации с активните казуси.</p>
+                    </a>
+                </div>
+
+                <div class="ops-kpis">
+                    <div class="kpi-tile">
+                        <span>Сигнали днес</span>
+                        <strong>{{ created_today }}</strong>
+                    </div>
+                    <div class="kpi-tile">
+                        <span>Новини днес</span>
+                        <strong>{{ news_today }}</strong>
+                    </div>
+                    <div class="kpi-tile">
+                        <span>Граждани</span>
+                        <strong>{{ citizens_count }}</strong>
+                    </div>
+                </div>
+            </div>
         </div>
     </section>
 
@@ -199,9 +213,7 @@
     tooltip.className = "custom-tooltip";
     document.body.appendChild(tooltip);
 
-    const targets = document.querySelectorAll("[data-tooltip]");
-
-    targets.forEach((el) => {
+    document.querySelectorAll("[data-tooltip]").forEach((el) => {
         el.addEventListener("mouseenter", () => {
             tooltip.textContent = el.getAttribute("data-tooltip");
             tooltip.style.opacity = "1";
@@ -216,6 +228,153 @@
             tooltip.style.opacity = "0";
         });
     });
+
+    const statusLabels = [{% for item in status_breakdown %}"{{ item.label }}"{% if not forloop.last %}, {% endif %}{% endfor %}];
+    const statusCounts = [{% for item in status_breakdown %}{{ item.count }}{% if not forloop.last %}, {% endif %}{% endfor %}];
+
+    const newsLabels = [{% for item in news_breakdown %}"{{ item.label }}"{% if not forloop.last %}, {% endif %}{% endfor %}];
+    const newsCounts = [{% for item in news_breakdown %}{{ item.count }}{% if not forloop.last %}, {% endif %}{% endfor %}];
+
+    const timelineLabels = [{% for day in timeline %}"{{ day.date }}"{% if not forloop.last %}, {% endif %}{% endfor %}];
+    const timelineSignals = [{% for day in timeline %}{{ day.signals }}{% if not forloop.last %}, {% endif %}{% endfor %}];
+    const timelineNews = [{% for day in timeline %}{{ day.news }}{% if not forloop.last %}, {% endif %}{% endfor %}];
+
+    const categoryLabels = [{% for row in top_categories %}"{{ row.category__name }}"{% if not forloop.last %}, {% endif %}{% endfor %}];
+    const categoryCounts = [{% for row in top_categories %}{{ row.total }}{% if not forloop.last %}, {% endif %}{% endfor %}];
+
+    const statusPalette = ["#1e88e5", "#f9a825", "#43a047", "#e53935"];
+    const newsPalette = ["#7e57c2", "#42a5f5", "#26a69a", "#ffa726", "#ef5350"];
+
+    new Chart(document.getElementById("statusChart"), {
+        type: "doughnut",
+        data: {
+            labels: statusLabels,
+            datasets: [{
+                data: statusCounts,
+                backgroundColor: statusPalette,
+                borderWidth: 0
+            }]
+        },
+        options: {
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: "bottom" }
+            },
+            cutout: "58%"
+        }
+    });
+
+    new Chart(document.getElementById("newsChart"), {
+        type: "polarArea",
+        data: {
+            labels: newsLabels,
+            datasets: [{
+                data: newsCounts,
+                backgroundColor: newsPalette,
+                borderWidth: 0
+            }]
+        },
+        options: {
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: "bottom" }
+            },
+            scales: {
+                r: {
+                    ticks: { display: false },
+                    grid: { color: "rgba(13, 71, 161, 0.1)" }
+                }
+            }
+        }
+    });
+
+    new Chart(document.getElementById("timelineChart"), {
+        type: "line",
+        data: {
+            labels: timelineLabels,
+            datasets: [
+                {
+                    label: "Сигнали",
+                    data: timelineSignals,
+                    borderColor: "#1e88e5",
+                    backgroundColor: "rgba(30, 136, 229, 0.14)",
+                    borderWidth: 3,
+                    tension: 0.35,
+                    fill: true
+                },
+                {
+                    label: "Новини",
+                    data: timelineNews,
+                    borderColor: "#7e57c2",
+                    backgroundColor: "rgba(126, 87, 194, 0.12)",
+                    borderWidth: 3,
+                    tension: 0.35,
+                    fill: true
+                }
+            ]
+        },
+        options: {
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: "top" }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: { precision: 0 }
+                }
+            }
+        }
+    });
+
+    new Chart(document.getElementById("rolesChart"), {
+        type: "doughnut",
+        data: {
+            labels: ["Граждани", "Общински администратори", "Супер администратори"],
+            datasets: [{
+                data: [{{ citizens_count }}, {{ municipal_admin_count }}, {{ super_admin_count }}],
+                backgroundColor: ["#42a5f5", "#66bb6a", "#ab47bc"],
+                borderWidth: 0
+            }]
+        },
+        options: {
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: "bottom" }
+            },
+            cutout: "55%"
+        }
+    });
+
+    if (categoryLabels.length > 0) {
+        new Chart(document.getElementById("categoryChart"), {
+            type: "bar",
+            data: {
+                labels: categoryLabels,
+                datasets: [{
+                    label: "Сигнали",
+                    data: categoryCounts,
+                    backgroundColor: "#1565c0",
+                    borderRadius: 8
+                }]
+            },
+            options: {
+                indexAxis: "y",
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        ticks: { precision: 0 }
+                    }
+                }
+            }
+        });
+    } else {
+        document.getElementById("categoryChart").parentElement.innerHTML = "<p class='empty'>Няма данни за категории.</p>";
+    }
 </script>
 
 </body>
