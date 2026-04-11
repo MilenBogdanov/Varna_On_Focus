@@ -34,13 +34,11 @@
 
         {% if messages %}
             {% for message in messages %}
-                {% if "auth" in message.tags %}
-                    <div class="alert-wrapper">
-                        <div class="alert {{ message.tags }}">
-                            {{ message }}
-                        </div>
+                <div class="alert-wrapper">
+                    <div class="alert {{ message.tags }}">
+                        {{ message }}
                     </div>
-                {% endif %}
+                </div>
             {% endfor %}
         {% endif %}
 

@@ -112,19 +112,19 @@ def banned_account(request):
 
 def custom_login(request):
     if request.method == "POST":
-        email = request.POST.get("email")
+        email = request.POST.get("email", "").strip()
         password = request.POST.get("password")
 
         try:
             user = User.objects.get(email=email)
         except User.DoesNotExist:
-            messages.error(request, "Невалиден имейл или парола.")
-            return render(request, "accounts/login.html")
+            messages.error(request, "Няма потребител с този имейл.", extra_tags="auth")
+            return render(request, "accounts/login.html", {"email": email})
 
         # 🔒 Първо проверяваме паролата
         if not user.check_password(password):
-            messages.error(request, "Невалиден имейл или парола.")
-            return render(request, "accounts/login.html")
+            messages.error(request, "Грешна парола.", extra_tags="auth")
+            return render(request, "accounts/login.html", {"email": email})
         # 🔒 Ако е деактивиран
         if user.is_banned:
             return redirect("banned_account")
