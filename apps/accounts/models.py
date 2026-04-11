@@ -74,7 +74,8 @@ class User(AbstractBaseUser, PermissionsMixin):
         Role,
         on_delete=models.PROTECT,
         related_name='users',
-        verbose_name='Роля'
+        verbose_name='Роля',
+        help_text='За супер админ: избери роля SUPER_ADMIN + включи "Администратор" и "Статут на супер-потребител". За общинар е достатъчно да избереш роля MUNICIPAL_ADMIN.'
     )
 
     # -------------------------
@@ -96,8 +97,18 @@ class User(AbstractBaseUser, PermissionsMixin):
     # -------------------------
     # System fields
     # -------------------------
+    is_banned = models.BooleanField(default=False, verbose_name='Деактивиране на профил (бан)')
     is_active = models.BooleanField(default=True, verbose_name='Активен')
-    is_staff = models.BooleanField(default=False, verbose_name='Администратор')
+    is_staff = models.BooleanField(
+        default=False,
+        verbose_name='Администратор',
+        help_text='Дава достъп до admin панела. В комбинация със SUPER_ADMIN и "Статут на супер-потребител" дава пълен достъп.'
+    )
+    is_superuser = models.BooleanField(
+        default=False,
+        help_text='При активиране заедно с роля SUPER_ADMIN, потребителят получава всички права (супер админ).',
+        verbose_name='Статут на супер-потребител'
+    )
 
     created_at = models.DateTimeField(
         auto_now_add=True,
@@ -116,6 +127,23 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return self.email
+
+    def save(self, *args, **kwargs):
+        # Блокиран потребител няма право на вход, докато не бъде отблокиран.
+        previously_banned = False
+        if self.pk:
+            previously_banned = (
+                                    User.objects.filter(pk=self.pk)
+                                    .values_list('is_banned', flat=True)
+                                    .first()
+                                ) or False
+
+        if self.is_banned:
+            self.is_active = False
+        elif previously_banned:
+            self.is_active = True
+
+        super().save(*args, **kwargs)
 
     # -------------------------
     # Генериране на код

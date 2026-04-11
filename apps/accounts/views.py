@@ -122,6 +122,13 @@ def custom_login(request):
         if not user.check_password(password):
             messages.error(request, "Невалиден имейл или парола.")
             return render(request, "accounts/login.html")
+        # 🔒 Ако е деактивиран
+        if user.is_banned:
+            messages.error(
+                request,
+                "Профилът ви е блокиран от администратор. Свържете се с поддръжка."
+            )
+            return render(request, "accounts/login.html")
 
         # 🔒 Ако е деактивиран
         if not user.is_active:

@@ -33,7 +33,11 @@ class Migration(migrations.Migration):
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('password', models.CharField(max_length=128, verbose_name='password')),
                 ('last_login', models.DateTimeField(blank=True, null=True, verbose_name='last login')),
-                ('is_superuser', models.BooleanField(default=False, help_text='Designates that this user has all permissions without explicitly assigning them.', verbose_name='superuser status')),
+                ('is_superuser', models.BooleanField(
+                    default=False,
+                    help_text='При избор на роля SUPER_ADMIN или активиране на полетата "Администратор" или "Статут на супер-потребител", потребителят автоматично получава всички необходими права (пълен достъп като супер админ).',
+                    verbose_name='superuser status'
+                )),
                 ('email', models.EmailField(max_length=254, unique=True)),
                 ('full_name', models.CharField(max_length=150)),
                 ('phone', models.CharField(blank=True, max_length=20)),
@@ -42,7 +46,12 @@ class Migration(migrations.Migration):
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('groups', models.ManyToManyField(blank=True, help_text='The groups this user belongs to. A user will get all permissions granted to each of their groups.', related_name='user_set', related_query_name='user', to='auth.group', verbose_name='groups')),
                 ('user_permissions', models.ManyToManyField(blank=True, help_text='Specific permissions for this user.', related_name='user_set', related_query_name='user', to='auth.permission', verbose_name='user permissions')),
-                ('role', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='users', to='accounts.role')),
+                ('role', models.ForeignKey(
+                    on_delete=django.db.models.deletion.PROTECT,
+                    related_name='users',
+                    to='accounts.role',
+                    help_text='За създаване на супер админ: избери роля SUPER_ADMIN + активирай полетата "Администратор" или "Статут на супер-потребител". За общинар е достатъчно да избереш роля MUNICIPAL_ADMIN.'
+                )),
             ],
             options={
                 'verbose_name': 'User',
