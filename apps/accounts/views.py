@@ -107,6 +107,9 @@ def resend_code(request):
 # CUSTOM LOGIN
 # -------------------------
 
+def banned_account(request):
+    return render(request, "accounts/banned_account.html")
+
 def custom_login(request):
     if request.method == "POST":
         email = request.POST.get("email")
@@ -124,11 +127,7 @@ def custom_login(request):
             return render(request, "accounts/login.html")
         # 🔒 Ако е деактивиран
         if user.is_banned:
-            messages.error(
-                request,
-                "Профилът ви е блокиран от администратор. Свържете се с поддръжка."
-            )
-            return render(request, "accounts/login.html")
+            return redirect("banned_account")
 
         # 🔒 Ако е деактивиран
         if not user.is_active:

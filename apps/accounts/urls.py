@@ -15,4 +15,5 @@ urlpatterns = [
     path("change-password/", views.custom_password_change_view, name="custom_password_change"),
     path("reactivate/", views.reactivate_account, name="reactivate_account"),
     path("edit-full-name/", views.edit_full_name, name="edit_full_name"),
+    path('banned-account/', views.banned_account, name='banned_account'),
 ]

@@ -1,0 +1,45 @@
+{% extends "accounts/base_form.html" %}
+
+{% block title %}Профилът е блокиран{% endblock %}
+{% block heading %}Профилът ви е блокиран{% endblock %}
+
+{% block content %}
+<div class="banned-page">
+    <p class="banned-text">
+        Вашият профил е блокиран от администратор на системата.
+    </p>
+    <p class="banned-text">
+        За съдействие, свържете се с Община Варна чрез наличните канали за контакт:
+    </p>
+
+    <div class="banned-contact-list">
+        <div class="banned-contact-item">
+            <span class="banned-contact-icon">⚲</span>
+            <div>
+                <strong>Локация</strong>
+                <p>Варна ЦентърОдесос, бул. „8-ми Приморски полк“ 43, 9002 Варна</p>
+            </div>
+        </div>
+
+        <div class="banned-contact-item">
+            <span class="banned-contact-icon">☎</span>
+            <div>
+                <strong>Телефон</strong>
+                <p><a href="tel:+359876251510">+359876251510</a></p>
+            </div>
+        </div>
+
+        <div class="banned-contact-item">
+            <span class="banned-contact-icon">✉</span>
+            <div>
+                <strong>Имейл</strong>
+                <p><a href="mailto:varnamunicipality1@gmail.com">varnamunicipality1@gmail.com</a></p>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-actions banned-actions">
+        <a href="{% url 'contact' %}" class="btn-primary banned-contact-btn">Форма за контакт</a>
+    </div>
+</div>
+{% endblock %}
