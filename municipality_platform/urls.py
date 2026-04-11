@@ -15,7 +15,7 @@ from apps.core.views import map_view
 from django.contrib.auth import views as auth_views
 from django.shortcuts import redirect
 from django.views.generic import TemplateView
-from apps.core.views import map_view, contact, admin_dashboard
+from apps.core.views import map_view, contact, admin_dashboard, super_admin_panel
 
 # -------------------------
 # API Router
@@ -53,6 +53,7 @@ urlpatterns = [
     # -------------------------
     path('map/', map_view, name='map'),
     path('admin-dashboard/', admin_dashboard, name='admin_dashboard'),
+    path('super-admin-panel/', super_admin_panel, name='super_admin_panel'),
     path('contact/', contact, name='contact'),
 
     # Signals app

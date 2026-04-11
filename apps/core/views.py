@@ -9,8 +9,8 @@ from datetime import datetime, timedelta
 from django.db.models import Count
 from django.utils import timezone
 
-from apps.accounts.decorators import admin_or_superadmin_required
-from apps.accounts.models import User
+from apps.accounts.decorators import admin_or_superadmin_required, superadmin_required
+from apps.accounts.models import User, Role
 from apps.signals.models import Signal
 from apps.core.choices import SignalStatus
 from apps.news.models import News
@@ -128,6 +128,66 @@ def admin_dashboard(request):
         "recent_signals": recent_signals,
     }
     return render(request, "dashboard/admin_dashboard.html", context)
+
+@login_required
+@superadmin_required
+def super_admin_panel(request):
+    from django.urls import reverse
+
+    now = timezone.now()
+    start_today = now.replace(hour=0, minute=0, second=0, microsecond=0)
+
+    total_signals = Signal.objects.count()
+    open_signals = Signal.objects.filter(status=SignalStatus.OPEN).count()
+    in_progress_signals = Signal.objects.filter(status=SignalStatus.IN_PROGRESS).count()
+    resolved_signals = Signal.objects.filter(status=SignalStatus.RESOLVED).count()
+    created_today = Signal.objects.filter(created_at__gte=start_today).count()
+
+    total_news = News.objects.count()
+    news_today = News.objects.filter(created_at__gte=start_today).count()
+
+    citizens_count = User.objects.filter(role__name="CITIZEN").count()
+    municipal_admin_count = User.objects.filter(role__name="MUNICIPAL_ADMIN").count()
+    super_admin_count = User.objects.filter(role__name="SUPER_ADMIN").count()
+
+    recent_signals = Signal.objects.select_related("category", "user").order_by("-created_at")[:6]
+
+    users_admin_url = reverse("admin:accounts_user_changelist")
+    roles_admin_url = reverse("admin:accounts_role_changelist")
+    signals_admin_url = reverse("admin:signals_signal_changelist")
+    news_admin_url = reverse("admin:news_news_changelist")
+    comments_admin_url = reverse("admin:signals_comment_changelist")
+
+    citizen_role = Role.objects.filter(name="CITIZEN").only("id").first()
+    municipal_role = Role.objects.filter(name="MUNICIPAL_ADMIN").only("id").first()
+    super_role = Role.objects.filter(name="SUPER_ADMIN").only("id").first()
+
+    users_by_role_links = {
+        "citizens": f"{users_admin_url}?role__id__exact={citizen_role.id}" if citizen_role else users_admin_url,
+        "municipal_admins": f"{users_admin_url}?role__id__exact={municipal_role.id}" if municipal_role else users_admin_url,
+        "super_admins": f"{users_admin_url}?role__id__exact={super_role.id}" if super_role else users_admin_url,
+    }
+
+    context = {
+        "total_signals": total_signals,
+        "open_signals": open_signals,
+        "in_progress_signals": in_progress_signals,
+        "resolved_signals": resolved_signals,
+        "created_today": created_today,
+        "total_news": total_news,
+        "news_today": news_today,
+        "citizens_count": citizens_count,
+        "municipal_admin_count": municipal_admin_count,
+        "super_admin_count": super_admin_count,
+        "recent_signals": recent_signals,
+        "users_admin_url": users_admin_url,
+        "roles_admin_url": roles_admin_url,
+        "signals_admin_url": signals_admin_url,
+        "news_admin_url": news_admin_url,
+        "comments_admin_url": comments_admin_url,
+        "users_by_role_links": users_by_role_links,
+    }
+    return render(request, "dashboard/super_admin_panel.html", context)
 
 def contact(request):
 

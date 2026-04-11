@@ -6,7 +6,11 @@ from django.core.paginator import Paginator
 from django.contrib.auth import logout
 from datetime import datetime, timedelta
 
-from apps.accounts.decorators import citizen_required, municipal_admin_required
+from apps.accounts.decorators import (
+    citizen_required,
+    municipal_admin_required,
+    admin_or_superadmin_required,
+)
 from apps.core.choices import AuditOperationType
 from apps.audit.models import SignalAudit
 from apps.signals.models import Category
@@ -106,7 +110,7 @@ def create_signal(request):
 # =========================================================
 
 @login_required
-@municipal_admin_required
+@admin_or_superadmin_required
 def manage_signal(request, signal_id):
 
     signal = get_object_or_404(Signal, id=signal_id)
@@ -446,7 +450,7 @@ def signal_detail(request, pk):
                 .order_by("-created_at")
             )
         elif hasattr(request.user, "role") and request.user.role:
-            if request.user.role.name == "MUNICIPAL_ADMIN":
+            if request.user.role.name in ["MUNICIPAL_ADMIN", "SUPER_ADMIN"]:
                 audit_logs = (
                     SignalAudit.objects
                     .filter(signal_id=signal.id)
@@ -458,7 +462,7 @@ def signal_detail(request, pk):
         if request.user.is_superuser:
             can_manage = True
         elif hasattr(request.user, "role") and request.user.role:
-            if request.user.role.name == "MUNICIPAL_ADMIN":
+            if request.user.role.name in ["MUNICIPAL_ADMIN", "SUPER_ADMIN"]:
                 can_manage = True
 
     return render(
@@ -497,7 +501,7 @@ def confirm_delete_account_view(request):
 # =========================================================
 
 @login_required
-@municipal_admin_required
+@admin_or_superadmin_required
 def all_signals_view(request):
     signals = (
         Signal.objects
@@ -544,7 +548,7 @@ def all_signals_view(request):
     )
 
 @login_required
-@municipal_admin_required
+@admin_or_superadmin_required
 def admin_delete_signal(request, pk):
 
     signal = get_object_or_404(Signal, pk=pk)

@@ -1,0 +1,25 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block extrastyle %}
+    {{ block.super }}
+    <link rel="stylesheet" href="{% static 'css/django_admin_custom.css' %}">
+{% endblock %}
+
+{% block branding %}
+<div class="custom-admin-branding">
+    <a href="{% url 'admin:index' %}" class="branding-link">
+        <img src="/media/logo/og-varna.png" alt="Община Варна" class="branding-logo">
+        <div class="branding-text">
+            <strong>Varna On Focus</strong>
+            <span>Супер администраторски панел</span>
+        </div>
+    </a>
+</div>
+{% endblock %}
+
+{% block userlinks %}
+    <a href="{% url 'index' %}">Към платформата</a> /
+    <a href="{% url 'admin_dashboard' %}">Админ табло</a> /
+    {{ block.super }}
+{% endblock %}

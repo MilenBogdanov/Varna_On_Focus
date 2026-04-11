@@ -1,0 +1,104 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Супер Админ Панел | Varna On Focus</title>
+    <link rel="stylesheet" href="{% static 'css/super_admin_panel.css' %}">
+</head>
+<body>
+<div class="top-bar">
+    <div class="brand-wrap">
+        <a href="{% url 'map' %}"><img src="/media/logo/og-varna.png" alt="Община Варна" class="logo"></a>
+        <div>
+            <h1>Супер Админ Панел</h1>
+            <p>Централно управление на сигнали, новини и системни операции</p>
+        </div>
+    </div>
+    <div class="top-actions">
+        <a href="{% url 'map' %}" class="btn ghost">Към карта</a>
+        <a href="{% url 'admin:index' %}" class="btn primary">Django Admin</a>
+    </div>
+</div>
+
+<main class="container">
+    <section class="kpi-grid">
+        <a href="{{ signals_admin_url }}" class="kpi-card cyan"><span>Общо сигнали</span><strong>{{ total_signals }}</strong></a>
+        <a href="{{ signals_admin_url }}?status__exact=OPEN" class="kpi-card blue"><span>Отворени</span><strong>{{ open_signals }}</strong></a>
+        <a href="{{ signals_admin_url }}?status__exact=IN_PROGRESS" class="kpi-card purple"><span>В процес</span><strong>{{ in_progress_signals }}</strong></a>
+        <a href="{{ signals_admin_url }}?status__exact=RESOLVED" class="kpi-card green"><span>Решени</span><strong>{{ resolved_signals }}</strong></a>
+        <a href="{{ signals_admin_url }}" class="kpi-card orange"><span>Нови сигнали днес</span><strong>{{ created_today }}</strong></a>
+        <a href="{{ news_admin_url }}" class="kpi-card pink"><span>Нови новини днес</span><strong>{{ news_today }}</strong></a>
+    </section>
+
+    <section class="panel-grid">
+        <article class="panel">
+            <h2>Оперативни действия</h2>
+            <div class="action-grid">
+                <a href="{{ signals_admin_url }}" class="action-card">
+                    <h3>Управление на сигнали</h3>
+                    <p>Отваря директно моделите за сигнали в Django Admin.</p>
+                </a>
+                <a href="{{ news_admin_url }}" class="action-card">
+                    <h3>Управление на новини</h3>
+                    <p>Пълен редакторски контрол в административния панел.</p>
+                </a>
+                <a href="{{ users_admin_url }}" class="action-card">
+                    <h3>Потребители</h3>
+                    <p>Управление на всички потребителски профили и състояния.</p>
+                </a>
+                <a href="{{ roles_admin_url }}" class="action-card">
+                    <h3>Роли и права</h3>
+                    <p>Бърз достъп до ролевия модел и системните разрешения.</p>
+                </a>
+            </div>
+        </article>
+
+        <article class="panel users-panel">
+            <h2>Потребители по роля</h2>
+            <a class="role-item" href="{{ users_by_role_links.citizens }}"><span>Граждани</span><strong>{{ citizens_count }}</strong></a>
+            <a class="role-item" href="{{ users_by_role_links.municipal_admins }}"><span>Общинари</span><strong>{{ municipal_admin_count }}</strong></a>
+            <a class="role-item" href="{{ users_by_role_links.super_admins }}"><span>Супер админи</span><strong>{{ super_admin_count }}</strong></a>
+            <a class="role-item total" href="{{ news_admin_url }}"><span>Общо новини</span><strong>{{ total_news }}</strong></a>
+            <a class="role-item" href="{{ comments_admin_url }}"><span>Коментари</span><strong>Отвори</strong></a>
+        </article>
+    </section>
+
+    <section class="panel">
+        <div class="panel-head">
+            <h2>Последни сигнали</h2>
+            <a href="{{ signals_admin_url }}" class="btn ghost">Виж всички</a>
+        </div>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>№</th>
+                        <th>Заглавие</th>
+                        <th>Категория</th>
+                        <th>Потребител</th>
+                        <th>Статус</th>
+                        <th>Действие</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for signal in recent_signals %}
+                    <tr>
+                        <td>#{{ signal.id }}</td>
+                        <td>{{ signal.title|truncatechars:42 }}</td>
+                        <td>{{ signal.category.name }}</td>
+                        <td>{{ signal.user.full_name|default:signal.user.email }}</td>
+                        <td><span class="status {{ signal.status|lower }}">{{ signal.get_status_display }}</span></td>
+                        <td><a href="{{ signals_admin_url }}{{ signal.id }}/change/" class="table-link">Управлявай</a></td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="6">Няма скорошни сигнали.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+</main>
+</body>
+</html>

@@ -45,6 +45,14 @@
 
         </a>
 
+        {% if user.is_authenticated and user.role and user.role.name == "SUPER_ADMIN" %}
+            <a href="{% url 'super_admin_panel' %}"
+               class="nav-btn"
+               data-tooltip="Супер админ панел">
+                <img src="/media/buttons/django_admin_panel.png" alt="Супер админ панел">
+            </a>
+        {% endif %}
+
     </div>
 
     <div class="top-bar-actions">
@@ -131,7 +139,7 @@
          data-tooltip="Филтриране">
         <img src="/media/buttons/filter.png" alt="">
     </div>
-    {% if user.is_authenticated and user.role.name == "MUNICIPAL_ADMIN" or user.role.name == "SUPER_ADMIN" %}
+    {% if user.is_authenticated and user.role and user.role.name == "MUNICIPAL_ADMIN" or user.is_authenticated and user.role and user.role.name == "SUPER_ADMIN" %}
     <a href="{% url 'signals:all_signals' %}"
        class="floating-btn btn-left-admin"
        data-tooltip="Всички сигнали">

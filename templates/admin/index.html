@@ -1,0 +1,48 @@
+{% extends "admin/base_site.html" %}
+
+{% block content %}
+<div class="admin-home-shell">
+    <section class="admin-home-kpis">
+        <a href="{% url 'admin:accounts_user_changelist' %}" class="admin-home-card">
+            <span>Потребители</span>
+            <strong>Управление</strong>
+        </a>
+        <a href="{% url 'admin:signals_signal_changelist' %}" class="admin-home-card">
+            <span>Сигнали</span>
+            <strong>Операции</strong>
+        </a>
+        <a href="{% url 'admin:news_news_changelist' %}" class="admin-home-card">
+            <span>Новини</span>
+            <strong>Публикации</strong>
+        </a>
+        <a href="{% url 'admin:accounts_role_changelist' %}" class="admin-home-card">
+            <span>Роли</span>
+            <strong>Контрол на достъп</strong>
+        </a>
+    </section>
+
+    <section class="admin-app-grid">
+        {% for app in app_list %}
+            <article class="admin-app-card module">
+                <h2>{{ app.name }}</h2>
+                <ul>
+                    {% for model in app.models %}
+                        <li>
+                            {% if model.admin_url %}
+                                <a href="{{ model.admin_url }}">{{ model.name }}</a>
+                            {% else %}
+                                {{ model.name }}
+                            {% endif %}
+
+                            <span class="actions">
+                                {% if model.add_url %}<a href="{{ model.add_url }}">Добави</a>{% endif %}
+                                {% if model.admin_url %}<a href="{{ model.admin_url }}">Преглед</a>{% endif %}
+                            </span>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </article>
+        {% endfor %}
+    </section>
+</div>
+{% endblock %}

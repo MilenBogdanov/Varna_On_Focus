@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect
 from django.utils import timezone
 from django.contrib import messages
+from django.urls import reverse
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.hashers import make_password
 from notifications.services import send_password_changed_email
@@ -142,6 +143,7 @@ def custom_login(request):
 
         # ✅ Всичко е ок
         login(request, user)
+
         return redirect("map")
 
     return render(request, "accounts/login.html")
