@@ -9,16 +9,24 @@
 </head>
 <body>
 <div class="top-bar">
-    <div class="brand-wrap">
-        <a href="{% url 'map' %}"><img src="/media/logo/og-varna.png" alt="Община Варна" class="logo"></a>
-        <div>
-            <h1>Супер Админ Панел</h1>
-            <p>Централно управление на сигнали, новини и системни операции</p>
+    <div class="top-bar-title">
+        <a href="{% url 'map' %}">
+            <img src="/media/logo/og-varna.png" class="varna-logo" alt="Община Варна">
+        </a>
+
+        <div class="brand-text-container">
+            <span>СУПЕР АДМИН ПАНЕЛ</span>
+            <span class="sub-title-text">Централно управление на сигнали, новини и системни операции</span>
         </div>
     </div>
-    <div class="top-actions">
-        <a href="{% url 'map' %}" class="btn ghost">Назад</a>
-        <a href="{% url 'admin:index' %}" class="btn primary">Разширени настройки</a>
+
+    <div class="top-bar-actions">
+        <a href="{% url 'map' %}" class="nav-btn" data-tooltip="Към картата">
+            <img src="/media/buttons/map.png" alt="Към картата">
+        </a>
+        <a href="{% url 'admin:index' %}" class="nav-btn" data-tooltip="Повече настройки">
+            <img src="/media/buttons/all_settings.png" alt="Повече настройки">
+        </a>
     </div>
 </div>
 
@@ -68,7 +76,7 @@
     <section class="panel">
         <div class="panel-head">
             <h2>Последни сигнали</h2>
-            <a href="{{ signals_admin_url }}" class="btn ghost">Виж всички</a>
+            <a href="{{ signals_admin_url }}" class="panel-link">Виж всички</a>
         </div>
         <div class="table-wrap">
             <table>
@@ -100,5 +108,27 @@
         </div>
     </section>
 </main>
+
+<script>
+    const tooltip = document.createElement("div");
+    tooltip.className = "custom-tooltip";
+    document.body.appendChild(tooltip);
+
+    document.querySelectorAll("[data-tooltip]").forEach((el) => {
+        el.addEventListener("mouseenter", () => {
+            tooltip.textContent = el.getAttribute("data-tooltip");
+            tooltip.style.opacity = "1";
+        });
+
+        el.addEventListener("mousemove", (e) => {
+            tooltip.style.left = e.clientX + "px";
+            tooltip.style.top = e.clientY + "px";
+        });
+
+        el.addEventListener("mouseleave", () => {
+            tooltip.style.opacity = "0";
+        });
+    });
+</script>
 </body>
 </html>
