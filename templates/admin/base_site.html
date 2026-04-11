@@ -1,5 +1,7 @@
-{% extends "admin/base_site.html" %}
+{% extends "admin/base.html" %}
 {% load static %}
+
+{% block title %}Django Administration | Varna On Focus{% endblock %}
 
 {% block extrastyle %}
     {{ block.super }}
@@ -8,18 +10,53 @@
 
 {% block branding %}
 <div class="custom-admin-branding">
-    <a href="{% url 'admin:index' %}" class="branding-link">
+    <a href="{% url 'admin:index' %}" class="branding-link" aria-label="Django Admin начало">
         <img src="/media/logo/og-varna.png" alt="Община Варна" class="branding-logo">
         <div class="branding-text">
-            <strong>Varna On Focus</strong>
-            <span>Супер администраторски панел</span>
+            <strong>ВАРНА НА ФОКУС</strong>
+            <span>Твоят регион ⚲ Твоят глас</span>
         </div>
     </a>
 </div>
 {% endblock %}
 
-{% block userlinks %}
-    <a href="{% url 'index' %}">Към платформата</a> /
-    <a href="{% url 'admin_dashboard' %}">Админ табло</a> /
-    {{ block.super }}
+{% block nav-global %}
+<div class="global-admin-nav" aria-label="Основна навигация">
+    <div class="nav-group">
+        <span class="nav-group-title">Преглед на Общинарски Функции</span>
+        <div class="nav-group-buttons">
+            <a href="{% url 'signals:all_signals' %}" class="global-nav-item" title="Сигнали" aria-label="Сигнали">
+                <img src="/media/buttons/all_signals.png" alt="">
+            </a>
+            <a href="{% url 'news' %}" class="global-nav-item" title="Новини" aria-label="Новини">
+                <img src="/media/buttons/news.png" alt="">
+            </a>
+            <a href="{% url 'admin_dashboard' %}" class="global-nav-item" title="Админ табло" aria-label="Админ табло">
+                <img src="/media/buttons/admin_dashboard.png" alt="">
+            </a>
+        </div>
+    </div>
+
+    <div class="nav-group nav-group-system">
+        <span class="nav-group-title">Админ функции</span>
+        <div class="nav-group-buttons">
+            <a href="{% url 'admin:index' %}" class="global-nav-item" title="Django начало" aria-label="Django начало">
+                <img src="/media/buttons/django_admin_panel.png" alt="">
+            </a>
+            <a href="{% url 'super_admin_panel' %}" class="global-nav-item" title="Супер админ панел" aria-label="Супер админ панел">
+                <img src="/media/buttons/django_admin_panel.png" alt="">
+            </a>
+        </div>
+    </div>
+
+    <a href="{% url 'map' %}" class="global-nav-item" title="Карта" aria-label="Карта">
+                <img src="/media/buttons/map.png" alt="">
+    </a>
+    <a href="{% url 'admin:logout' %}" class="global-nav-item" title="Изход" aria-label="Изход">
+                <img src="/media/buttons/log_out.png" alt="">
+    </a>
+
+</div>
 {% endblock %}
+
+{% block userlinks %}{% endblock %}

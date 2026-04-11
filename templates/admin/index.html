@@ -23,6 +23,7 @@
 
     <section class="admin-app-grid">
         {% for app in app_list %}
+            {% if app.app_label != 'core' and app.app_label != 'auth' %}
             <article class="admin-app-card module">
                 <h2>{{ app.name }}</h2>
                 <ul>
@@ -42,6 +43,7 @@
                     {% endfor %}
                 </ul>
             </article>
+            {% endif %}
         {% endfor %}
     </section>
 </div>

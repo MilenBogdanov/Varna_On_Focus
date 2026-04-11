@@ -1,8 +1,5 @@
 from django.contrib import admin
-from .models import Zone
+from django.contrib.auth.models import Group
 
-@admin.register(Zone)
-class ZoneAdmin(admin.ModelAdmin):
-    list_display = ("id", "name", "created_at")
-    search_fields = ("name",)
-    ordering = ("-created_at",)
+
+admin.site.unregister(Group)
