@@ -1,0 +1,159 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <title>Одит панел – Община Варна</title>
+    <link rel="stylesheet" href="{% static 'css/audit_panel.css' %}">
+</head>
+<body>
+
+<div class="top-bar">
+    <div class="top-bar-title">
+        <a href="{% url 'index' %}">
+            <img src="/media/logo/og-varna.png" class="varna-logo" alt="Варна">
+        </a>
+
+        <div class="brand-text-container">
+            <span>ВАРНА НА ФОКУС</span>
+            <span class="sub-title-text">Одит и справки</span>
+        </div>
+
+        <a href="{% url 'news' %}" class="nav-btn" data-tooltip="Новини">
+            <img src="/media/buttons/news.png" alt="Новини">
+        </a>
+
+        <a href="{% url 'contact' %}" class="nav-btn" data-tooltip="Контакти">
+            <img src="/media/buttons/contact.png" alt="Контакти">
+        </a>
+
+        {% if user.is_authenticated and user.role and user.role.name == "MUNICIPAL_ADMIN" %}
+            <a href="{% url 'audit_panel' %}" class="nav-btn" data-tooltip="Одит панел">
+                <img src="/media/buttons/audit_panel.png" alt="Одит панел">
+            </a>
+        {% endif %}
+
+        {% if user.is_authenticated and user.role and user.role.name == "SUPER_ADMIN" %}
+            <a href="{% url 'super_admin_panel' %}" class="nav-btn" data-tooltip="Супер админ панел">
+                <img src="/media/buttons/django_admin_panel.png" alt="Супер админ панел">
+            </a>
+            <a href="{% url 'audit_panel' %}" class="nav-btn" data-tooltip="Одит панел">
+                <img src="/media/buttons/audit_panel.png" alt="Одит панел">
+            </a>
+        {% endif %}
+    </div>
+
+    <div class="top-bar-actions">
+        <div class="weather-inline">
+            <div class="weather-top">
+                <span class="weather-icon">⏳</span>
+                <span class="weather-temp">--</span>
+            </div>
+            <div class="weather-desc">Зареждане...</div>
+        </div>
+
+        <a href="{% url 'map' %}" class="nav-btn" data-tooltip="Към картата">
+            <img src="/media/buttons/map.png" alt="Карта">
+        </a>
+    </div>
+</div>
+
+<div class="contact-container">
+    <div class="contact-card split audit-layout">
+        <div class="contact-form audit-filters">
+            <div class="contact-title">Одит панел</div>
+
+            <form method="get">
+                <label>Тип запис</label>
+                <select name="source">
+                    <option value="ALL" {% if source_filter == "ALL" %}selected{% endif %}>Всички</option>
+                    <option value="SIGNAL" {% if source_filter == "SIGNAL" %}selected{% endif %}>Сигнали</option>
+                    <option value="NEWS" {% if source_filter == "NEWS" %}selected{% endif %}>Новини</option>
+                </select>
+
+                <label>Операция</label>
+                <select name="operation">
+                    <option value="ALL" {% if operation_filter == "ALL" %}selected{% endif %}>Всички</option>
+                    {% for value, label in operations %}
+                        <option value="{{ value }}" {% if operation_filter == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+
+                <label>Извършил (email)</label>
+                <input type="text" name="actor" value="{{ actor_filter }}" placeholder="напр. admin@varna.bg">
+
+                <label>От дата</label>
+                <input type="date" name="date_from" value="{{ date_from }}">
+
+                <label>До дата</label>
+                <input type="date" name="date_to" value="{{ date_to }}">
+
+                <button type="submit" class="contact-btn">Филтрирай</button>
+            </form>
+
+            <form method="get" class="export-form">
+                <input type="hidden" name="source" value="{{ source_filter }}">
+                <input type="hidden" name="operation" value="{{ operation_filter }}">
+                <input type="hidden" name="actor" value="{{ actor_filter }}">
+                <input type="hidden" name="date_from" value="{{ date_from }}">
+                <input type="hidden" name="date_to" value="{{ date_to }}">
+                <input type="hidden" name="export" value="excel">
+                <button type="submit" class="contact-btn">Експорт за Excel (.csv)</button>
+            </form>
+        </div>
+
+        <div class="contact-visual audit-results-shell">
+            <div class="contact-info table-host">
+                <div class="info-item header-row">
+                    <strong>Тип</strong>
+                    <strong>ID</strong>
+                    <strong>Операция</strong>
+                    <strong>Потребител</strong>
+                    <strong>Дата</strong>
+                </div>
+
+                {% for row in entries %}
+                    <div class="info-item table-row">
+                        <span><span class="cell-pill">{{ row.source }}</span></span>
+                        <span><span class="cell-pill">#{{ row.entity_id }}</span></span>
+                        <span><span class="cell-pill">{{ row.operation }}</span></span>
+                        <span><span class="cell-pill">{{ row.performed_by }}</span></span>
+                        <span><span class="cell-pill">{{ row.created_at|date:"d.m.Y H:i" }}</span></span>
+                    </div>
+                {% empty %}
+                    <div class="info-item empty-row">
+                        <span>Няма резултати за зададените филтри.</span>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="{% static 'js/contact.js' %}"></script>
+<script>
+const tooltip = document.createElement("div");
+tooltip.className = "custom-tooltip";
+document.body.appendChild(tooltip);
+
+document.addEventListener("mouseover", function(e){
+    const target = e.target.closest("[data-tooltip]");
+    if(!target) return;
+    tooltip.textContent = target.getAttribute("data-tooltip");
+    tooltip.style.opacity = "1";
+});
+
+document.addEventListener("mousemove", function(e){
+    tooltip.style.left = (e.clientX + 14) + "px";
+    tooltip.style.top = (e.clientY + 14) + "px";
+});
+
+document.addEventListener("mouseout", function(e){
+    if(e.target.closest("[data-tooltip]")){
+        tooltip.style.opacity = "0";
+    }
+});
+</script>
+
+</body>
+</html>

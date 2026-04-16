@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from django.http import HttpResponse
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 from django.conf import settings
@@ -8,7 +9,9 @@ import os
 from datetime import datetime, timedelta
 from django.db.models import Count
 from django.utils import timezone
-
+from apps.audit.models import SignalAudit, NewsAudit
+from apps.core.choices import AuditOperationType
+import csv
 from apps.accounts.decorators import admin_or_superadmin_required, superadmin_required
 from apps.accounts.models import User, Role
 from apps.signals.models import Signal
@@ -382,3 +385,89 @@ def contact(request):
         })
 
     return render(request, "contact/contact.html")
+
+@login_required
+@admin_or_superadmin_required
+def audit_panel(request):
+    source_filter = request.GET.get("source", "ALL")
+    operation_filter = request.GET.get("operation", "ALL")
+    actor_filter = request.GET.get("actor", "").strip()
+    date_from = request.GET.get("date_from", "")
+    date_to = request.GET.get("date_to", "")
+
+    signal_logs = SignalAudit.objects.select_related("performed_by").all()
+    news_logs = NewsAudit.objects.select_related("performed_by").all()
+
+    if operation_filter != "ALL":
+        signal_logs = signal_logs.filter(operation_type=operation_filter)
+        news_logs = news_logs.filter(operation_type=operation_filter)
+
+    if actor_filter:
+        signal_logs = signal_logs.filter(performed_by__email__icontains=actor_filter)
+        news_logs = news_logs.filter(performed_by__email__icontains=actor_filter)
+
+    if date_from:
+        signal_logs = signal_logs.filter(created_at__date__gte=date_from)
+        news_logs = news_logs.filter(created_at__date__gte=date_from)
+
+    if date_to:
+        signal_logs = signal_logs.filter(created_at__date__lte=date_to)
+        news_logs = news_logs.filter(created_at__date__lte=date_to)
+
+    entries = []
+
+    if source_filter in ["ALL", "SIGNAL"]:
+        entries.extend(
+            {
+                "source": "Сигнал",
+                "entity_id": log.signal_id,
+                "operation": log.get_operation_type_display(),
+                "operation_raw": log.operation_type,
+                "performed_by": log.performed_by.email if log.performed_by else "Система",
+                "created_at": log.created_at,
+            }
+            for log in signal_logs
+        )
+
+    if source_filter in ["ALL", "NEWS"]:
+        entries.extend(
+            {
+                "source": "Новина",
+                "entity_id": log.news_id,
+                "operation": log.get_operation_type_display(),
+                "operation_raw": log.operation_type,
+                "performed_by": log.performed_by.email if log.performed_by else "Система",
+                "created_at": log.created_at,
+            }
+            for log in news_logs
+        )
+
+    entries.sort(key=lambda item: item["created_at"], reverse=True)
+
+    if request.GET.get("export") == "excel":
+        response = HttpResponse(content_type="text/csv; charset=utf-8")
+        response["Content-Disposition"] = 'attachment; filename="audit_panel_export.csv"'
+        response.write("\ufeff")
+
+        writer = csv.writer(response)
+        writer.writerow(["Тип", "ID", "Операция", "Извършил", "Дата"])
+        for row in entries:
+            writer.writerow([
+                row["source"],
+                row["entity_id"],
+                row["operation"],
+                row["performed_by"],
+                row["created_at"].strftime("%d.%m.%Y %H:%M"),
+            ])
+        return response
+
+    context = {
+        "entries": entries[:300],
+        "source_filter": source_filter,
+        "operation_filter": operation_filter,
+        "actor_filter": actor_filter,
+        "date_from": date_from,
+        "date_to": date_to,
+        "operations": AuditOperationType.choices,
+    }
+    return render(request, "dashboard/audit_panel.html", context)

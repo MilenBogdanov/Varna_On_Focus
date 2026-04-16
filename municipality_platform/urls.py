@@ -11,11 +11,10 @@ from rest_framework_simplejwt.views import (
 
 from apps.signals.api_views import SignalViewSet, SignalMapAPIView
 from apps.news.api_views import ZoneMapAPIView
-from apps.core.views import map_view
 from django.contrib.auth import views as auth_views
 from django.shortcuts import redirect
 from django.views.generic import TemplateView
-from apps.core.views import map_view, contact, admin_dashboard, super_admin_panel
+from apps.core.views import map_view, contact, admin_dashboard, super_admin_panel, audit_panel
 
 # -------------------------
 # API Router
@@ -54,6 +53,7 @@ urlpatterns = [
     path('map/', map_view, name='map'),
     path('admin-dashboard/', admin_dashboard, name='admin_dashboard'),
     path('super-admin-panel/', super_admin_panel, name='super_admin_panel'),
+    path('audit-panel/', audit_panel, name='audit_panel'),
     path('contact/', contact, name='contact'),
 
     # Signals app

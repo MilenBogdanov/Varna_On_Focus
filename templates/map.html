@@ -45,11 +45,25 @@
 
         </a>
 
+        {% if user.is_authenticated and user.role and user.role.name == "MUNICIPAL_ADMIN" %}
+            <a href="{% url 'audit_panel' %}"
+               class="nav-btn"
+               data-tooltip="Одит панел">
+                <img src="/media/buttons/audit_panel.png" alt="Одит панел">
+            </a>
+        {% endif %}
+
         {% if user.is_authenticated and user.role and user.role.name == "SUPER_ADMIN" %}
             <a href="{% url 'super_admin_panel' %}"
                class="nav-btn"
                data-tooltip="Супер админ панел">
                 <img src="/media/buttons/django_admin_panel.png" alt="Супер админ панел">
+            </a>
+
+            <a href="{% url 'audit_panel' %}"
+                   class="nav-btn"
+                   data-tooltip="Одит панел">
+                    <img src="/media/buttons/audit_panel.png" alt="Одит панел">
             </a>
         {% endif %}
 
