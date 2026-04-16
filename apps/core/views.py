@@ -18,6 +18,8 @@ from apps.signals.models import Signal
 from apps.core.choices import SignalStatus
 from apps.news.models import News
 from apps.core.choices import NewsSourceType
+import json
+from django.core.serializers.json import DjangoJSONEncoder
 
 
 
@@ -425,6 +427,8 @@ def audit_panel(request):
                 "operation_raw": log.operation_type,
                 "performed_by": log.performed_by.email if log.performed_by else "Система",
                 "created_at": log.created_at,
+                "old_data": log.old_data or {},
+                "new_data": log.new_data or {},
             }
             for log in signal_logs
         )
@@ -438,6 +442,8 @@ def audit_panel(request):
                 "operation_raw": log.operation_type,
                 "performed_by": log.performed_by.email if log.performed_by else "Система",
                 "created_at": log.created_at,
+                "old_data": log.old_data or {},
+                "new_data": log.new_data or {},
             }
             for log in news_logs
         )
@@ -463,6 +469,7 @@ def audit_panel(request):
 
     context = {
         "entries": entries[:300],
+        "entries_json": entries[:300],
         "source_filter": source_filter,
         "operation_filter": operation_filter,
         "actor_filter": actor_filter,

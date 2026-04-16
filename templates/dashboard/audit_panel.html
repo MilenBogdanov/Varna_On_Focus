@@ -61,7 +61,7 @@
 <div class="contact-container">
     <div class="contact-card split audit-layout">
         <div class="contact-form audit-filters">
-            <div class="contact-title">Одит панел</div>
+            <div class="contact-title">Направи своята справка</div>
 
             <form method="get">
                 <label>Тип запис</label>
@@ -88,7 +88,10 @@
                 <label>До дата</label>
                 <input type="date" name="date_to" value="{{ date_to }}">
 
-                <button type="submit" class="contact-btn">Филтрирай</button>
+                <div class="filter-actions">
+                    <button type="submit" class="contact-btn">Филтрирай</button>
+                    <a href="{% url 'audit_panel' %}" class="contact-btn clear-btn">Изчисти филтър</a>
+                </div>
             </form>
 
             <form method="get" class="export-form">
@@ -113,7 +116,7 @@
                 </div>
 
                 {% for row in entries %}
-                    <div class="info-item table-row">
+                    <div class="info-item table-row" data-row-index="{{ forloop.counter0 }}">
                         <span><span class="cell-pill">{{ row.source }}</span></span>
                         <span><span class="cell-pill">#{{ row.entity_id }}</span></span>
                         <span><span class="cell-pill">{{ row.operation }}</span></span>
@@ -130,8 +133,131 @@
     </div>
 </div>
 
+<div class="audit-modal-overlay" id="auditModalOverlay">
+    <div class="audit-modal">
+        <div class="audit-modal-header">
+            <h3 id="auditModalTitle">Детайли по одит запис</h3>
+            <button type="button" class="audit-modal-close" id="auditModalClose">✕</button>
+        </div>
+        <div class="audit-modal-meta" id="auditModalMeta"></div>
+        <div class="audit-modal-grid">
+            <div class="audit-pane audit-pane-old">
+                <h4>Преди промяната</h4>
+                <!--<div class="audit-pane-hint">Предишни стойности</div>-->
+                <div id="auditOldData" class="audit-data-block">Няма данни</div>
+            </div>
+            <div class="audit-pane audit-pane-new">
+                <h4>След промяната</h4>
+                <!-- <div class="audit-pane-hint">Текущи стойности</div> -->
+                <div id="auditNewData" class="audit-data-block">Няма данни</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{ entries_json|json_script:"audit-entries-data" }}
+
+
 <script src="{% static 'js/contact.js' %}"></script>
 <script>
+const auditEntries = JSON.parse(document.getElementById("audit-entries-data").textContent);
+
+const auditModalOverlay = document.getElementById("auditModalOverlay");
+const auditModalClose = document.getElementById("auditModalClose");
+const auditModalTitle = document.getElementById("auditModalTitle");
+const auditModalMeta = document.getElementById("auditModalMeta");
+const auditOldData = document.getElementById("auditOldData");
+const auditNewData = document.getElementById("auditNewData");
+
+function formatFieldLabel(key){
+    return key
+        .replaceAll("_", " ")
+        .replaceAll(".", " ")
+        .trim()
+        .replace(/\s+/g, " ")
+        .replace(/^./, (char) => char.toUpperCase());
+}
+
+function formatValue(value){
+    if(value === null || value === undefined || value === ""){
+        return "—";
+    }
+    if(typeof value === "boolean"){
+        return value ? "Да" : "Не";
+    }
+    if(typeof value === "number"){
+        return Number.isInteger(value) ? String(value) : value.toFixed(6);
+    }
+    if(Array.isArray(value)){
+        if(value.length === 0){
+            return "Празен списък";
+        }
+        return value
+            .map((item) => Array.isArray(item)
+                ? item.map((point) => formatValue(point)).join(", ")
+                : formatValue(item))
+            .join(" | ");
+    }
+    if(typeof value === "object"){
+        return Object.entries(value)
+            .map(([k, v]) => `${formatFieldLabel(k)}: ${formatValue(v)}`)
+            .join(" • ");
+    }
+    return String(value);
+}
+
+function renderAuditData(container, data, compareData = {}, highlightMode = "none"){
+    if(!data || Object.keys(data).length === 0){
+        container.innerHTML = '<div class="audit-empty">Няма данни</div>';
+        return;
+    }
+
+    const rows = Object.entries(data)
+        .map(([key, value]) => {
+            const compareValue = compareData ? compareData[key] : undefined;
+            const hasChanged = JSON.stringify(value) !== JSON.stringify(compareValue);
+            const changeClass = hasChanged ? ` changed-${highlightMode}` : "";
+
+            return `
+            <div class="audit-data-row${changeClass}">
+                <div class="audit-data-key">${formatFieldLabel(key)}</div>
+                <div class="audit-data-value">${formatValue(value)}</div>
+            </div>
+        `;
+        })
+        .join("");
+
+    container.innerHTML = `<div class="audit-data-list">${rows}</div>`;
+}
+
+document.querySelectorAll(".table-row").forEach((rowEl) => {
+    rowEl.addEventListener("click", () => {
+        const rowIndex = Number(rowEl.dataset.rowIndex);
+        const row = auditEntries[rowIndex];
+        if(!row) return;
+
+        auditModalTitle.textContent = `${row.source} #${row.entity_id} – ${row.operation}`;
+        auditModalMeta.textContent = `${row.performed_by} • ${new Date(row.created_at).toLocaleString("bg-BG")}`;
+        const oldData = row.old_data || {};
+        const newData = row.new_data || {};
+
+        renderAuditData(auditOldData, oldData, newData, "old");
+        renderAuditData(auditNewData, newData, oldData, "new");
+        auditModalOverlay.classList.add("active");
+    });
+});
+
+function closeAuditModal(){
+    auditModalOverlay.classList.remove("active");
+}
+
+auditModalClose.addEventListener("click", closeAuditModal);
+auditModalOverlay.addEventListener("click", (e) => {
+    if(e.target === auditModalOverlay){
+        closeAuditModal();
+    }
+});
+
 const tooltip = document.createElement("div");
 tooltip.className = "custom-tooltip";
 document.body.appendChild(tooltip);

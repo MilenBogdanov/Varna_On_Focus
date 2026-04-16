@@ -27,9 +27,6 @@ body{
 }
 
 .top-bar-title {
-    font-size: 26px;
-    font-weight: 700;
-    letter-spacing: 0.5px;
     display: flex;
     align-items: center;
     gap: 20px;
@@ -54,11 +51,11 @@ body{
 }
 
 .brand-text-container span:first-child{
-    font-size:45px;
-    font-weight:800;
-    line-height:1;
+    font-size:26px;
+    font-weight:700;
+    line-height:1.1;
     letter-spacing:0.5px;
-    margin-bottom:-2px;
+    margin-bottom:0;
 }
 
 .sub-title-text{
@@ -115,10 +112,24 @@ body{
 }
 
 .contact-title{
-    font-size:46px;
+    font-size:34px;
     margin:0 0 18px;
     color:#1f3f69;
     font-weight:800;
+}
+
+.filter-actions{
+    display:flex;
+    gap:12px;
+}
+
+.clear-btn{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    text-decoration:none;
+    background:linear-gradient(135deg,#7b8ca8,#5a6a84);
+    box-shadow:0 10px 20px rgba(60,76,100,0.25);
 }
 
 .audit-filters label{
@@ -173,11 +184,12 @@ body{
 
 .table-host{
     width:100%;
-    background:rgba(255,255,255,0.35);
+    background:rgba(255,255,255,0.55);
     border-radius:28px;
-    padding:14px;
+    padding:18px;
     overflow-y:auto;
-    max-height:calc(100vh - 250px);
+    max-height:calc(100vh - 30px);
+    border:1px solid rgba(95,124,164,0.22);
 }
 
 .header-row,
@@ -192,9 +204,9 @@ body{
     position:sticky;
     top:0;
     z-index:2;
-    background:#c6d3e5;
+    background:#bfd1e9;
     border-radius:18px;
-    padding:12px 14px;
+    padding:14px 16px;
     margin-bottom:12px;
 }
 
@@ -204,10 +216,19 @@ body{
 }
 
 .table-row{
-    background:#dde5f1;
+    background:linear-gradient(135deg,#e4ecf7,#d7e3f2);
     border-radius:16px;
-    padding:10px 12px;
+    padding:12px;
     margin-bottom:10px;
+    cursor:pointer;
+    transition:all 0.2s ease;
+    border:1px solid transparent;
+}
+
+.table-row:hover{
+    transform:translateY(-1px);
+    border-color:rgba(38,101,176,0.25);
+    box-shadow:0 10px 24px rgba(33,78,143,0.12);
 }
 
 .cell-pill{
@@ -271,4 +292,173 @@ body{
     .audit-results-shell{
         min-height:500px;
     }
+
+    .audit-modal-grid{
+        grid-template-columns:1fr;
+    }
+}
+
+.audit-modal-overlay{
+    position:fixed;
+    inset:0;
+    background:rgba(10,27,49,0.45);
+    display:none;
+    align-items:center;
+    justify-content:center;
+    z-index:1200;
+    padding:20px;
+}
+
+.audit-modal-overlay.active{
+    display:flex;
+}
+
+.audit-modal{
+    width:min(980px,95vw);
+    max-height:90vh;
+    overflow:auto;
+    border-radius:22px;
+    background:#f7fbff;
+    box-shadow:0 28px 70px rgba(4,18,38,0.35);
+    padding:24px;
+}
+
+.audit-modal-header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+}
+
+.audit-modal-header h3{
+    margin:0;
+    color:#1f3f69;
+}
+
+.audit-modal-close{
+    border:none;
+    width:40px;
+    height:40px;
+    border-radius:12px;
+    cursor:pointer;
+    background:#d8e4f5;
+    color:#21486f;
+    font-size:18px;
+    font-weight:700;
+}
+
+.audit-modal-meta{
+    margin-top:8px;
+    color:#5c6f8f;
+    font-size:14px;
+    font-weight:600;
+}
+
+.audit-modal-grid{
+    margin-top:18px;
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:16px;
+}
+
+.audit-modal-grid h4{
+    margin:0 0 8px;
+    color:#2f507d;
+}
+
+.audit-modal-grid pre{
+    margin:0;
+    background:#eaf0f9;
+    border:1px solid #ccdaee;
+    border-radius:14px;
+    padding:12px;
+    min-height:180px;
+    white-space:pre-wrap;
+    word-break:break-word;
+    font-size:13px;
+    color:#17365f;
+}
+
+.audit-data-list{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+}
+
+/* Всеки ред */
+.audit-data-row{
+    display:grid;
+    grid-template-columns: 180px 1fr;
+    gap:12px;
+    padding:10px 12px;
+    border-radius:12px;
+    background:#ffffff;
+    border:1px solid #d6e2f1;
+    align-items:center;
+    transition:0.2s ease;
+}
+
+/* Label (ляво) */
+.audit-data-key{
+    font-weight:700;
+    font-size:13px;
+    color:#5f7899;
+    text-transform:uppercase;
+    letter-spacing:0.5px;
+}
+
+/* Value (дясно) */
+.audit-data-value{
+    font-size:14px;
+    font-weight:600;
+    color:#1c3557;
+    word-break:break-word;
+}
+
+/* Hover ефект */
+.audit-data-row:hover{
+    background:#f3f7fd;
+    transform:translateX(2px);
+}
+
+/* Няма данни */
+.audit-empty{
+    padding:14px;
+    text-align:center;
+    color:#6c85a6;
+    font-weight:600;
+}
+
+/* =========================
+   🔴🟢 HIGHLIGHT CHANGES
+   ========================= */
+
+/* Стари стойности (червено) */
+.audit-data-row.changed-old{
+    background:rgba(255, 80, 80, 0.08);
+    border-color:rgba(255, 80, 80, 0.25);
+}
+
+.audit-data-row.changed-old .audit-data-value{
+    color:#b42323;
+}
+
+/* Нови стойности (зелено/синьо) */
+.audit-data-row.changed-new{
+    background:rgba(46, 141, 227, 0.10);
+    border-color:rgba(46, 141, 227, 0.35);
+}
+
+.audit-data-row.changed-new .audit-data-value{
+    color:#1a52b0;
+}
+
+/* =========================
+   BONUS: badge стил за стойности
+   ========================= */
+
+.audit-data-value span{
+    background:#e6eef9;
+    padding:4px 8px;
+    border-radius:8px;
 }
