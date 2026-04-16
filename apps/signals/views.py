@@ -1,7 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.utils import timezone
 from django.core.paginator import Paginator
 from django.contrib.auth import logout
 from datetime import datetime, timedelta
@@ -11,7 +10,6 @@ from apps.accounts.decorators import (
     municipal_admin_required,
     admin_or_superadmin_required,
 )
-from apps.core.choices import AuditOperationType
 from apps.audit.models import SignalAudit
 from apps.signals.models import Category
 
@@ -385,18 +383,6 @@ def delete_signal(request, pk):
 
     if request.method == "POST":
 
-        # Audit запис
-        SignalAudit.objects.create(
-            signal_id=signal.id,
-            operation_type=AuditOperationType.DELETE,
-            old_data={
-                "title": signal.title,
-                "status": signal.status
-            },
-            new_data=None,
-            created_at=timezone.now()
-        )
-
         signal.delete()
 
         messages.success(
@@ -554,17 +540,6 @@ def admin_delete_signal(request, pk):
     signal = get_object_or_404(Signal, pk=pk)
 
     if request.method == "POST":
-
-        SignalAudit.objects.create(
-            signal_id=signal.id,
-            operation_type=AuditOperationType.DELETE,
-            old_data={
-                "title": signal.title,
-                "status": signal.status
-            },
-            new_data=None,
-            created_at=timezone.now()
-        )
 
         signal.delete()
 

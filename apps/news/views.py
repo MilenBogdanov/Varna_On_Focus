@@ -2,6 +2,8 @@ import json
 
 from django.shortcuts import render, redirect
 from django.http import JsonResponse
+from django.contrib.auth.decorators import login_required
+
 
 from .forms import NewsCreateForm
 from .models import News, NewsZone, ZonePoint
@@ -11,11 +13,34 @@ from .models import NewsSourceType
 from datetime import datetime
 from django.utils.timezone import now
 from django.shortcuts import get_object_or_404
+from apps.accounts.decorators import admin_or_superadmin_required
+from apps.audit.services import log_news_operation
+from apps.core.choices import AuditOperationType
+
+def _serialize_news_for_audit(news):
+    zone_points = []
+    zone = getattr(news, "zone", None)
+
+    if zone:
+        zone_points = [
+            [float(point.latitude), float(point.longitude)]
+            for point in zone.points.all().order_by("point_order")
+        ]
+
+    return {
+        "title": news.title,
+        "content": news.content,
+        "source_type": news.source_type,
+        "admin_id": news.admin_id,
+        "zone_points": zone_points,
+    }
 
 # ---------------------------------------------------
 # CREATE NEWS
 # ---------------------------------------------------
 
+@login_required
+@admin_or_superadmin_required
 def create_news(request):
 
     if request.method == "POST":
@@ -50,6 +75,13 @@ def create_news(request):
                             longitude=point[1],
                             point_order=index
                         )
+
+            news.refresh_from_db()
+            log_news_operation(
+                news,
+                AuditOperationType.CREATE,
+                new_data=_serialize_news_for_audit(news)
+            )
 
             return redirect("news")
 
@@ -152,6 +184,8 @@ def news_map_api(request):
 # EDIT NEWS
 # ---------------------------------------------------
 
+@login_required
+@admin_or_superadmin_required
 def edit_news(request, news_id):
 
     news = get_object_or_404(
@@ -169,6 +203,7 @@ def edit_news(request, news_id):
 
     if request.method == "POST":
 
+        old_data = _serialize_news_for_audit(news)
         form = NewsCreateForm(request.POST, instance=news)
         polygon = request.POST.get("polygon")
 
@@ -178,6 +213,15 @@ def edit_news(request, news_id):
 
             if not polygon:
                 NewsZone.objects.filter(news=news).delete()
+                news.refresh_from_db()
+                new_data = _serialize_news_for_audit(news)
+                if old_data != new_data:
+                    log_news_operation(
+                        news,
+                        AuditOperationType.UPDATE,
+                        old_data=old_data,
+                        new_data=new_data
+                    )
                 return redirect("news")
 
             try:
@@ -187,6 +231,15 @@ def edit_news(request, news_id):
 
             if len(new_points) == 0:
                 NewsZone.objects.filter(news=news).delete()
+                news.refresh_from_db()
+                new_data = _serialize_news_for_audit(news)
+                if old_data != new_data:
+                    log_news_operation(
+                        news,
+                        AuditOperationType.UPDATE,
+                        old_data=old_data,
+                        new_data=new_data
+                    )
                 return redirect("news")
 
             zone, created = NewsZone.objects.get_or_create(
@@ -202,6 +255,17 @@ def edit_news(request, news_id):
                     latitude=float(point[0]),
                     longitude=float(point[1]),
                     point_order=index
+                )
+
+            news.refresh_from_db()
+            new_data = _serialize_news_for_audit(news)
+
+            if old_data != new_data:
+                log_news_operation(
+                    news,
+                    AuditOperationType.UPDATE,
+                    old_data=old_data,
+                    new_data=new_data
                 )
 
             return redirect("news")
@@ -223,9 +287,19 @@ def edit_news(request, news_id):
 # DELETE NEWS
 # ---------------------------------------------------
 
+@login_required
+@admin_or_superadmin_required
 def delete_news(request, news_id):
 
     news = get_object_or_404(News, id=news_id)
+    old_data = _serialize_news_for_audit(news)
+
+    log_news_operation(
+        news,
+        AuditOperationType.DELETE,
+        old_data=old_data,
+        new_data=None
+    )
 
     news.delete()
 

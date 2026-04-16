@@ -5,6 +5,7 @@ from django.forms.models import model_to_dict
 
 from .models import Signal
 from apps.audit.models import SignalAudit
+from apps.audit.context import get_current_user
 from apps.core.choices import AuditOperationType
 
 
@@ -33,6 +34,7 @@ def create_or_update_signal_audit(sender, instance, created, **kwargs):
             old_data=None,
             new_data=_serialize_signal(instance),
             created_at=instance.created_at,
+            performed_by=get_current_user(),
         )
         return
 
@@ -59,6 +61,7 @@ def create_or_update_signal_audit(sender, instance, created, **kwargs):
             old_data=diff_old,
             new_data=diff_new,
             created_at=instance.updated_at,
+            performed_by=get_current_user(),
         )
 
 
@@ -71,6 +74,7 @@ def delete_signal_audit(sender, instance, **kwargs):
         old_data=_serialize_signal(instance),
         new_data=None,
         created_at=instance.updated_at,
+        performed_by=get_current_user(),
     )
 
 

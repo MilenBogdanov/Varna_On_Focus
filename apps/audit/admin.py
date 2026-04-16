@@ -22,10 +22,12 @@ class SignalAuditAdmin(ReadOnlyAdmin):
     list_display = (
         'signal_id',
         'operation_type',
+        'performed_by',
         'created_at',
     )
-    list_filter = ('operation_type', 'created_at')
-    search_fields = ('signal_id',)
+    list_filter = ('operation_type', 'created_at', 'performed_by')
+    search_fields = ('signal_id', 'performed_by__email', 'performed_by__full_name')
+    readonly_fields = ('signal_id', 'operation_type', 'old_data', 'new_data', 'performed_by', 'created_at')
 
 
 @admin.register(NewsAudit)
@@ -33,7 +35,9 @@ class NewsAuditAdmin(ReadOnlyAdmin):
     list_display = (
         'news_id',
         'operation_type',
+        'performed_by',
         'created_at',
     )
-    list_filter = ('operation_type', 'created_at')
-    search_fields = ('news_id',)
+    list_filter = ('operation_type', 'created_at', 'performed_by')
+    search_fields = ('news_id', 'performed_by__email', 'performed_by__full_name')
+    readonly_fields = ('news_id', 'operation_type', 'old_data', 'new_data', 'performed_by', 'created_at')
