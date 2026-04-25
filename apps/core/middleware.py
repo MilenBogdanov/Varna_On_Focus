@@ -98,10 +98,11 @@ class AutoTranslateWidgetMiddleware:
     max-height: 54px;
     overflow: hidden;
     border-radius: 16px 0 0 16px;
-    border: 1px solid rgba(255, 255, 255, 0.35);
-    background: linear-gradient(165deg, #0f172a 0%, #1e293b 48%, #334155 100%);
+    border: 1px solid rgba(255,255,255,0.4);
+    backdrop-filter: blur(18px);
+    background: linear-gradient(135deg, #1e88e5, #1565c0);
     color: #ffffff;
-    box-shadow: 0 18px 42px rgba(2, 6, 23, 0.42);
+    box-shadow: 0 20px 50px rgba(0,0,0,0.25);
     transition: width .28s ease, max-height .32s ease, box-shadow .25s ease;
     backdrop-filter: blur(5px);
   }}
@@ -183,7 +184,19 @@ class AutoTranslateWidgetMiddleware:
     font-size: 12px;
     font-weight: 700;
     margin-bottom: 8px;
-    color: #e2e8f0;
+    color: rgba(255,255,255,0.9);
+  }}
+  
+  #lang-drawer::before{{
+    content:"";
+    position:absolute;
+    inset:0;
+    background: linear-gradient(
+        to bottom,
+        rgba(255,255,255,0.25),
+        transparent 60%
+    );
+    pointer-events:none;
   }}
 
   #lang-list {{
@@ -205,7 +218,8 @@ class AutoTranslateWidgetMiddleware:
     width: 100%;
     border: 1px solid transparent;
     border-radius: 10px;
-    background: rgba(15, 23, 42, 0.65);
+    background: rgba(255,255,255,0.12);
+    backdrop-filter: blur(10px);
     color: #f8fafc;
     display: flex;
     align-items: center;
@@ -218,14 +232,14 @@ class AutoTranslateWidgetMiddleware:
   }}
 
   .lang-item-btn:hover {{
-    background: rgba(51, 65, 85, 0.9);
-    border-color: rgba(148, 163, 184, 0.5);
+    background: rgba(255,255,255,0.25);
+    border-color: rgba(255,255,255,0.6);
     transform: translateX(-2px);
   }}
 
   .lang-item-btn.active {{
-    background: rgba(34, 197, 94, 0.22);
-    border-color: rgba(74, 222, 128, 0.9);
+    background: rgba(46,125,50,0.25);
+    border-color: rgba(46,125,50,0.8);
   }}
 
   .lang-flag {{
@@ -261,6 +275,7 @@ class AutoTranslateWidgetMiddleware:
   const STORAGE_KEY = "varna_site_lang";
   const sourceLang = "bg";
   const languages = {options_json};
+  let widgetUiInitialized = false;
 
   const flagMap = {{
     bg: "🇧🇬",
@@ -283,6 +298,17 @@ class AutoTranslateWidgetMiddleware:
   function setLanguage(targetLang) {{
     localStorage.setItem(STORAGE_KEY, targetLang);
     setCookie("googtrans", `/${{sourceLang}}/${{targetLang}}`, 365);
+  }}
+  
+  function applySelectedLanguageToGoogleWidget(targetLang) {{
+    const combo = document.querySelector(".goog-te-combo");
+    if (!combo) return false;
+
+    if (combo.value !== targetLang) {{
+      combo.value = targetLang;
+      combo.dispatchEvent(new Event("change"));
+    }}
+    return true;
   }}
 
   function hideGoogleTranslateBanner() {{
@@ -380,23 +406,17 @@ class AutoTranslateWidgetMiddleware:
       }});
     }});
   }}
+  
+  
 
-  const bannerObserver = new MutationObserver(hideGoogleTranslateBanner);
-  bannerObserver.observe(document.documentElement, {{ childList: true, subtree: true }});
-  setInterval(hideGoogleTranslateBanner, 400);
 
-  window.googleTranslateElementInit = function() {{
-    new google.translate.TranslateElement({{
-      pageLanguage: sourceLang,
-      includedLanguages: "{included_languages}",
-      autoDisplay: false
-    }}, "google_translate_element");
-
-    hideGoogleTranslateBanner();
+    function initWidgetUI() {{
+    if (widgetUiInitialized) return;
 
     const widget = document.getElementById("auto-lang-widget");
     const panel = document.getElementById("lang-panel");
     const toggleButton = document.getElementById("lang-drawer-toggle");
+    if (!widget || !panel || !toggleButton) return;
 
     const selected = getStoredLanguage();
     renderLanguageOptions(selected);
@@ -413,6 +433,41 @@ class AutoTranslateWidgetMiddleware:
       }}
     }});
 
+    widgetUiInitialized = true;
+  }}
+
+  function reapplyGoogleTranslation(targetLang, attemptsLeft = 12) {{
+    if (applySelectedLanguageToGoogleWidget(targetLang)) {{
+      return;
+    }}
+
+    if (attemptsLeft <= 0) {{
+      return;
+    }}
+
+    setTimeout(function() {{
+      reapplyGoogleTranslation(targetLang, attemptsLeft - 1);
+    }}, 120);
+  }}
+
+  const bannerObserver = new MutationObserver(hideGoogleTranslateBanner);
+  bannerObserver.observe(document.documentElement, {{ childList: true, subtree: true }});
+  setInterval(hideGoogleTranslateBanner, 400);
+  initWidgetUI();
+
+  window.googleTranslateElementInit = function() {{
+    new google.translate.TranslateElement({{
+      pageLanguage: sourceLang,
+      includedLanguages: "{included_languages}",
+      autoDisplay: false
+    }}, "google_translate_element");
+
+    hideGoogleTranslateBanner();
+    initWidgetUI();
+    const selected = getStoredLanguage();
+    renderLanguageOptions(selected);
+    reapplyGoogleTranslation(selected);
+
     const currentCookie = document.cookie.includes("googtrans=");
     if (!currentCookie) {{
       setLanguage(selected);
@@ -421,6 +476,22 @@ class AutoTranslateWidgetMiddleware:
       }}
     }}
   }};
+
+function reapplyTranslationAfterHistoryNavigation() {{
+    const selected = getStoredLanguage();
+    initWidgetUI();
+    setLanguage(selected);
+    renderLanguageOptions(selected);
+    reapplyGoogleTranslation(selected);
+  }}
+
+  window.addEventListener("pageshow", function() {{
+    setTimeout(reapplyTranslationAfterHistoryNavigation, 0);
+  }});
+
+  window.addEventListener("popstate", function() {{
+    setTimeout(reapplyTranslationAfterHistoryNavigation, 0);
+  }});
 }})();
 </script>
 
