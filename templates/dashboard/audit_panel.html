@@ -108,20 +108,26 @@
         <div class="contact-visual audit-results-shell">
             <div class="contact-info table-host">
                 <div class="info-item header-row">
-                    <strong>Тип</strong>
-                    <strong>ID</strong>
-                    <strong>Операция</strong>
-                    <strong>Потребител</strong>
-                    <strong>Дата</strong>
+                    <button type="button" class="sortable-header" data-sort-key="source">Тип <span class="sort-indicator">↕</span></button>
+                    <button type="button" class="sortable-header" data-sort-key="entity_id">ID <span class="sort-indicator">↕</span></button>
+                    <button type="button" class="sortable-header" data-sort-key="operation">Операция <span class="sort-indicator">↕</span></button>
+                    <button type="button" class="sortable-header" data-sort-key="performed_by">Потребител <span class="sort-indicator">↕</span></button>
+                    <button type="button" class="sortable-header" data-sort-key="created_at">Дата <span class="sort-indicator">↕</span></button>
                 </div>
 
                 {% for row in entries %}
-                    <div class="info-item table-row" data-row-index="{{ forloop.counter0 }}">
-                        <span><span class="cell-pill">{{ row.source }}</span></span>
-                        <span><span class="cell-pill">#{{ row.entity_id }}</span></span>
-                        <span><span class="cell-pill">{{ row.operation }}</span></span>
-                        <span><span class="cell-pill">{{ row.performed_by }}</span></span>
-                        <span><span class="cell-pill">{{ row.created_at|date:"d.m.Y H:i" }}</span></span>
+                    <div class="info-item table-row"
+                         data-row-index="{{ forloop.counter0 }}"
+                         data-source="{{ row.source|lower }}"
+                         data-entity-id="{{ row.entity_id }}"
+                         data-operation="{{ row.operation|lower }}"
+                         data-performed-by="{{ row.performed_by|lower }}"
+                         data-created-at="{{ row.created_at|date:'c' }}">
+                        <span class="table-cell">{{ row.source }}</span>
+                        <span class="table-cell">#{{ row.entity_id }}</span>
+                        <span class="table-cell">{{ row.operation }}</span>
+                        <span class="table-cell">{{ row.performed_by }}</span>
+                        <span class="table-cell">{{ row.created_at|date:"d.m.Y H:i" }}</span>
                     </div>
                 {% empty %}
                     <div class="info-item empty-row">
@@ -168,6 +174,104 @@ const auditModalTitle = document.getElementById("auditModalTitle");
 const auditModalMeta = document.getElementById("auditModalMeta");
 const auditOldData = document.getElementById("auditOldData");
 const auditNewData = document.getElementById("auditNewData");
+const sortableHeaders = Array.from(document.querySelectorAll(".sortable-header"));
+const tableHost = document.querySelector(".table-host");
+const rowElements = Array.from(document.querySelectorAll(".table-row"));
+const defaultOrderMap = new Map(rowElements.map((rowEl, index) => [rowEl, index]));
+const sortState = {
+    key: null,
+    direction: "none"
+};
+
+function parseSortableValue(rowEl, key){
+    if(key === "entity_id"){
+        return Number(rowEl.dataset.entityId || 0);
+    }
+    if(key === "created_at"){
+        return new Date(rowEl.dataset.createdAt || 0).getTime();
+    }
+    if(key === "source"){
+        return (rowEl.dataset.source || "").toLocaleLowerCase("bg-BG");
+    }
+    if(key === "operation"){
+        return (rowEl.dataset.operation || "").toLocaleLowerCase("bg-BG");
+    }
+    if(key === "performed_by"){
+        return (rowEl.dataset.performedBy || "").toLocaleLowerCase("bg-BG");
+    }
+    return "";
+}
+
+function sortRowsBy(key, direction){
+    if(!tableHost || rowElements.length === 0){
+        return;
+    }
+
+    const sortedRows = [...rowElements];
+
+    if(direction === "none"){
+        sortedRows.sort((a, b) => defaultOrderMap.get(a) - defaultOrderMap.get(b));
+    } else {
+        sortedRows.sort((a, b) => {
+            const aValue = parseSortableValue(a, key);
+            const bValue = parseSortableValue(b, key);
+            let compareResult = 0;
+
+            if(typeof aValue === "number" && typeof bValue === "number"){
+                compareResult = aValue - bValue;
+            } else {
+                compareResult = String(aValue).localeCompare(String(bValue), "bg-BG", {
+                    sensitivity: "base",
+                    numeric: true
+                });
+            }
+
+            return direction === "asc" ? compareResult : -compareResult;
+        });
+    }
+
+    sortedRows.forEach((rowEl) => {
+        tableHost.appendChild(rowEl);
+    });
+}
+
+function renderSortIndicators(){
+    sortableHeaders.forEach((btn) => {
+        btn.classList.remove("is-active", "sort-asc", "sort-desc");
+        const indicator = btn.querySelector(".sort-indicator");
+        if(!indicator) return;
+
+        if(btn.dataset.sortKey === sortState.key && sortState.direction !== "none"){
+            btn.classList.add("is-active", sortState.direction === "asc" ? "sort-asc" : "sort-desc");
+            indicator.textContent = sortState.direction === "asc" ? "▲" : "▼";
+        } else {
+            indicator.textContent = "↕";
+        }
+    });
+}
+
+sortableHeaders.forEach((btn) => {
+    btn.addEventListener("click", () => {
+        const key = btn.dataset.sortKey;
+        if(!key) return;
+
+        if(sortState.key !== key){
+            sortState.key = key;
+            sortState.direction = "asc";
+        } else if(sortState.direction === "asc"){
+            sortState.direction = "desc";
+        } else if(sortState.direction === "desc"){
+            sortState.direction = "none";
+            sortState.key = null;
+        } else {
+            sortState.direction = "asc";
+        }
+
+        sortRowsBy(key, sortState.direction);
+        renderSortIndicators();
+    });
+});
+
 
 function formatFieldLabel(key){
     return key
@@ -279,6 +383,9 @@ document.addEventListener("mouseout", function(e){
         tooltip.style.opacity = "0";
     }
 });
+
+renderSortIndicators();
+
 </script>
 
 </body>
