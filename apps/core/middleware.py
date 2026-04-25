@@ -88,6 +88,10 @@ class AutoTranslateWidgetMiddleware:
     z-index: 9999;
     font-family: inherit;
   }}
+  
+  .lang-name {{
+    text-transform: lowercase !important;
+  }}
 
   #lang-drawer {{
     width: 58px;
@@ -284,13 +288,14 @@ class AutoTranslateWidgetMiddleware:
   function hideGoogleTranslateBanner() {{
     document.body.style.top = "0px";
     const selectors = [
-      "iframe.goog-te-banner-frame",
-      ".goog-te-balloon-frame",
-      "#goog-gt-tt",
-      ".goog-tooltip",
-      ".VIpgJd-ZVi9od-ORHb-OEVmcd",
-      ".VIpgJd-ZVi9od-l4eHX-hSRGPd",
-      ".VIpgJd-yAWNEb-L7lbkb"
+    "iframe.goog-te-banner-frame",
+    ".goog-te-balloon-frame",
+    "#goog-gt-tt",
+    ".goog-tooltip",
+    ".VIpgJd-ZVi9od-ORHb-OEVmcd",
+    ".VIpgJd-ZVi9od-l4eHX-hSRGPd",
+    ".VIpgJd-yAWNEb-L7lbkb"
+  ];
 
     selectors.forEach((selector) => {{
       document.querySelectorAll(selector).forEach((node) => {{
@@ -360,7 +365,7 @@ class AutoTranslateWidgetMiddleware:
       flag.textContent = getFlag(lang.code);
 
       name.className = "lang-name";
-      name.textContent = getDisplayName(lang.code, uiLang);
+      name.textContent = getDisplayName(lang.code, uiLang).toLowerCase();
 
       btn.appendChild(flag);
       btn.appendChild(name);
