@@ -84,74 +84,169 @@ class AutoTranslateWidgetMiddleware:
   #auto-lang-widget {{
     position: fixed;
     top: 110px;
-    right: 20px;
+    right: 0;
     z-index: 9999;
+    font-family: inherit;
   }}
 
-  #lang-toggle-btn {{
-    width: 52px;
-    height: 52px;
+  #lang-drawer {{
+    width: 58px;
+    max-height: 54px;
+    overflow: hidden;
+    border-radius: 16px 0 0 16px;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    background: linear-gradient(165deg, #0f172a 0%, #1e293b 48%, #334155 100%);
+    color: #ffffff;
+    box-shadow: 0 18px 42px rgba(2, 6, 23, 0.42);
+    transition: width .28s ease, max-height .32s ease, box-shadow .25s ease;
+    backdrop-filter: blur(5px);
+  }}
+
+  #auto-lang-widget.open #lang-drawer {{
+    width: 260px;
+    max-height: 360px;
+    box-shadow: 0 24px 52px rgba(2, 6, 23, 0.5);
+  }}
+
+  #lang-drawer-toggle {{
+    width: 100%;
+    min-height: 54px;
     border: 0;
-    border-radius: 50%;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, .22);
-    background: #ffffff;
+    background: transparent;
+    color: inherit;
     cursor: pointer;
     display: flex;
     align-items: center;
-    justify-content: center;
-    padding: 0;
+    gap: 8px;
+    padding: 0 14px;
+    text-align: left;
   }}
 
-  #lang-toggle-btn:hover {{
-    transform: scale(1.04);
+  #lang-drawer-toggle:hover {{
+    background: rgba(148, 163, 184, 0.14);
   }}
 
-  #lang-toggle-btn img {{
-    width: 28px;
-    height: 28px;
+  #lang-arrow {{
+    font-size: 14px;
+    opacity: .95;
+    transform: translateX(0) rotate(0deg);
+    transition: transform .3s ease;
+  }}
+
+  #auto-lang-widget.open #lang-arrow {{
+    transform: translateX(2px) rotate(180deg);
+  }}
+
+  #lang-toggle-logo {{
+    width: 22px;
+    height: 22px;
+    object-fit: contain;
+    border-radius: 50%;
+    background: #fff;
+    padding: 2px;
+  }}
+
+  #lang-toggle-text {{
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: .01em;
+    opacity: 0;
+    transform: translateX(4px);
+    transition: opacity .2s ease, transform .24s ease;
+    white-space: nowrap;
+  }}
+
+  #auto-lang-widget.open #lang-toggle-text {{
+    opacity: 1;
+    transform: translateX(0);
   }}
 
   #lang-panel {{
-    margin-top: 10px;
-    background: #ffffff;
-    border-radius: 12px;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, .18);
-    padding: 10px;
-    min-width: 210px;
-    display: none;
+    border-top: 1px solid rgba(148, 163, 184, 0.26);
+    padding: 10px 10px 12px;
+    opacity: 0;
+    transform: translateY(-8px);
+    transition: opacity .22s ease, transform .22s ease;
   }}
 
   #auto-lang-widget.open #lang-panel {{
-    display: block;
+    opacity: 1;
+    transform: translateY(0);
   }}
 
   #lang-label {{
     display: block;
     font-size: 12px;
     font-weight: 700;
-    margin-bottom: 6px;
-    color: #1f2937;
+    margin-bottom: 8px;
+    color: #e2e8f0;
   }}
 
-  #lang-select {{
+  #lang-list {{
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 6px;
+    max-height: 255px;
+    overflow-y: auto;
+  }}
+
+  #lang-list li {{
+    margin: 0;
+    padding: 0;
+  }}
+
+  .lang-item-btn {{
     width: 100%;
-    padding: 7px;
-    border: 1px solid #d1d5db;
-    border-radius: 8px;
+    border: 1px solid transparent;
+    border-radius: 10px;
+    background: rgba(15, 23, 42, 0.65);
+    color: #f8fafc;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    cursor: pointer;
     font-size: 14px;
-    color: #111827;
-    background: #fff;
+    line-height: 1.2;
+    transition: background .2s ease, border-color .2s ease, transform .18s ease;
+  }}
+
+  .lang-item-btn:hover {{
+    background: rgba(51, 65, 85, 0.9);
+    border-color: rgba(148, 163, 184, 0.5);
+    transform: translateX(-2px);
+  }}
+
+  .lang-item-btn.active {{
+    background: rgba(34, 197, 94, 0.22);
+    border-color: rgba(74, 222, 128, 0.9);
+  }}
+
+  .lang-flag {{
+    font-size: 17px;
+    width: 24px;
+    text-align: center;
+  }}
+
+  .lang-name {{
+    font-weight: 600;
   }}
 </style>
 
 <div id="auto-lang-widget" aria-label="Language switcher">
-  <button id="lang-toggle-btn" type="button" aria-label="Translate" title="Translate">
-    <img src="/media/buttons/Google_Translate_Icon.png" alt="Translate">
-  </button>
+  <div id="lang-drawer">
+    <button id="lang-drawer-toggle" type="button" aria-label="Translate" title="Translate">
+      <span id="lang-arrow">❯</span>
+      <img id="lang-toggle-logo" src="/media/buttons/Google_Translate_Icon.png" alt="Translate">
+      <span id="lang-toggle-text">Превод</span>
+    </button>
 
-  <div id="lang-panel">
-    <label id="lang-label" for="lang-select">Language</label>
-    <select id="lang-select"></select>
+    <div id="lang-panel" aria-hidden="true">
+      <label id="lang-label" for="lang-list">Language</label>
+      <ul id="lang-list"></ul>
+    </div>
   </div>
 </div>
 
@@ -162,6 +257,14 @@ class AutoTranslateWidgetMiddleware:
   const STORAGE_KEY = "varna_site_lang";
   const sourceLang = "bg";
   const languages = {options_json};
+
+  const flagMap = {{
+    bg: "🇧🇬",
+    en: "🇬🇧",
+    ru: "🇷🇺",
+    tr: "🇹🇷",
+    de: "🇩🇪"
+  }};
 
   function setCookie(name, value, days) {{
     const d = new Date();
@@ -188,7 +291,6 @@ class AutoTranslateWidgetMiddleware:
       ".VIpgJd-ZVi9od-ORHb-OEVmcd",
       ".VIpgJd-ZVi9od-l4eHX-hSRGPd",
       ".VIpgJd-yAWNEb-L7lbkb"
-    ];
 
     selectors.forEach((selector) => {{
       document.querySelectorAll(selector).forEach((node) => {{
@@ -214,32 +316,64 @@ class AutoTranslateWidgetMiddleware:
 
   function getLanguageLabel(uiLang) {{
     const labelMap = {{
-      bg: "Език",
-      en: "Language",
-      ru: "Язык",
-      tr: "Dil",
-      de: "Sprache"
+      bg: "Избери език",
+      en: "Choose language",
+      ru: "Выберите язык",
+      tr: "Dil seç",
+      de: "Sprache wählen"
     }};
 
-    return labelMap[uiLang] || "Language";
+    return labelMap[uiLang] || "Choose language";
+  }}
+
+  function getFlag(code) {{
+    return flagMap[code] || "🌐";
   }}
 
   function renderLanguageOptions(currentLang) {{
-    const select = document.getElementById("lang-select");
+    const list = document.getElementById("lang-list");
     const label = document.getElementById("lang-label");
-    if (!select) return;
+    if (!list || !label) return;
 
     const uiLang = currentLang || sourceLang;
     const sorted = languages.slice().sort((a, b) =>
       getDisplayName(a.code, uiLang).localeCompare(getDisplayName(b.code, uiLang), uiLang)
     );
 
-    select.innerHTML = sorted
-      .map((lang) => `<option value="${{lang.code}}">${{getDisplayName(lang.code, uiLang)}}</option>`)
-      .join("");
-
-    select.value = uiLang;
     label.textContent = getLanguageLabel(uiLang);
+    list.innerHTML = "";
+
+    sorted.forEach((lang) => {{
+      const li = document.createElement("li");
+      const btn = document.createElement("button");
+      const flag = document.createElement("span");
+      const name = document.createElement("span");
+
+      btn.type = "button";
+      btn.className = "lang-item-btn";
+      if (lang.code === uiLang) {{
+        btn.classList.add("active");
+      }}
+      btn.dataset.lang = lang.code;
+
+      flag.className = "lang-flag";
+      flag.textContent = getFlag(lang.code);
+
+      name.className = "lang-name";
+      name.textContent = getDisplayName(lang.code, uiLang);
+
+      btn.appendChild(flag);
+      btn.appendChild(name);
+      li.appendChild(btn);
+      list.appendChild(li);
+
+      btn.addEventListener("click", function() {{
+        const langCode = btn.dataset.lang;
+        setLanguage(langCode);
+        renderLanguageOptions(langCode);
+        window.location.reload();
+      }});
+    }});
   }}
 
   const bannerObserver = new MutationObserver(hideGoogleTranslateBanner);
@@ -256,20 +390,22 @@ class AutoTranslateWidgetMiddleware:
     hideGoogleTranslateBanner();
 
     const widget = document.getElementById("auto-lang-widget");
-    const toggleButton = document.getElementById("lang-toggle-btn");
-    const langSelect = document.getElementById("lang-select");
+    const panel = document.getElementById("lang-panel");
+    const toggleButton = document.getElementById("lang-drawer-toggle");
 
     const selected = getStoredLanguage();
     renderLanguageOptions(selected);
 
     toggleButton.addEventListener("click", function() {{
-      widget.classList.toggle("open");
+      const isOpen = widget.classList.toggle("open");
+      panel.setAttribute("aria-hidden", isOpen ? "false" : "true");
     }});
 
-    langSelect.addEventListener("change", function() {{
-      setLanguage(langSelect.value);
-      renderLanguageOptions(langSelect.value);
-      window.location.reload();
+    document.addEventListener("click", function(event) {{
+      if (!widget.contains(event.target)) {{
+        widget.classList.remove("open");
+        panel.setAttribute("aria-hidden", "true");
+      }}
     }});
 
     const currentCookie = document.cookie.includes("googtrans=");
