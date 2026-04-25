@@ -88,7 +88,7 @@ class AutoTranslateWidgetMiddleware:
     z-index: 9999;
     font-family: inherit;
   }}
-  
+
   .lang-name {{
     text-transform: lowercase !important;
   }}
@@ -186,7 +186,7 @@ class AutoTranslateWidgetMiddleware:
     margin-bottom: 8px;
     color: rgba(255,255,255,0.9);
   }}
-  
+
   #lang-drawer::before{{
     content:"";
     position:absolute;
@@ -274,6 +274,37 @@ class AutoTranslateWidgetMiddleware:
 (function() {{
   const STORAGE_KEY = "varna_site_lang";
   const sourceLang = "bg";
+  // CLEAR OLD COOKIE FIRST
+  document.cookie = "googtrans=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;";
+  document.cookie = "googtrans=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;domain=" + window.location.hostname + ";";
+
+  function normalizeLanguage(code) {{
+    const allowed = ["bg","en","ru","tr","de"];
+    return allowed.includes(code) ? code : sourceLang;
+  }}
+
+  function setCookie(name, value) {{
+    const hostname = window.location.hostname;
+    const parts = hostname.split(".");
+    const parentDomain = parts.length >= 2 ? `.${{parts.slice(-2).join(".")}}` : "";
+
+    document.cookie = `${{name}}=${{value}};path=/;SameSite=Lax`;
+    if (parentDomain) {{
+      document.cookie = `${{name}}=${{value}};path=/;domain=${{parentDomain}};SameSite=Lax`;
+    }}
+  }}
+
+  const stored = sourceLang;
+  localStorage.setItem(STORAGE_KEY, sourceLang);
+
+  setCookie("googtrans", `/${{sourceLang}}/${{stored}}`);
+}})();
+</script>
+
+<script>
+(function() {{
+  const STORAGE_KEY = "varna_site_lang";
+  const sourceLang = "bg";
   const languages = {options_json};
   let widgetUiInitialized = false;
 
@@ -285,21 +316,74 @@ class AutoTranslateWidgetMiddleware:
     de: "🇩🇪"
   }};
 
-  function setCookie(name, value, days) {{
+  let hasForcedNavigationReload = false;
+
+  function setCookie(name, value, days, domain = "") {{
     const d = new Date();
     d.setTime(d.getTime() + (days * 24 * 60 * 60 * 1000));
-    document.cookie = `${{name}}=${{value}};expires=${{d.toUTCString()}};path=/`;
+    const domainPart = domain ? `;domain=${{domain}}` : "";
+    document.cookie = `${{name}}=${{value}};expires=${{d.toUTCString()}};path=/;SameSite=Lax${{domainPart}}`;
+  }}
+
+  function getCookieDomainCandidates() {{
+    const hostname = window.location.hostname;
+    const looksLikeIpv4 = /^\\d+\\.\\d+\\.\\d+\\.\\d+$/.test(hostname);
+
+    if (!hostname || hostname === "localhost" || looksLikeIpv4) {{
+      return [""];
+    }}
+
+    const parts = hostname.split(".");
+    const parentDomain = parts.length >= 2 ? `.${{parts.slice(-2).join(".")}}` : "";
+
+    return Array.from(new Set(["", hostname, `.${{hostname}}`, parentDomain].filter(Boolean)));
+  }}
+
+  function setGoogTransCookie(value) {{
+    const cookieDomains = getCookieDomainCandidates();
+    cookieDomains.forEach((domain) => {{
+      setCookie("googtrans", value, 365, domain);
+    }});
+  }}
+
+  function normalizeLanguage(code) {{
+    const requested = (code || "").toLowerCase();
+    const hasLanguage = languages.some((lang) => lang.code === requested);
+    return hasLanguage ? requested : sourceLang;
   }}
 
   function getStoredLanguage() {{
-    return localStorage.getItem(STORAGE_KEY) || sourceLang;
+    const saved = localStorage.getItem(STORAGE_KEY);
+    return saved ? normalizeLanguage(saved) : sourceLang;
+  }}
+
+  function getCookieValue(name) {{
+    const key = `${{name}}=`;
+    const found = document.cookie
+      .split(";")
+      .map((part) => part.trim())
+      .find((part) => part.startsWith(key));
+    return found ? found.slice(key.length) : "";
   }}
 
   function setLanguage(targetLang) {{
-    localStorage.setItem(STORAGE_KEY, targetLang);
-    setCookie("googtrans", `/${{sourceLang}}/${{targetLang}}`, 365);
+    const normalized = normalizeLanguage(targetLang);
+    localStorage.setItem(STORAGE_KEY, normalized);
+    setGoogTransCookie(`/${{sourceLang}}/${{normalized}}`);
   }}
-  
+
+  function syncLanguageState() {{
+    const selected = getStoredLanguage();
+    const expectedCookieValue = `/${{sourceLang}}/${{selected}}`;
+    const currentCookieValue = getCookieValue("googtrans");
+
+    if (currentCookieValue !== expectedCookieValue) {{
+      setLanguage(selected);
+    }}
+
+    return selected;
+  }}
+
   function applySelectedLanguageToGoogleWidget(targetLang) {{
     const combo = document.querySelector(".goog-te-combo");
     if (!combo) return false;
@@ -402,13 +486,10 @@ class AutoTranslateWidgetMiddleware:
         const langCode = btn.dataset.lang;
         setLanguage(langCode);
         renderLanguageOptions(langCode);
-        window.location.reload();
+        applySelectedLanguageToGoogleWidget(langCode); // това вместо reload
       }});
     }});
   }}
-  
-  
-
 
     function initWidgetUI() {{
     if (widgetUiInitialized) return;
@@ -436,7 +517,7 @@ class AutoTranslateWidgetMiddleware:
     widgetUiInitialized = true;
   }}
 
-  function reapplyGoogleTranslation(targetLang, attemptsLeft = 12) {{
+  function reapplyGoogleTranslation(targetLang, attemptsLeft = 30) {{
     if (applySelectedLanguageToGoogleWidget(targetLang)) {{
       return;
     }}
@@ -447,12 +528,63 @@ class AutoTranslateWidgetMiddleware:
 
     setTimeout(function() {{
       reapplyGoogleTranslation(targetLang, attemptsLeft - 1);
-    }}, 120);
+    }}, 150);
   }}
 
-  const bannerObserver = new MutationObserver(hideGoogleTranslateBanner);
-  bannerObserver.observe(document.documentElement, {{ childList: true, subtree: true }});
+  function ensureLanguageApplied(targetLang, allowReloadFallback = false) {{
+    const normalized = normalizeLanguage(targetLang);
+
+    syncLanguageState();
+    renderLanguageOptions(normalized);
+    reapplyGoogleTranslation(normalized);
+
+    if (!allowReloadFallback || normalized === sourceLang || hasForcedNavigationReload) {{
+      return;
+    }}
+
+    setTimeout(function() {{
+      const stillNotApplied = !applySelectedLanguageToGoogleWidget(normalized);
+      if (stillNotApplied) {{
+          hasForcedNavigationReload = true;
+          window.location.reload();
+      }}
+    }}, 2600);
+  }}
+
+  function forceLanguageImmediately() {{
+      const target = localStorage.getItem("varna_site_lang") || "bg";
+
+      function tryApply() {{
+        const combo = document.querySelector(".goog-te-combo");
+
+        if (combo) {{
+          combo.value = target;
+          combo.dispatchEvent(new Event("change"));
+          return true;
+        }}
+        return false;
+      }}
+
+      let attempts = 0;
+
+      const interval = setInterval(function() {{
+        if (tryApply() || attempts > 20) {{
+          clearInterval(interval);
+        }}
+        attempts++;
+      }}, 100);
+    }}
+
+  window.addEventListener("DOMContentLoaded", function() {{
+      const target = document.documentElement;
+
+      if (target) {{
+        const bannerObserver = new MutationObserver(hideGoogleTranslateBanner);
+        bannerObserver.observe(target, {{ childList: true, subtree: true }});
+      }}
+    }});
   setInterval(hideGoogleTranslateBanner, 400);
+  syncLanguageState();
   initWidgetUI();
 
   window.googleTranslateElementInit = function() {{
@@ -464,25 +596,15 @@ class AutoTranslateWidgetMiddleware:
 
     hideGoogleTranslateBanner();
     initWidgetUI();
-    const selected = getStoredLanguage();
-    renderLanguageOptions(selected);
-    reapplyGoogleTranslation(selected);
-
-    const currentCookie = document.cookie.includes("googtrans=");
-    if (!currentCookie) {{
-      setLanguage(selected);
-      if (selected !== sourceLang) {{
-        window.location.reload();
-      }}
-    }}
+    const selected = syncLanguageState();
+    forceLanguageImmediately();
+    ensureLanguageApplied(selected, false);
   }};
 
 function reapplyTranslationAfterHistoryNavigation() {{
-    const selected = getStoredLanguage();
+    const selected = syncLanguageState();
     initWidgetUI();
-    setLanguage(selected);
-    renderLanguageOptions(selected);
-    reapplyGoogleTranslation(selected);
+    ensureLanguageApplied(selected, true);
   }}
 
   window.addEventListener("pageshow", function() {{
