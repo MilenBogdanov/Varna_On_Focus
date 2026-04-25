@@ -51,9 +51,9 @@ class AutoTranslateWidgetMiddleware:
             ],
         )
 
-        option_tags = "\n".join(
-            f'<option value="{code}">{label}</option>' for code, label in languages
-        )
+        language_codes = [code for code, _ in languages]
+        included_languages = ",".join(language_codes)
+        options_json = repr([{"code": code, "label": label} for code, label in languages])
 
         return f"""
 <style>
@@ -62,26 +62,106 @@ class AutoTranslateWidgetMiddleware:
   .goog-te-balloon-frame,
   #goog-gt-tt,
   .goog-tooltip,
-  .goog-tooltip:hover {{
+  .goog-tooltip:hover,
+  .goog-te-spinner-pos,
+  .skiptranslate iframe,
+  .VIpgJd-ZVi9od-ORHb-OEVmcd,
+  .VIpgJd-ZVi9od-l4eHX-hSRGPd,
+  .VIpgJd-yAWNEb-L7lbkb,
+  #goog-gt-vt,
+  #goog-gt-tt,
+  .goog-text-highlight {{
     display: none !important;
     visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
   }}
 
   body {{
     top: 0 !important;
   }}
+
+  #auto-lang-widget {{
+    position: fixed;
+    top: 110px;
+    right: 20px;
+    z-index: 9999;
+  }}
+
+  #lang-toggle-btn {{
+    width: 52px;
+    height: 52px;
+    border: 0;
+    border-radius: 50%;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, .22);
+    background: #ffffff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+  }}
+
+  #lang-toggle-btn:hover {{
+    transform: scale(1.04);
+  }}
+
+  #lang-toggle-btn img {{
+    width: 28px;
+    height: 28px;
+  }}
+
+  #lang-panel {{
+    margin-top: 10px;
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, .18);
+    padding: 10px;
+    min-width: 210px;
+    display: none;
+  }}
+
+  #auto-lang-widget.open #lang-panel {{
+    display: block;
+  }}
+
+  #lang-label {{
+    display: block;
+    font-size: 12px;
+    font-weight: 700;
+    margin-bottom: 6px;
+    color: #1f2937;
+  }}
+
+  #lang-select {{
+    width: 100%;
+    padding: 7px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 14px;
+    color: #111827;
+    background: #fff;
+  }}
 </style>
-<div id="auto-lang-switcher" style="position:fixed;right:16px;bottom:16px;z-index:99999;background:#fff;padding:10px 12px;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.15);font-family:Arial,sans-serif;">
-  <label for="lang-select" style="display:block;font-size:12px;font-weight:700;margin-bottom:6px;color:#1f2937;">Language</label>
-  <select id="lang-select" style="min-width:140px;padding:6px;border:1px solid #d1d5db;border-radius:8px;">
-    {option_tags}
-  </select>
+
+<div id="auto-lang-widget" aria-label="Language switcher">
+  <button id="lang-toggle-btn" type="button" aria-label="Translate" title="Translate">
+    <img src="/media/buttons/Google_Translate_Icon.png" alt="Translate">
+  </button>
+
+  <div id="lang-panel">
+    <label id="lang-label" for="lang-select">Language</label>
+    <select id="lang-select"></select>
+  </div>
 </div>
+
 <div id="google_translate_element" style="display:none;"></div>
+
 <script>
 (function() {{
   const STORAGE_KEY = "varna_site_lang";
   const sourceLang = "bg";
+  const languages = {options_json};
 
   function setCookie(name, value, days) {{
     const d = new Date();
@@ -100,37 +180,95 @@ class AutoTranslateWidgetMiddleware:
 
   function hideGoogleTranslateBanner() {{
     document.body.style.top = "0px";
-    const bannerFrame = document.querySelector("iframe.goog-te-banner-frame");
-    if (bannerFrame) {{
-      bannerFrame.style.display = "none";
-      bannerFrame.style.visibility = "hidden";
-    }}
-    const tooltip = document.getElementById("goog-gt-tt");
-    if (tooltip) {{
-      tooltip.style.display = "none";
-      tooltip.style.visibility = "hidden";
-    }}
+    const selectors = [
+      "iframe.goog-te-banner-frame",
+      ".goog-te-balloon-frame",
+      "#goog-gt-tt",
+      ".goog-tooltip",
+      ".VIpgJd-ZVi9od-ORHb-OEVmcd",
+      ".VIpgJd-ZVi9od-l4eHX-hSRGPd",
+      ".VIpgJd-yAWNEb-L7lbkb"
+    ];
+
+    selectors.forEach((selector) => {{
+      document.querySelectorAll(selector).forEach((node) => {{
+        node.style.display = "none";
+        node.style.visibility = "hidden";
+        node.style.opacity = "0";
+        node.style.pointerEvents = "none";
+      }});
+    }});
+  }}
+
+  function getDisplayName(code, uiLang) {{
+    try {{
+      if (typeof Intl !== "undefined" && Intl.DisplayNames) {{
+        const dn = new Intl.DisplayNames([uiLang], {{ type: "language" }});
+        return dn.of(code) || code;
+      }}
+    }} catch (e) {{}}
+
+    const fallback = languages.find((lang) => lang.code === code);
+    return fallback ? fallback.label : code;
+  }}
+
+  function getLanguageLabel(uiLang) {{
+    const labelMap = {{
+      bg: "Език",
+      en: "Language",
+      ru: "Язык",
+      tr: "Dil",
+      de: "Sprache"
+    }};
+
+    return labelMap[uiLang] || "Language";
+  }}
+
+  function renderLanguageOptions(currentLang) {{
+    const select = document.getElementById("lang-select");
+    const label = document.getElementById("lang-label");
+    if (!select) return;
+
+    const uiLang = currentLang || sourceLang;
+    const sorted = languages.slice().sort((a, b) =>
+      getDisplayName(a.code, uiLang).localeCompare(getDisplayName(b.code, uiLang), uiLang)
+    );
+
+    select.innerHTML = sorted
+      .map((lang) => `<option value="${{lang.code}}">${{getDisplayName(lang.code, uiLang)}}</option>`)
+      .join("");
+
+    select.value = uiLang;
+    label.textContent = getLanguageLabel(uiLang);
   }}
 
   const bannerObserver = new MutationObserver(hideGoogleTranslateBanner);
   bannerObserver.observe(document.documentElement, {{ childList: true, subtree: true }});
-  setInterval(hideGoogleTranslateBanner, 500);
+  setInterval(hideGoogleTranslateBanner, 400);
 
   window.googleTranslateElementInit = function() {{
     new google.translate.TranslateElement({{
       pageLanguage: sourceLang,
-      includedLanguages: "bg,en,ru,tr,de",
+      includedLanguages: "{included_languages}",
       autoDisplay: false
     }}, "google_translate_element");
 
     hideGoogleTranslateBanner();
 
+    const widget = document.getElementById("auto-lang-widget");
+    const toggleButton = document.getElementById("lang-toggle-btn");
     const langSelect = document.getElementById("lang-select");
+
     const selected = getStoredLanguage();
-    langSelect.value = selected;
+    renderLanguageOptions(selected);
+
+    toggleButton.addEventListener("click", function() {{
+      widget.classList.toggle("open");
+    }});
 
     langSelect.addEventListener("change", function() {{
       setLanguage(langSelect.value);
+      renderLanguageOptions(langSelect.value);
       window.location.reload();
     }});
 
@@ -144,5 +282,6 @@ class AutoTranslateWidgetMiddleware:
   }};
 }})();
 </script>
+
 <script src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 """
