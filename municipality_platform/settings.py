@@ -57,6 +57,7 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
+    'apps.core.middleware.AutoTranslateWidgetMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'apps.audit.middleware.CurrentUserAuditMiddleware',
@@ -126,6 +127,14 @@ AUTH_PASSWORD_VALIDATORS = [
 # INTERNATIONALIZATION
 # --------------------------------------------------
 LANGUAGE_CODE = 'bg'
+LANGUAGES = [
+    ('bg', 'Bulgarian'),
+    ('en', 'English'),
+    ('ru', 'Russian'),
+    ('tr', 'Turkish'),
+    ('de', 'German'),
+]
+SUPPORTED_SITE_LANGUAGES = LANGUAGES
 TIME_ZONE = 'Europe/Sofia'
 USE_I18N = True
 USE_TZ = True
