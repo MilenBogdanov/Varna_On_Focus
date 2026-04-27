@@ -51,9 +51,10 @@ class AutoTranslateWidgetMiddleware:
             ],
         )
 
+        import json
         language_codes = [code for code, _ in languages]
         included_languages = ",".join(language_codes)
-        options_json = repr([{"code": code, "label": label} for code, label in languages])
+        options_json = json.dumps([{"code": code, "label": label} for code, label in languages], ensure_ascii=False)
 
         return f"""
 <style>
@@ -64,13 +65,18 @@ class AutoTranslateWidgetMiddleware:
   .goog-tooltip,
   .goog-tooltip:hover,
   .goog-te-spinner-pos,
+  .goog-te-spinner,
+  .goog-spinner-pos,
   .skiptranslate iframe,
   .VIpgJd-ZVi9od-ORHb-OEVmcd,
   .VIpgJd-ZVi9od-l4eHX-hSRGPd,
   .VIpgJd-yAWNEb-L7lbkb,
+  .VIpgJd-ZVi9od-aZ2wEe,
+  .VIpgJd-ZVi9od-aZ2wEe-OiiCO,
   #goog-gt-vt,
   #goog-gt-tt,
-  .goog-text-highlight {{
+  .goog-text-highlight,
+  #goog-wt-spinner {{
     display: none !important;
     visibility: hidden !important;
     opacity: 0 !important;
@@ -273,9 +279,10 @@ class AutoTranslateWidgetMiddleware:
 <script>
 (function() {{
   const STORAGE_KEY = "varna_site_lang_session";
+  // КЛЮЧОВА ПРОМЯНА: Флаг дали това е първото посещение в тази сесия
+  const INIT_KEY = "varna_site_lang_initialized";
   const sourceLang = "bg";
   const languages = {options_json};
-  const forceBulgarianForGuest = {str(not request.user.is_authenticated).lower()};
   let widgetUiInitialized = false;
 
   const flagMap = {{
@@ -348,14 +355,22 @@ class AutoTranslateWidgetMiddleware:
     return normalized;
   }}
 
+  // КЛЮЧОВА ПРОМЯНА: При първото отваряне на сесията ВИНАГИ форсираме BG.
+  // При навигация между страници (INIT_KEY вече е set) запазваме избора на потребителя.
   function initializeLanguage() {{
-    if (forceBulgarianForGuest) {{
+    const isFirstLoad = !sessionStorage.getItem(INIT_KEY);
+
+    if (isFirstLoad) {{
+      // Първо отваряне на платформата в тази сесия → винаги BG
+      sessionStorage.setItem(INIT_KEY, "1");
+      clearGoogTransCookieAcrossDomains();
       return setStoredLanguage(sourceLang);
     }}
 
-    const alreadyStored = sessionStorage.getItem(STORAGE_KEY);
-    const initialLang = alreadyStored ? normalizeLanguage(alreadyStored) : sourceLang;
-    return setStoredLanguage(initialLang);
+    // Навигация между страници → запазваме текущо избрания език
+    const stored = getStoredLanguage();
+    setGoogTransCookie(stored);
+    return stored;
   }}
 
   function hideGoogleTranslateBanner() {{
@@ -367,7 +382,13 @@ class AutoTranslateWidgetMiddleware:
       ".goog-tooltip",
       ".VIpgJd-ZVi9od-ORHb-OEVmcd",
       ".VIpgJd-ZVi9od-l4eHX-hSRGPd",
-      ".VIpgJd-yAWNEb-L7lbkb"
+      ".VIpgJd-yAWNEb-L7lbkb",
+      ".goog-te-spinner-pos",
+      ".goog-te-spinner",
+      ".goog-spinner-pos",
+      ".VIpgJd-ZVi9od-aZ2wEe",
+      ".VIpgJd-ZVi9od-aZ2wEe-OiiCO",
+      "#goog-wt-spinner"
     ];
 
     selectors.forEach((selector) => {{
@@ -525,25 +546,40 @@ class AutoTranslateWidgetMiddleware:
     }}, "google_translate_element");
 
     hideGoogleTranslateBanner();
-    const selected = initializeLanguage();
+
+    // КЛЮЧОВА ПРОМЯНА: При инициализация на Google Translate widget-а
+    // взимаме текущо избрания език от storage (не reset-ваме).
+    const selected = getStoredLanguage();
     initWidgetUI();
     renderLanguageOptions(selected);
-    reapplyGoogleTranslation(selected, 30, true);
+
+    if (selected === sourceLang) {{
+      // За BG — изчистваме всичко и не правим translate
+      clearGoogTransCookieAcrossDomains();
+    }} else {{
+      reapplyGoogleTranslation(selected, 40, true);
+    }}
   }};
 
+  // КЛЮЧОВА ПРОМЯНА: pageshow и popstate само reapply-ват текущия избор,
+  // без да reset-ват към BG и без да извикват initializeLanguage() повторно.
   function reapplyTranslationAfterNavigation() {{
-    const selected = initializeLanguage();
-    initWidgetUI();
+    const selected = getStoredLanguage();
     renderLanguageOptions(selected);
-    reapplyGoogleTranslation(selected, 30, true);
+    if (selected !== sourceLang) {{
+      reapplyGoogleTranslation(selected, 30, true);
+    }}
   }}
 
-  window.addEventListener("pageshow", function() {{
-    setTimeout(reapplyTranslationAfterNavigation, 0);
+  window.addEventListener("pageshow", function(e) {{
+    // persisted = true означава страницата е заредена от bfcache
+    if (e.persisted) {{
+      setTimeout(reapplyTranslationAfterNavigation, 100);
+    }}
   }});
 
   window.addEventListener("popstate", function() {{
-    setTimeout(reapplyTranslationAfterNavigation, 0);
+    setTimeout(reapplyTranslationAfterNavigation, 100);
   }});
 }})();
 </script>
