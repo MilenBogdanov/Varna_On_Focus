@@ -87,6 +87,92 @@ class AutoTranslateWidgetMiddleware:
     top: 0 !important;
   }}
 
+  body.gt-loading {{
+    opacity: 0 !important;
+    pointer-events: none !important;
+  }}
+
+  body.gt-ready {{
+    opacity: 1;
+    transition: opacity 0.3s ease;
+  }}
+
+  #gt-loading-overlay {{
+    position: fixed;
+    inset: 0;
+    z-index: 99999;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    background: linear-gradient(160deg, #0d2b6b 0%, #1565c0 60%, #1e88e5 100%);
+    opacity: 1;
+    transition: opacity 0.35s ease;
+  }}
+
+  #gt-loading-overlay.gt-overlay-hide {{
+    opacity: 0;
+    pointer-events: none;
+  }}
+
+  .gt-spinner-ring {{
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    border: 5px solid rgba(255,255,255,0.15);
+    border-top-color: #ffffff;
+    border-right-color: rgba(255,255,255,0.6);
+    animation: gt-spin 0.9s cubic-bezier(0.55,0.15,0.45,0.85) infinite;
+    box-shadow: 0 0 28px rgba(255,255,255,0.15);
+  }}
+
+  @keyframes gt-spin {{
+    to {{ transform: rotate(360deg); }}
+  }}
+
+  .gt-loading-logo {{
+    width: 54px;
+    height: 54px;
+    position: absolute;
+    border-radius: 50%;
+    object-fit: contain;
+    padding: 6px;
+    background: rgba(255,255,255,0.12);
+    backdrop-filter: blur(4px);
+  }}
+
+  .gt-spinner-wrap {{
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 72px;
+    height: 72px;
+  }}
+
+  .gt-loading-text {{
+    font-family: inherit, system-ui, sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.9);
+    letter-spacing: 0.04em;
+    text-shadow: 0 1px 8px rgba(0,0,0,0.25);
+  }}
+
+  .gt-loading-dots span {{
+    animation: gt-blink 1.2s infinite;
+    opacity: 0;
+  }}
+  .gt-loading-dots span:nth-child(1) {{ animation-delay: 0s; }}
+  .gt-loading-dots span:nth-child(2) {{ animation-delay: 0.2s; }}
+  .gt-loading-dots span:nth-child(3) {{ animation-delay: 0.4s; }}
+
+  @keyframes gt-blink {{
+    0%, 80%, 100% {{ opacity: 0; }}
+    40% {{ opacity: 1; }}
+  }}
+
   #auto-lang-widget {{
     position: fixed;
     top: 110px;
@@ -275,6 +361,16 @@ class AutoTranslateWidgetMiddleware:
 </div>
 
 <div id="google_translate_element" style="display:none;"></div>
+
+<div id="gt-loading-overlay" style="display:none;">
+  <div class="gt-spinner-wrap">
+    <div class="gt-spinner-ring"></div>
+    <img class="gt-loading-logo" src="/media/buttons/Google_Translate_Icon.png" alt="">
+  </div>
+  <div class="gt-loading-text">
+    Превод<span class="gt-loading-dots"><span>.</span><span>.</span><span>.</span></span>
+  </div>
+</div>
 
 <script>
 (function() {{
@@ -538,6 +634,17 @@ class AutoTranslateWidgetMiddleware:
   initWidgetUI();
   renderLanguageOptions(selectedOnLoad);
 
+  // Ако езикът НЕ е BG — скриваме body и показваме loading overlay
+  if (selectedOnLoad !== sourceLang) {{
+    document.body.classList.add("gt-loading");
+    const overlay = document.getElementById("gt-loading-overlay");
+    if (overlay) {{
+      overlay.style.display = "flex";
+    }}
+  }} else {{
+    document.body.classList.add("gt-ready");
+  }}
+
   window.googleTranslateElementInit = function() {{
     new google.translate.TranslateElement({{
       pageLanguage: sourceLang,
@@ -554,15 +661,54 @@ class AutoTranslateWidgetMiddleware:
     renderLanguageOptions(selected);
 
     if (selected === sourceLang) {{
-      // За BG — изчистваме всичко и не правим translate
       clearGoogTransCookieAcrossDomains();
+      const overlayBg = document.getElementById("gt-loading-overlay");
+      if (overlayBg) overlayBg.style.display = "none";
+      document.body.classList.remove("gt-loading");
+      document.body.classList.add("gt-ready");
     }} else {{
-      reapplyGoogleTranslation(selected, 40, true);
+      // Изчакваме Google Translate да смени combo стойността и да преведе,
+      // след което показваме страницата плавно.
+      waitForTranslationThenShow(selected);
     }}
   }};
 
-  // КЛЮЧОВА ПРОМЯНА: pageshow и popstate само reapply-ват текущия избор,
-  // без да reset-ват към BG и без да извикват initializeLanguage() повторно.
+  function hideOverlayAndShow() {{
+    const overlay = document.getElementById("gt-loading-overlay");
+    document.body.classList.remove("gt-loading");
+    document.body.classList.add("gt-ready");
+    if (overlay) {{
+      overlay.classList.add("gt-overlay-hide");
+      setTimeout(function() {{ overlay.style.display = "none"; }}, 400);
+    }}
+  }}
+
+  function waitForTranslationThenShow(targetLang) {{
+    let attempts = 60; // max ~3s
+    const normalized = normalizeLanguage(targetLang);
+
+    function tryApplyAndShow() {{
+      const combo = document.querySelector(".goog-te-combo");
+      if (combo) {{
+        if (combo.value !== normalized) {{
+          combo.value = normalized;
+          combo.dispatchEvent(new Event("change"));
+        }}
+        // Изчакваме Google Translate да обработи DOM-а
+        setTimeout(hideOverlayAndShow, 500);
+        return;
+      }}
+      if (--attempts > 0) {{
+        setTimeout(tryApplyAndShow, 80);
+      }} else {{
+        // Timeout — показваме каквото има
+        hideOverlayAndShow();
+      }}
+    }}
+
+    tryApplyAndShow();
+  }}
+
   function reapplyTranslationAfterNavigation() {{
     const selected = getStoredLanguage();
     renderLanguageOptions(selected);
@@ -571,10 +717,30 @@ class AutoTranslateWidgetMiddleware:
     }}
   }}
 
+  // При bfcache (back/forward) Google Translate губи състоянието си.
+  // Единственото надеждно решение: презапиши googtrans cookie и reload.
+  function handleBfCacheRestore() {{
+    const selected = getStoredLanguage();
+    if (selected !== sourceLang) {{
+      // Скриваме преди reload за да няма flash
+      const overlayBfc = document.getElementById("gt-loading-overlay");
+      if (overlayBfc) overlayBfc.style.display = "flex";
+      document.body.classList.add("gt-loading");
+      document.body.classList.remove("gt-ready");
+      setGoogTransCookie(selected);
+      window.location.reload();
+    }} else {{
+      clearGoogTransCookieAcrossDomains();
+      document.body.classList.remove("gt-loading");
+      document.body.classList.add("gt-ready");
+      renderLanguageOptions(selected);
+    }}
+  }}
+
   window.addEventListener("pageshow", function(e) {{
-    // persisted = true означава страницата е заредена от bfcache
     if (e.persisted) {{
-      setTimeout(reapplyTranslationAfterNavigation, 100);
+      // Страницата е от bfcache — Google Translate е изгубен, трябва reload
+      setTimeout(handleBfCacheRestore, 50);
     }}
   }});
 
