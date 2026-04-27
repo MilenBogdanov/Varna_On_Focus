@@ -497,19 +497,37 @@ class AutoTranslateWidgetMiddleware:
     }});
   }}
 
-  function applySelectedLanguageToGoogleWidget(targetLang, forceDispatch = false) {{
+  // Проверява дали Google Translate е напълно инициализиран и готов
+  function isGoogleTranslateReady() {{
     const combo = document.querySelector(".goog-te-combo");
     if (!combo) return false;
+    // Проверяваме дали има опции заредени в combo (ако има само 1 или 0 — още зарежда)
+    return combo.options && combo.options.length > 2;
+  }}
 
+  function applySelectedLanguageToGoogleWidget(targetLang, forceDispatch = false) {{
+    if (!isGoogleTranslateReady()) return false;
+
+    const combo = document.querySelector(".goog-te-combo");
     const normalized = normalizeLanguage(targetLang);
-    if (forceDispatch || combo.value !== normalized) {{
+
+    if (normalized === sourceLang) {{
+      // Връщане към BG — select-ваме source lang опцията
       combo.value = normalized;
       combo.dispatchEvent(new Event("change"));
+      return true;
+    }}
+
+    if (forceDispatch || combo.value !== normalized) {{
+      combo.value = normalized;
+      // Изпращаме multiple events за да сме сигурни че Google Translate ги хваща
+      combo.dispatchEvent(new Event("change"));
+      combo.dispatchEvent(new Event("change", {{ bubbles: true }}));
     }}
     return true;
   }}
 
-  function reapplyGoogleTranslation(targetLang, attemptsLeft = 30, forceDispatch = false) {{
+  function reapplyGoogleTranslation(targetLang, attemptsLeft = 40, forceDispatch = false) {{
     if (applySelectedLanguageToGoogleWidget(targetLang, forceDispatch)) {{
       return;
     }}
@@ -590,7 +608,32 @@ class AutoTranslateWidgetMiddleware:
       btn.addEventListener("click", function() {{
         const selected = setStoredLanguage(btn.dataset.lang);
         renderLanguageOptions(selected);
-        reapplyGoogleTranslation(selected, 30, true);
+
+        // Затваряме drawer-а
+        const widget = document.getElementById("auto-lang-widget");
+        const panel = document.getElementById("lang-panel");
+        if (widget) widget.classList.remove("open");
+        if (panel) panel.setAttribute("aria-hidden", "true");
+
+        if (selected === sourceLang) {{
+          // Към BG — reload без overlay (бързо)
+          clearGoogTransCookieAcrossDomains();
+          window.location.reload();
+        }} else {{
+          // Към друг език — overlay + превод
+          const overlay = document.getElementById("gt-loading-overlay");
+          if (overlay) overlay.style.display = "flex";
+          document.body.classList.add("gt-loading");
+          document.body.classList.remove("gt-ready");
+
+          if (isGoogleTranslateReady()) {{
+            waitForTranslationThenShow(selected);
+          }} else {{
+            // Google Translate още не е зареден — reload с cookie
+            setGoogTransCookie(selected);
+            window.location.reload();
+          }}
+        }}
       }});
     }});
   }}
