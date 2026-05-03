@@ -54,7 +54,10 @@ class AutoTranslateWidgetMiddleware:
         import json
         language_codes = [code for code, _ in languages]
         included_languages = ",".join(language_codes)
-        options_json = json.dumps([{"code": code, "label": label} for code, label in languages], ensure_ascii=False)
+        options_json = json.dumps(
+            [{"code": code, "label": label} for code, label in languages],
+            ensure_ascii=False,
+        )
 
         return f"""
 <style>
@@ -181,29 +184,71 @@ class AutoTranslateWidgetMiddleware:
     font-family: inherit;
   }}
 
-  .lang-name {{
-    text-transform: lowercase !important;
-  }}
-
-  #lang-drawer {{
+  #lang-drawer{{
     width: 58px;
     max-height: 54px;
     overflow: hidden;
-    border-radius: 16px 0 0 16px;
-    border: 1px solid rgba(255,255,255,0.4);
-    backdrop-filter: blur(18px);
-    background: linear-gradient(135deg, #1e88e5, #1565c0);
-    color: #ffffff;
-    box-shadow: 0 20px 50px rgba(0,0,0,0.25);
-    transition: width .28s ease, max-height .32s ease, box-shadow .25s ease;
-    backdrop-filter: blur(5px);
-  }}
 
-  #auto-lang-widget.open #lang-drawer {{
+    border-radius: 16px 0 0 16px;
+
+    /* 🔥 GLASS STYLE */
+    background: rgba(255,255,255,0.08);
+
+    backdrop-filter: blur(26px) saturate(180%);
+    -webkit-backdrop-filter: blur(26px) saturate(180%);
+
+    border: 1px solid rgba(255,255,255,0.35);
+
+    box-shadow:
+        0 25px 60px rgba(0,0,0,0.25),
+        inset 0 1px 0 rgba(255,255,255,0.5);
+
+    color: #ffffff;
+
+    transition: width .28s ease,
+                max-height .32s ease,
+                box-shadow .25s ease,
+                transform .25s ease;
+    }}
+    
+    #lang-drawer::before{{
+    content:"";
+    position:absolute;
+    inset:0;
+
+    background: linear-gradient(
+        to bottom,
+        rgba(255,255,255,0.25),
+        rgba(255,255,255,0.05) 40%,
+        transparent 70%
+    );
+
+    pointer-events:none;
+}}
+
+#lang-drawer:hover{{
+    transform: translateY(-3px) scale(1.02);
+
+    box-shadow:
+        0 35px 80px rgba(0,0,0,0.35),
+        inset 0 1px 0 rgba(255,255,255,0.7);
+}}
+
+  #auto-lang-widget.open #lang-drawer{{
     width: 260px;
     max-height: 360px;
-    box-shadow: 0 24px 52px rgba(2, 6, 23, 0.5);
-  }}
+
+    box-shadow:
+        0 40px 90px rgba(0,0,0,0.45),
+        inset 0 1px 0 rgba(255,255,255,0.7);
+}}
+
+#lang-drawer,
+#lang-drawer *{{
+    text-shadow:
+        0 1px 2px rgba(0,0,0,0.4),
+        0 2px 6px rgba(0,0,0,0.2);
+}}
 
   #lang-drawer-toggle {{
     width: 100%;
@@ -220,7 +265,7 @@ class AutoTranslateWidgetMiddleware:
   }}
 
   #lang-drawer-toggle:hover {{
-    background: rgba(148, 163, 184, 0.14);
+    background: rgba(148,163,184,0.14);
   }}
 
   #lang-arrow {{
@@ -259,7 +304,7 @@ class AutoTranslateWidgetMiddleware:
   }}
 
   #lang-panel {{
-    border-top: 1px solid rgba(148, 163, 184, 0.26);
+    border-top: 1px solid rgba(148,163,184,0.26);
     padding: 10px 10px 12px;
     opacity: 0;
     transform: translateY(-8px);
@@ -279,16 +324,12 @@ class AutoTranslateWidgetMiddleware:
     color: rgba(255,255,255,0.9);
   }}
 
-  #lang-drawer::before{{
-    content:"";
-    position:absolute;
-    inset:0;
-    background: linear-gradient(
-        to bottom,
-        rgba(255,255,255,0.25),
-        transparent 60%
-    );
-    pointer-events:none;
+  #lang-drawer::before {{
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom, rgba(255,255,255,0.25), transparent 60%);
+    pointer-events: none;
   }}
 
   #lang-list {{
@@ -308,30 +349,29 @@ class AutoTranslateWidgetMiddleware:
 
   .lang-item-btn {{
     width: 100%;
-    border: 1px solid transparent;
-    border-radius: 10px;
-    background: rgba(255,255,255,0.12);
-    backdrop-filter: blur(10px);
-    color: #f8fafc;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 8px 10px;
-    cursor: pointer;
-    font-size: 14px;
-    line-height: 1.2;
-    transition: background .2s ease, border-color .2s ease, transform .18s ease;
+  border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 10px;
+  background: rgba(0,0,0,0.18);               /* ← беше rgba(255,255,255,0.10) */
+  color: #f8fafc;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1.2;
+  transition: background .2s ease, border-color .2s ease, transform .18s ease;
   }}
 
   .lang-item-btn:hover {{
-    background: rgba(255,255,255,0.25);
-    border-color: rgba(255,255,255,0.6);
-    transform: translateX(-2px);
+    background: rgba(0,0,0,0.28);               /* ← беше rgba(255,255,255,0.22) */
+  border-color: rgba(255,255,255,0.45);
+  transform: translateX(-2px);
   }}
 
   .lang-item-btn.active {{
-    background: rgba(46,125,50,0.25);
-    border-color: rgba(46,125,50,0.8);
+    background: rgba(46,125,50,0.35);           /* ← леко по-наситено зелено */
+  border-color: rgba(46,125,50,0.8);
   }}
 
   .lang-flag {{
@@ -342,6 +382,7 @@ class AutoTranslateWidgetMiddleware:
 
   .lang-name {{
     font-weight: 600;
+    text-transform: lowercase;
   }}
 </style>
 
@@ -350,9 +391,8 @@ class AutoTranslateWidgetMiddleware:
     <button id="lang-drawer-toggle" type="button" aria-label="Translate" title="Translate">
       <span id="lang-arrow">❯</span>
       <img id="lang-toggle-logo" src="/media/buttons/Google_Translate_Icon.png" alt="Translate">
-      <span id="lang-toggle-text">Превод</span>
+      <span id="lang-toggle-text">Превод / Translation</span>
     </button>
-
     <div id="lang-panel" aria-hidden="true">
       <label id="lang-label" for="lang-list">Language</label>
       <ul id="lang-list"></ul>
@@ -374,287 +414,236 @@ class AutoTranslateWidgetMiddleware:
 
 <script>
 (function() {{
+
+  // ── КОНСТАНТИ ───────────────────────────────────────────────
   const STORAGE_KEY = "varna_site_lang_session";
-  // КЛЮЧОВА ПРОМЯНА: Флаг дали това е първото посещение в тази сесия
-  const INIT_KEY = "varna_site_lang_initialized";
-  const sourceLang = "bg";
-  const languages = {options_json};
+  const INIT_KEY    = "varna_site_lang_initialized";
+  const sourceLang  = "bg";
+  const languages   = {options_json};
+  const flagMap     = {{ bg:"🇧🇬", en:"🇬🇧", ru:"🇷🇺", tr:"🇹🇷", de:"🇩🇪" }};
   let widgetUiInitialized = false;
 
-  const flagMap = {{
-    bg: "🇧🇬",
-    en: "🇬🇧",
-    ru: "🇷🇺",
-    tr: "🇹🇷",
-    de: "🇩🇪"
-  }};
+  // Ключът включва pathname → автоматично се нулира при нова страница
+  function reloadKey() {{
+    return "gt_reloaded_v2_" + window.location.pathname;
+  }}
 
+  // ── НОРМАЛИЗИРАНЕ ───────────────────────────────────────────
   function normalizeLanguage(code) {{
-    const requested = (code || "").toLowerCase();
-    const hasLanguage = languages.some((lang) => lang.code === requested);
-    return hasLanguage ? requested : sourceLang;
+    const c = (code || "").toLowerCase();
+    return languages.some(function(l) {{ return l.code === c; }}) ? c : sourceLang;
   }}
 
-  function getCookieDomainCandidates() {{
-    const hostname = window.location.hostname;
-    const looksLikeIpv4 = /^\\d+\\.\\d+\\.\\d+\\.\\d+$/.test(hostname);
-
-    if (!hostname || hostname === "localhost" || looksLikeIpv4) {{
-      return [""];
-    }}
-
-    const parts = hostname.split(".");
-    const parentDomain = parts.length >= 2 ? `.${{parts.slice(-2).join(".")}}` : "";
-    return Array.from(new Set(["", hostname, `.${{hostname}}`, parentDomain].filter(Boolean)));
+  // ── COOKIE ФУНКЦИИ ──────────────────────────────────────────
+  function getCookieDomains() {{
+    const h = window.location.hostname;
+    if (!h || h === "localhost" || /^\d+\.\d+\.\d+\.\d+$/.test(h)) return [""];
+    const parts = h.split(".");
+    const parent = parts.length >= 2 ? "." + parts.slice(-2).join(".") : "";
+    return Array.from(new Set(["", h, "." + h, parent].filter(Boolean)));
   }}
 
-  function setCookie(name, value, days, domain = "") {{
-    const d = new Date();
-    d.setTime(d.getTime() + (days * 24 * 60 * 60 * 1000));
-    const domainPart = domain ? `;domain=${{domain}}` : "";
-    document.cookie = `${{name}}=${{value}};expires=${{d.toUTCString()}};path=/;SameSite=Lax${{domainPart}}`;
+  function setCookie(name, value, days, domain) {{
+    const exp = new Date(Date.now() + days * 86400000).toUTCString();
+    const dp  = domain ? ";domain=" + domain : "";
+    document.cookie = name + "=" + value + ";expires=" + exp + ";path=/;SameSite=Lax" + dp;
   }}
 
-  function clearGoogTransCookieAcrossDomains() {{
-    const cookieDomains = getCookieDomainCandidates();
-    const expiredAt = "Thu, 01 Jan 1970 00:00:00 GMT";
-
-    cookieDomains.forEach((domain) => {{
-      const domainPart = domain ? `;domain=${{domain}}` : "";
-      document.cookie = `googtrans=;expires=${{expiredAt}};path=/${{domainPart}}`;
-      document.cookie = `googtrans=;expires=${{expiredAt}};path=/${{domainPart}};SameSite=Lax`;
+  function clearGoogTransCookie() {{
+    const exp = "Thu, 01 Jan 1970 00:00:00 GMT";
+    getCookieDomains().forEach(function(d) {{
+      const dp = d ? ";domain=" + d : "";
+      document.cookie = "googtrans=;expires=" + exp + ";path=/" + dp;
+      document.cookie = "googtrans=;expires=" + exp + ";path=/" + dp + ";SameSite=Lax";
     }});
   }}
 
-  function setGoogTransCookie(targetLang) {{
-    const normalized = normalizeLanguage(targetLang);
-
-    if (normalized === sourceLang) {{
-      clearGoogTransCookieAcrossDomains();
-      return;
-    }}
-
-    const value = `/${{sourceLang}}/${{normalized}}`;
-    getCookieDomainCandidates().forEach((domain) => {{
-      setCookie("googtrans", value, 365, domain);
+  function setGoogTransCookie(lang) {{
+    const n = normalizeLanguage(lang);
+    if (n === sourceLang) {{ clearGoogTransCookie(); return; }}
+    getCookieDomains().forEach(function(d) {{
+      setCookie("googtrans", "/" + sourceLang + "/" + n, 365, d);
     }});
   }}
 
+  // ── SESSION STORAGE ─────────────────────────────────────────
   function getStoredLanguage() {{
     return normalizeLanguage(sessionStorage.getItem(STORAGE_KEY));
   }}
 
   function setStoredLanguage(lang) {{
-    const normalized = normalizeLanguage(lang);
-    sessionStorage.setItem(STORAGE_KEY, normalized);
-    setGoogTransCookie(normalized);
-    return normalized;
+    const n = normalizeLanguage(lang);
+    sessionStorage.setItem(STORAGE_KEY, n);
+    setGoogTransCookie(n);
+    return n;
   }}
 
-  // КЛЮЧОВА ПРОМЯНА: При първото отваряне на сесията ВИНАГИ форсираме BG.
-  // При навигация между страници (INIT_KEY вече е set) запазваме избора на потребителя.
-  function initializeLanguage() {{
-    const isFirstLoad = !sessionStorage.getItem(INIT_KEY);
+  // ── OVERLAY ─────────────────────────────────────────────────
+  function showOverlay() {{
+    var o = document.getElementById("gt-loading-overlay");
+    if (o) o.style.display = "flex";
+    document.body.classList.add("gt-loading");
+    document.body.classList.remove("gt-ready");
+  }}
 
-    if (isFirstLoad) {{
-      // Първо отваряне на платформата в тази сесия → винаги BG
-      sessionStorage.setItem(INIT_KEY, "1");
-      clearGoogTransCookieAcrossDomains();
-      return setStoredLanguage(sourceLang);
+  function hideOverlay() {{
+    var o = document.getElementById("gt-loading-overlay");
+    document.body.classList.remove("gt-loading");
+    document.body.classList.add("gt-ready");
+    if (o) {{
+      o.classList.add("gt-overlay-hide");
+      setTimeout(function() {{ o.style.display = "none"; }}, 400);
     }}
-
-    // Навигация между страници → запазваме текущо избрания език
-    const stored = getStoredLanguage();
-    setGoogTransCookie(stored);
-    return stored;
   }}
 
-  function hideGoogleTranslateBanner() {{
+  // ── СКРИВАНЕ НА GOOGLE BANNER ───────────────────────────────
+  function hideGoogleBanner() {{
     document.body.style.top = "0px";
-    const selectors = [
-      "iframe.goog-te-banner-frame",
-      ".goog-te-balloon-frame",
-      "#goog-gt-tt",
-      ".goog-tooltip",
-      ".VIpgJd-ZVi9od-ORHb-OEVmcd",
-      ".VIpgJd-ZVi9od-l4eHX-hSRGPd",
-      ".VIpgJd-yAWNEb-L7lbkb",
-      ".goog-te-spinner-pos",
-      ".goog-te-spinner",
-      ".goog-spinner-pos",
-      ".VIpgJd-ZVi9od-aZ2wEe",
-      ".VIpgJd-ZVi9od-aZ2wEe-OiiCO",
+    [
+      "iframe.goog-te-banner-frame", ".goog-te-balloon-frame", "#goog-gt-tt",
+      ".goog-tooltip", ".VIpgJd-ZVi9od-ORHb-OEVmcd", ".VIpgJd-ZVi9od-l4eHX-hSRGPd",
+      ".VIpgJd-yAWNEb-L7lbkb", ".goog-te-spinner-pos", ".goog-te-spinner",
+      ".goog-spinner-pos", ".VIpgJd-ZVi9od-aZ2wEe", ".VIpgJd-ZVi9od-aZ2wEe-OiiCO",
       "#goog-wt-spinner"
-    ];
-
-    selectors.forEach((selector) => {{
-      document.querySelectorAll(selector).forEach((node) => {{
-        node.style.display = "none";
-        node.style.visibility = "hidden";
-        node.style.opacity = "0";
-        node.style.pointerEvents = "none";
+    ].forEach(function(sel) {{
+      document.querySelectorAll(sel).forEach(function(el) {{
+        el.style.cssText += ";display:none!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important";
       }});
     }});
   }}
 
-  // Проверява дали Google Translate е напълно инициализиран и готов
-  function isGoogleTranslateReady() {{
-    const combo = document.querySelector(".goog-te-combo");
-    if (!combo) return false;
-    // Проверяваме дали има опции заредени в combo (ако има само 1 или 0 — още зарежда)
-    return combo.options && combo.options.length > 2;
-  }}
+  window.addEventListener("DOMContentLoaded", function() {{
+    new MutationObserver(hideGoogleBanner)
+      .observe(document.documentElement, {{ childList: true, subtree: true }});
+  }});
+  setInterval(hideGoogleBanner, 500);
 
-  function applySelectedLanguageToGoogleWidget(targetLang, forceDispatch = false) {{
-    if (!isGoogleTranslateReady()) return false;
-
-    const combo = document.querySelector(".goog-te-combo");
-    const normalized = normalizeLanguage(targetLang);
-
-    if (normalized === sourceLang) {{
-      // Връщане към BG — select-ваме source lang опцията
-      combo.value = normalized;
-      combo.dispatchEvent(new Event("change"));
-      return true;
-    }}
-
-    if (forceDispatch || combo.value !== normalized) {{
-      combo.value = normalized;
-      // Изпращаме multiple events за да сме сигурни че Google Translate ги хваща
-      combo.dispatchEvent(new Event("change"));
-      combo.dispatchEvent(new Event("change", {{ bubbles: true }}));
-    }}
-    return true;
-  }}
-
-  function reapplyGoogleTranslation(targetLang, attemptsLeft = 40, forceDispatch = false) {{
-    if (applySelectedLanguageToGoogleWidget(targetLang, forceDispatch)) {{
+  // ── ОСНОВНА СТРАТЕГИЯ: ПРЕВОД ЧРЕЗ RELOAD ───────────────────
+  //
+  // При нон-BG език и ново зареждане на страницата:
+  //   1. Сетваме googtrans cookie
+  //   2. Маркираме в sessionStorage че reload е направен (за този pathname)
+  //   3. window.location.reload() → браузърът зарежда страницата наново,
+  //      Google Translate чете cookie-то и превежда DOM-а при зареждане.
+  //
+  // При втора итерация (reload флагът е сетнат):
+  //   → просто скриваме overlay-я, преводът вече е в DOM-а.
+  //
+  // Ключът съдържа pathname → при навигация към нова страница
+  // флагът е различен и отново се прави reload → винаги преведено.
+  // ────────────────────────────────────────────────────────────
+  function applyTranslationViaReload(lang) {{
+    if (sessionStorage.getItem(reloadKey()) === "1") {{
+      // Reload вече е направен за тази страница — показваме я
+      hideOverlay();
       return;
     }}
-
-    if (attemptsLeft <= 0) {{
-      return;
-    }}
-
-    setTimeout(function() {{
-      reapplyGoogleTranslation(targetLang, attemptsLeft - 1, forceDispatch);
-    }}, 150);
+    // Първо зареждане на тази страница с нон-BG → reload
+    showOverlay();
+    setGoogTransCookie(lang);
+    sessionStorage.setItem(reloadKey(), "1");
+    window.location.reload();
   }}
 
+  // ── ИНИЦИАЛИЗАЦИЯ НА ЕЗИК ───────────────────────────────────
+  function initializeLanguage() {{
+    if (!sessionStorage.getItem(INIT_KEY)) {{
+      // Съвсем ново отваряне на сесията → винаги BG
+      sessionStorage.setItem(INIT_KEY, "1");
+      clearGoogTransCookie();
+      return setStoredLanguage(sourceLang);
+    }}
+    var stored = getStoredLanguage();
+    setGoogTransCookie(stored);
+    return stored;
+  }}
+
+  // ── UI: ЕЗИКОВИ БУТОНИ ──────────────────────────────────────
   function getDisplayName(code, uiLang) {{
     try {{
-      if (typeof Intl !== "undefined" && Intl.DisplayNames) {{
-        const dn = new Intl.DisplayNames([uiLang], {{ type: "language" }});
-        return dn.of(code) || code;
-      }}
-    }} catch (e) {{}}
-
-    const fallback = languages.find((lang) => lang.code === code);
-    return fallback ? fallback.label : code;
+      if (typeof Intl !== "undefined" && Intl.DisplayNames)
+        return new Intl.DisplayNames([uiLang], {{ type: "language" }}).of(code) || code;
+    }} catch(e) {{}}
+    var f = languages.find(function(l) {{ return l.code === code; }});
+    return f ? f.label : code;
   }}
 
-  function getLanguageLabel(uiLang) {{
-    const labelMap = {{
-      bg: "Избери език",
-      en: "Choose language",
-      ru: "Выберите язык",
-      tr: "Dil seç",
-      de: "Sprache wählen"
-    }};
-    return labelMap[uiLang] || "Choose language";
-  }}
-
-  function getFlag(code) {{
-    return flagMap[code] || "🌐";
+  function getLangLabel(uiLang) {{
+    var m = {{ bg:"Избери език / Choose language", en:"Choose language", ru:"Выберите язык", tr:"Dil seç", de:"Sprache wählen" }};
+    return m[uiLang] || "Choose language";
   }}
 
   function renderLanguageOptions(currentLang) {{
-    const list = document.getElementById("lang-list");
-    const label = document.getElementById("lang-label");
+    var list  = document.getElementById("lang-list");
+    var label = document.getElementById("lang-label");
     if (!list || !label) return;
 
-    const uiLang = normalizeLanguage(currentLang || sourceLang);
-    const sorted = languages.slice().sort((a, b) =>
-      getDisplayName(a.code, uiLang).localeCompare(getDisplayName(b.code, uiLang), uiLang)
-    );
+    var uiLang = normalizeLanguage(currentLang || sourceLang);
+    var sorted = languages.slice().sort(function(a, b) {{
+      return getDisplayName(a.code, uiLang)
+        .localeCompare(getDisplayName(b.code, uiLang), uiLang);
+    }});
 
-    label.textContent = getLanguageLabel(uiLang);
+    label.textContent = getLangLabel(uiLang);
     list.innerHTML = "";
 
-    sorted.forEach((lang) => {{
-      const li = document.createElement("li");
-      const btn = document.createElement("button");
-      const flag = document.createElement("span");
-      const name = document.createElement("span");
+    sorted.forEach(function(lang) {{
+      var li  = document.createElement("li");
+      var btn = document.createElement("button");
+      var fl  = document.createElement("span");
+      var nm  = document.createElement("span");
 
       btn.type = "button";
-      btn.className = "lang-item-btn";
-      if (lang.code === uiLang) {{
-        btn.classList.add("active");
-      }}
+      btn.className = "lang-item-btn" + (lang.code === uiLang ? " active" : "");
       btn.dataset.lang = lang.code;
+      fl.className = "lang-flag";
+      fl.textContent = flagMap[lang.code] || "🌐";
+      nm.className = "lang-name";
+      nm.textContent = getDisplayName(lang.code, uiLang);
 
-      flag.className = "lang-flag";
-      flag.textContent = getFlag(lang.code);
-
-      name.className = "lang-name";
-      name.textContent = getDisplayName(lang.code, uiLang).toLowerCase();
-
-      btn.appendChild(flag);
-      btn.appendChild(name);
+      btn.appendChild(fl);
+      btn.appendChild(nm);
       li.appendChild(btn);
       list.appendChild(li);
 
       btn.addEventListener("click", function() {{
-        const selected = setStoredLanguage(btn.dataset.lang);
-        renderLanguageOptions(selected);
+        var selected = setStoredLanguage(btn.dataset.lang);
 
-        // Затваряме drawer-а
-        const widget = document.getElementById("auto-lang-widget");
-        const panel = document.getElementById("lang-panel");
+        var widget = document.getElementById("auto-lang-widget");
+        var panel  = document.getElementById("lang-panel");
         if (widget) widget.classList.remove("open");
-        if (panel) panel.setAttribute("aria-hidden", "true");
+        if (panel)  panel.setAttribute("aria-hidden", "true");
+
+        // Нулираме reload флага при смяна на език —
+        // новият избор трябва да тригерира нов reload
+        sessionStorage.removeItem(reloadKey());
 
         if (selected === sourceLang) {{
-          // Към BG — reload без overlay (бързо)
-          clearGoogTransCookieAcrossDomains();
+          clearGoogTransCookie();
           window.location.reload();
         }} else {{
-          // Към друг език — overlay + превод
-          const overlay = document.getElementById("gt-loading-overlay");
-          if (overlay) overlay.style.display = "flex";
-          document.body.classList.add("gt-loading");
-          document.body.classList.remove("gt-ready");
-
-          if (isGoogleTranslateReady()) {{
-            waitForTranslationThenShow(selected);
-          }} else {{
-            // Google Translate още не е зареден — reload с cookie
-            setGoogTransCookie(selected);
-            window.location.reload();
-          }}
+          renderLanguageOptions(selected);
+          applyTranslationViaReload(selected);
         }}
       }});
     }});
   }}
 
+  // ── UI: DRAWER TOGGLE ───────────────────────────────────────
   function initWidgetUI() {{
     if (widgetUiInitialized) return;
+    var widget = document.getElementById("auto-lang-widget");
+    var panel  = document.getElementById("lang-panel");
+    var toggle = document.getElementById("lang-drawer-toggle");
+    if (!widget || !panel || !toggle) return;
 
-    const widget = document.getElementById("auto-lang-widget");
-    const panel = document.getElementById("lang-panel");
-    const toggleButton = document.getElementById("lang-drawer-toggle");
-    if (!widget || !panel || !toggleButton) return;
-
-    renderLanguageOptions(getStoredLanguage());
-
-    toggleButton.addEventListener("click", function() {{
-      const isOpen = widget.classList.toggle("open");
+    toggle.addEventListener("click", function() {{
+      var isOpen = widget.classList.toggle("open");
       panel.setAttribute("aria-hidden", isOpen ? "false" : "true");
     }});
 
-    document.addEventListener("click", function(event) {{
-      if (!widget.contains(event.target)) {{
+    document.addEventListener("click", function(e) {{
+      if (!widget.contains(e.target)) {{
         widget.classList.remove("open");
         panel.setAttribute("aria-hidden", "true");
       }}
@@ -663,133 +652,57 @@ class AutoTranslateWidgetMiddleware:
     widgetUiInitialized = true;
   }}
 
-  window.addEventListener("DOMContentLoaded", function() {{
-    const target = document.documentElement;
-    if (target) {{
-      const bannerObserver = new MutationObserver(hideGoogleTranslateBanner);
-      bannerObserver.observe(target, {{ childList: true, subtree: true }});
-    }}
-  }});
-
-  setInterval(hideGoogleTranslateBanner, 400);
-
-  const selectedOnLoad = initializeLanguage();
-  initWidgetUI();
-  renderLanguageOptions(selectedOnLoad);
-
-  // Ако езикът НЕ е BG — скриваме body и показваме loading overlay
-  if (selectedOnLoad !== sourceLang) {{
-    document.body.classList.add("gt-loading");
-    const overlay = document.getElementById("gt-loading-overlay");
-    if (overlay) {{
-      overlay.style.display = "flex";
-    }}
-  }} else {{
-    document.body.classList.add("gt-ready");
-  }}
-
+  // ── GOOGLE TRANSLATE CALLBACK ────────────────────────────────
+  // Вика се от Google след като widget-ът се зареди.
+  // При reload стратегията DOM-ът вече е преведен от cookie-то —
+  // просто инициализираме UI-а и скриваме overlay-я.
   window.googleTranslateElementInit = function() {{
     new google.translate.TranslateElement({{
       pageLanguage: sourceLang,
       includedLanguages: "{included_languages}",
-      autoDisplay: false
+      autoDisplay: false,
     }}, "google_translate_element");
 
-    hideGoogleTranslateBanner();
-
-    // КЛЮЧОВА ПРОМЯНА: При инициализация на Google Translate widget-а
-    // взимаме текущо избрания език от storage (не reset-ваме).
-    const selected = getStoredLanguage();
+    hideGoogleBanner();
     initWidgetUI();
-    renderLanguageOptions(selected);
+    renderLanguageOptions(getStoredLanguage());
 
-    if (selected === sourceLang) {{
-      clearGoogTransCookieAcrossDomains();
-      const overlayBg = document.getElementById("gt-loading-overlay");
-      if (overlayBg) overlayBg.style.display = "none";
-      document.body.classList.remove("gt-loading");
-      document.body.classList.add("gt-ready");
-    }} else {{
-      // Изчакваме Google Translate да смени combo стойността и да преведе,
-      // след което показваме страницата плавно.
-      waitForTranslationThenShow(selected);
-    }}
+    var selected = getStoredLanguage();
+    if (selected === sourceLang) clearGoogTransCookie();
+    hideOverlay();
   }};
 
-  function hideOverlayAndShow() {{
-    const overlay = document.getElementById("gt-loading-overlay");
-    document.body.classList.remove("gt-loading");
+  // ── СТАРТИРАНЕ ──────────────────────────────────────────────
+  var selectedOnLoad = initializeLanguage();
+  initWidgetUI();
+  renderLanguageOptions(selectedOnLoad);
+
+  if (selectedOnLoad !== sourceLang) {{
+    showOverlay();
+    applyTranslationViaReload(selectedOnLoad);
+  }} else {{
     document.body.classList.add("gt-ready");
-    if (overlay) {{
-      overlay.classList.add("gt-overlay-hide");
-      setTimeout(function() {{ overlay.style.display = "none"; }}, 400);
-    }}
   }}
 
-  function waitForTranslationThenShow(targetLang) {{
-    let attempts = 60; // max ~3s
-    const normalized = normalizeLanguage(targetLang);
-
-    function tryApplyAndShow() {{
-      const combo = document.querySelector(".goog-te-combo");
-      if (combo) {{
-        if (combo.value !== normalized) {{
-          combo.value = normalized;
-          combo.dispatchEvent(new Event("change"));
-        }}
-        // Изчакваме Google Translate да обработи DOM-а
-        setTimeout(hideOverlayAndShow, 500);
-        return;
-      }}
-      if (--attempts > 0) {{
-        setTimeout(tryApplyAndShow, 80);
-      }} else {{
-        // Timeout — показваме каквото има
-        hideOverlayAndShow();
-      }}
-    }}
-
-    tryApplyAndShow();
-  }}
-
-  function reapplyTranslationAfterNavigation() {{
-    const selected = getStoredLanguage();
-    renderLanguageOptions(selected);
-    if (selected !== sourceLang) {{
-      reapplyGoogleTranslation(selected, 30, true);
-    }}
-  }}
-
-  // При bfcache (back/forward) Google Translate губи състоянието си.
-  // Единственото надеждно решение: презапиши googtrans cookie и reload.
-  function handleBfCacheRestore() {{
-    const selected = getStoredLanguage();
-    if (selected !== sourceLang) {{
-      // Скриваме преди reload за да няма flash
-      const overlayBfc = document.getElementById("gt-loading-overlay");
-      if (overlayBfc) overlayBfc.style.display = "flex";
-      document.body.classList.add("gt-loading");
-      document.body.classList.remove("gt-ready");
-      setGoogTransCookie(selected);
-      window.location.reload();
-    }} else {{
-      clearGoogTransCookieAcrossDomains();
-      document.body.classList.remove("gt-loading");
-      document.body.classList.add("gt-ready");
-      renderLanguageOptions(selected);
-    }}
-  }}
-
+  // ── PAGESHOW (bfcache — back/forward) ───────────────────────
+  // При bfcache restore нулираме reload флага за да се направи
+  // нов reload и преводът да се приложи наново.
   window.addEventListener("pageshow", function(e) {{
     if (e.persisted) {{
-      // Страницата е от bfcache — Google Translate е изгубен, трябва reload
-      setTimeout(handleBfCacheRestore, 50);
+      sessionStorage.removeItem(reloadKey());
+      var selected = getStoredLanguage();
+      renderLanguageOptions(selected);
+      if (selected !== sourceLang) {{
+        applyTranslationViaReload(selected);
+      }} else {{
+        hideOverlay();
+      }}
+    }} else {{
+      hideOverlay();
+      renderLanguageOptions(getStoredLanguage());
     }}
   }});
 
-  window.addEventListener("popstate", function() {{
-    setTimeout(reapplyTranslationAfterNavigation, 100);
-  }});
 }})();
 </script>
 
