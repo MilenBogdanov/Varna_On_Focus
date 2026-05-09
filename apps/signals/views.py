@@ -4,7 +4,7 @@ from django.contrib import messages
 from django.core.paginator import Paginator
 from django.contrib.auth import logout
 from datetime import datetime, timedelta
-
+from django.utils import timezone
 from apps.accounts.decorators import (
     citizen_required,
     municipal_admin_required,
@@ -21,7 +21,28 @@ from PIL import Image
 from io import BytesIO
 from django.core.files.base import ContentFile
 from django.urls import reverse
-from apps.core.choices import SignalStatus
+from apps.core.choices import SignalStatus, AuditOperationType
+from django.core.mail import send_mail
+from apps.accounts.models import User
+
+MUNICIPALITY_EMAILS = [
+    "varnamunicipality1@gmail.com",
+    "varna.signals.noreply@gmail.com",
+]
+
+
+def _get_signal_participants_emails(signal):
+    participant_emails = set(
+        signal.comments.exclude(user__email__isnull=True)
+        .exclude(user__email="")
+        .values_list("user__email", flat=True)
+    )
+
+    if signal.user and signal.user.email:
+        participant_emails.add(signal.user.email)
+
+    return sorted(participant_emails)
+
 
 # =========================================================
 # 🟢 СЪЗДАВАНЕ НА СИГНАЛ (Citizen)
@@ -39,6 +60,19 @@ def create_signal(request):
             signal = form.save(commit=False)
             signal.user = request.user
             signal.save()
+
+            send_mail(
+                subject=f"Нов сигнал #{signal.id}: {signal.title}",
+                message=(
+                    f"Създаден е нов сигнал от {request.user.email}.\n"
+                    f"Заглавие: {signal.title}\n"
+                    f"Адрес: {signal.address}\n"
+                    f"Описание:\n{signal.description}"
+                ),
+                from_email="varna.signals.noreply@gmail.com",
+                recipient_list=MUNICIPALITY_EMAILS,
+                fail_silently=True,
+            )
 
             images = request.FILES.getlist("images")
 
@@ -134,6 +168,20 @@ def manage_signal(request, signal_id):
                     new_data={"status": updated_signal.status},
                     created_at=timezone.now()
                 )
+
+                participant_emails = _get_signal_participants_emails(signal)
+                if participant_emails:
+                    send_mail(
+                        subject=f"Промяна на статус за сигнал #{signal.id}",
+                        message=(
+                            f"Статусът на сигнал '{signal.title}' е променен.\n"
+                            f"Стар статус: {old_status}\n"
+                            f"Нов статус: {updated_signal.status}"
+                        ),
+                        from_email="varna.signals.noreply@gmail.com",
+                        recipient_list=participant_emails,
+                        fail_silently=True,
+                    )
 
             messages.success(
                 request,
@@ -409,11 +457,43 @@ def signal_detail(request, pk):
         content = request.POST.get("content")
 
         if content:
-            Comment.objects.create(
+            comment = Comment.objects.create(
                 signal=signal,
                 user=request.user,
                 content=content
             )
+
+            is_municipality_admin = (
+                    hasattr(request.user, "role")
+                    and request.user.role
+                    and request.user.role.name in ["MUNICIPAL_ADMIN", "SUPER_ADMIN"]
+            )
+
+            if is_municipality_admin:
+                participant_emails = _get_signal_participants_emails(signal)
+                if participant_emails:
+                    send_mail(
+                        subject=f"Нов коментар от администрация по сигнал #{signal.id}",
+                        message=(
+                            f"Администратор добави нов коментар към сигнал '{signal.title}'.\n\n"
+                            f"Коментар:\n{comment.content}"
+                        ),
+                        from_email="varna.signals.noreply@gmail.com",
+                        recipient_list=participant_emails,
+                        fail_silently=True,
+                    )
+            else:
+                send_mail(
+                    subject=f"Нов коментар от гражданин по сигнал #{signal.id}",
+                    message=(
+                        f"Гражданин добави коментар към сигнал '{signal.title}'.\n\n"
+                        f"Потребител: {request.user.email}\n"
+                        f"Коментар:\n{comment.content}"
+                    ),
+                    from_email="varna.signals.noreply@gmail.com",
+                    recipient_list=MUNICIPALITY_EMAILS,
+                    fail_silently=True,
+                )
 
             return redirect(reverse("signals:signal_detail", args=[signal.id]) + "#comments")
 

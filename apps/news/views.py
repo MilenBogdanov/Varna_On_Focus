@@ -12,8 +12,10 @@ from django.db.models import Q
 from .models import NewsSourceType
 from datetime import datetime
 from django.utils.timezone import now
+from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
 from apps.accounts.decorators import admin_or_superadmin_required
+from apps.accounts.models import User
 from apps.audit.services import log_news_operation
 from apps.core.choices import AuditOperationType
 
@@ -82,6 +84,27 @@ def create_news(request):
                 AuditOperationType.CREATE,
                 new_data=_serialize_news_for_audit(news)
             )
+
+            citizen_emails = list(
+                User.objects.filter(role__name="CITIZEN", is_active=True)
+                .exclude(email__isnull=True)
+                .exclude(email="")
+                .values_list("email", flat=True)
+            )
+
+            if citizen_emails:
+                send_mail(
+                    subject=f"Нова новина: {news.title}",
+                    message=(
+                        "Публикувана е нова новина в платформата.\n\n"
+                        f"Заглавие: {news.title}\n"
+                        f"Тип: {news.get_source_type_display()}\n\n"
+                        f"{news.content}"
+                    ),
+                    from_email="varna.signals.noreply@gmail.com",
+                    recipient_list=citizen_emails,
+                    fail_silently=True,
+                )
 
             return redirect("news")
 
