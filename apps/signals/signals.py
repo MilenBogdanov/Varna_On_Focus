@@ -7,7 +7,8 @@ from .models import Signal
 from apps.audit.models import SignalAudit
 from apps.audit.context import get_current_user
 from apps.core.choices import AuditOperationType
-
+from django.core.mail import send_mail
+from apps.accounts.models import User
 
 # 🔹 Запазваме старото състояние временно
 @receiver(pre_save, sender=Signal)
@@ -64,6 +65,13 @@ def create_or_update_signal_audit(sender, instance, created, **kwargs):
             performed_by=get_current_user(),
         )
 
+        if "status" in diff_new:
+            _notify_citizens_for_status_change(
+                signal=instance,
+                old_status=diff_old["status"],
+                new_status=diff_new["status"],
+            )
+
 
 # 🔹 DELETE
 @receiver(post_delete, sender=Signal)
@@ -101,3 +109,32 @@ def _serialize_signal(instance):
     data["longitude"] = float(instance.longitude)
 
     return data
+
+def _notify_citizens_for_status_change(signal, old_status, new_status):
+    citizen_emails = sorted(
+        User.objects.filter(role__name="CITIZEN", is_active=True)
+        .exclude(email__isnull=True)
+        .exclude(email="")
+        .values_list("email", flat=True)
+        .distinct()
+    )
+
+    if not citizen_emails:
+        return
+
+    subject = f"Промяна на статус за сигнал #{signal.id}"
+    message = (
+        f"Статусът на сигнал '{signal.title}' е променен.\n"
+        f"Стар статус: {old_status}\n"
+        f"Нов статус: {new_status}"
+    )
+
+    batch_size = 50
+    for i in range(0, len(citizen_emails), batch_size):
+        send_mail(
+            subject=subject,
+            message=message,
+            from_email="varna.signals.noreply@gmail.com",
+            recipient_list=citizen_emails[i:i + batch_size],
+            fail_silently=True,
+        )

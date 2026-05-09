@@ -23,7 +23,6 @@ from django.core.files.base import ContentFile
 from django.urls import reverse
 from apps.core.choices import SignalStatus, AuditOperationType
 from django.core.mail import send_mail
-from apps.accounts.models import User
 
 MUNICIPALITY_EMAILS = [
     "varnamunicipality1@gmail.com",
@@ -169,25 +168,6 @@ def manage_signal(request, signal_id):
                     created_at=timezone.now()
                 )
 
-                citizen_emails = sorted(
-                    User.objects.filter(role__name="CITIZEN")
-                    .exclude(email__isnull=True)
-                    .exclude(email="")
-                    .values_list("email", flat=True)
-                    .distinct()
-                )
-                if citizen_emails:
-                    send_mail(
-                        subject=f"Промяна на статус за сигнал #{signal.id}",
-                        message=(
-                            f"Статусът на сигнал '{signal.title}' е променен.\n"
-                            f"Стар статус: {old_status}\n"
-                            f"Нов статус: {updated_signal.status}"
-                        ),
-                        from_email="varna.signals.noreply@gmail.com",
-                        recipient_list=citizen_emails,
-                        fail_silently=True,
-                    )
 
             messages.success(
                 request,
