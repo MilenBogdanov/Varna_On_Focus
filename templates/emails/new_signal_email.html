@@ -1,0 +1,10 @@
+{% extends "emails/base_email.html" %}
+
+{% block content %}
+<h2 style="margin:0 0 16px; color:#0d47a1;">Подаден е нов сигнал</h2>
+<p><strong>Номер:</strong> #{{ signal.id }}</p>
+<p><strong>Подател:</strong> {{ created_by_email }}</p>
+<p><strong>Заглавие:</strong> {{ signal.title }}</p>
+<p><strong>Адрес:</strong> {{ signal.address }}</p>
+<p><strong>Описание:</strong><br>{{ signal.description|linebreaksbr }}</p>
+{% endblock %}

@@ -1,0 +1,8 @@
+{% extends "emails/base_email.html" %}
+
+{% block content %}
+<h2 style="margin:0 0 16px; color:#0d47a1;">Промяна на статус на сигнал</h2>
+<p><strong>Сигнал:</strong> #{{ signal.id }} — {{ signal.title }}</p>
+<p><strong>Стар статус:</strong> {{ old_status_display }}</p>
+<p><strong>Нов статус:</strong> {{ new_status_display }}</p>
+{% endblock %}

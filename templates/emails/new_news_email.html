@@ -1,0 +1,8 @@
+{% extends "emails/base_email.html" %}
+
+{% block content %}
+<h2 style="margin:0 0 16px; color:#0d47a1;">Публикувана е нова новина</h2>
+<p><strong>Заглавие:</strong> {{ news.title }}</p>
+<p><strong>Тип:</strong> {{ news.get_source_type_display }}</p>
+<p><strong>Съдържание:</strong><br>{{ news.content|linebreaksbr }}</p>
+{% endblock %}

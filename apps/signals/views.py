@@ -22,7 +22,7 @@ from io import BytesIO
 from django.core.files.base import ContentFile
 from django.urls import reverse
 from apps.core.choices import SignalStatus, AuditOperationType
-from django.core.mail import send_mail
+from notifications.services import send_new_signal_email, send_new_signal_comment_email
 
 MUNICIPALITY_EMAILS = [
     "varnamunicipality1@gmail.com",
@@ -60,18 +60,7 @@ def create_signal(request):
             signal.user = request.user
             signal.save()
 
-            send_mail(
-                subject=f"Нов сигнал #{signal.id}: {signal.title}",
-                message=(
-                    f"Създаден е нов сигнал от {request.user.email}.\n"
-                    f"Заглавие: {signal.title}\n"
-                    f"Адрес: {signal.address}\n"
-                    f"Описание:\n{signal.description}"
-                ),
-                from_email="varna.signals.noreply@gmail.com",
-                recipient_list=MUNICIPALITY_EMAILS,
-                fail_silently=True,
-            )
+            send_new_signal_email(signal, request.user.email, MUNICIPALITY_EMAILS)
 
             images = request.FILES.getlist("images")
 
@@ -458,27 +447,20 @@ def signal_detail(request, pk):
             if is_municipality_admin:
                 participant_emails = _get_signal_participants_emails(signal)
                 if participant_emails:
-                    send_mail(
-                        subject=f"Нов коментар от администрация по сигнал #{signal.id}",
-                        message=(
-                            f"Администратор добави нов коментар към сигнал '{signal.title}'.\n\n"
-                            f"Коментар:\n{comment.content}"
-                        ),
-                        from_email="varna.signals.noreply@gmail.com",
+                    send_new_signal_comment_email(
+                        signal=signal,
+                        comment=comment,
+                        actor_email=request.user.email,
                         recipient_list=participant_emails,
-                        fail_silently=True,
+                        actor_type_label="Администратор",
                     )
             else:
-                send_mail(
-                    subject=f"Нов коментар от гражданин по сигнал #{signal.id}",
-                    message=(
-                        f"Гражданин добави коментар към сигнал '{signal.title}'.\n\n"
-                        f"Потребител: {request.user.email}\n"
-                        f"Коментар:\n{comment.content}"
-                    ),
-                    from_email="varna.signals.noreply@gmail.com",
+                send_new_signal_comment_email(
+                    signal=signal,
+                    comment=comment,
+                    actor_email=request.user.email,
                     recipient_list=MUNICIPALITY_EMAILS,
-                    fail_silently=True,
+                    actor_type_label="Гражданин",
                 )
 
             return redirect(reverse("signals:signal_detail", args=[signal.id]) + "#comments")

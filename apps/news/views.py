@@ -12,7 +12,7 @@ from django.db.models import Q
 from .models import NewsSourceType
 from datetime import datetime
 from django.utils.timezone import now
-from django.core.mail import send_mail
+from notifications.services import send_new_news_email
 from django.shortcuts import get_object_or_404
 from apps.accounts.decorators import admin_or_superadmin_required
 from apps.accounts.models import User
@@ -92,19 +92,7 @@ def create_news(request):
                 .values_list("email", flat=True)
             )
 
-            if citizen_emails:
-                send_mail(
-                    subject=f"Нова новина: {news.title}",
-                    message=(
-                        "Публикувана е нова новина в платформата.\n\n"
-                        f"Заглавие: {news.title}\n"
-                        f"Тип: {news.get_source_type_display()}\n\n"
-                        f"{news.content}"
-                    ),
-                    from_email="varna.signals.noreply@gmail.com",
-                    recipient_list=citizen_emails,
-                    fail_silently=True,
-                )
+            send_new_news_email(news, citizen_emails)
 
             return redirect("news")
 

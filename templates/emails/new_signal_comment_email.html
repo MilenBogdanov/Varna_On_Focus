@@ -1,0 +1,9 @@
+{% extends "emails/base_email.html" %}
+
+{% block content %}
+<h2 style="margin:0 0 16px; color:#0d47a1;">Нов коментар по сигнал</h2>
+<p><strong>Сигнал:</strong> #{{ signal.id }} — {{ signal.title }}</p>
+<p><strong>Тип потребител:</strong> {{ actor_type_label }}</p>
+<p><strong>Имейл:</strong> {{ actor_email }}</p>
+<p><strong>Коментар:</strong><br>{{ comment.content|linebreaksbr }}</p>
+{% endblock %}

@@ -7,7 +7,7 @@ from .models import Signal
 from apps.audit.models import SignalAudit
 from apps.audit.context import get_current_user
 from apps.core.choices import AuditOperationType
-from django.core.mail import send_mail
+from notifications.services import send_signal_status_changed_email
 from apps.accounts.models import User
 
 # 🔹 Запазваме старото състояние временно
@@ -122,19 +122,14 @@ def _notify_citizens_for_status_change(signal, old_status, new_status):
     if not citizen_emails:
         return
 
-    subject = f"Промяна на статус за сигнал #{signal.id}"
-    message = (
-        f"Статусът на сигнал '{signal.title}' е променен.\n"
-        f"Стар статус: {old_status}\n"
-        f"Нов статус: {new_status}"
-    )
+    old_status_display = dict(signal._meta.get_field("status").choices).get(old_status, old_status)
+    new_status_display = dict(signal._meta.get_field("status").choices).get(new_status, new_status)
 
     batch_size = 50
     for i in range(0, len(citizen_emails), batch_size):
-        send_mail(
-            subject=subject,
-            message=message,
-            from_email="varna.signals.noreply@gmail.com",
+        send_signal_status_changed_email(
+            signal=signal,
+            old_status_display=old_status_display,
+            new_status_display=new_status_display,
             recipient_list=citizen_emails[i:i + batch_size],
-            fail_silently=True,
         )
