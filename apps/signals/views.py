@@ -169,8 +169,14 @@ def manage_signal(request, signal_id):
                     created_at=timezone.now()
                 )
 
-                participant_emails = _get_signal_participants_emails(signal)
-                if participant_emails:
+                citizen_emails = sorted(
+                    User.objects.filter(role__name="CITIZEN")
+                    .exclude(email__isnull=True)
+                    .exclude(email="")
+                    .values_list("email", flat=True)
+                    .distinct()
+                )
+                if citizen_emails:
                     send_mail(
                         subject=f"Промяна на статус за сигнал #{signal.id}",
                         message=(
@@ -179,7 +185,7 @@ def manage_signal(request, signal_id):
                             f"Нов статус: {updated_signal.status}"
                         ),
                         from_email="varna.signals.noreply@gmail.com",
-                        recipient_list=participant_emails,
+                        recipient_list=citizen_emails,
                         fail_silently=True,
                     )
 
