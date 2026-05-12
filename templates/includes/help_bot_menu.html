@@ -9,7 +9,7 @@
                  class="enterprise-helpbot-logo">
 
             <span class="enterprise-helpbot-toggle-text">
-                Help Bot
+                Помощен бот / Help Bot
             </span>
         </button>
 
@@ -29,6 +29,25 @@
                         <div class="enterprise-helpbot-title"
                              id="enterpriseHelpbotTitle">
                             Център за помощ
+                        </div>
+
+                        <div class="enterprise-helpbot-lang-switch"
+                             aria-label="Language switcher">
+                            <button type="button"
+                                    class="enterprise-helpbot-lang-btn"
+                                    data-lang="bg">BG</button>
+                            <button type="button"
+                                    class="enterprise-helpbot-lang-btn"
+                                    data-lang="en">EN</button>
+                            <button type="button"
+                                    class="enterprise-helpbot-lang-btn"
+                                    data-lang="de">DE</button>
+                            <button type="button"
+                                    class="enterprise-helpbot-lang-btn"
+                                    data-lang="ru">RU</button>
+                            <button type="button"
+                                    class="enterprise-helpbot-lang-btn"
+                                    data-lang="tr">TR</button>
                         </div>
                     </div>
 
@@ -742,7 +761,6 @@
 
             root: {
                 title: 'Център за помощ',
-                subtitle: 'Изберете секция или въведете ключова дума.',
                 items: [
                     { label: 'Често задавани въпроси', goto: 'faq' },
                     { label: 'Сигнали и статуси', goto: 'signals' },
@@ -888,7 +906,7 @@
 
             root: {
                 title: 'Help Center',
-                subtitle: 'Choose a section or enter a keyword.',
+
                 items: [
                     { label: 'Frequently Asked Questions', goto: 'faq' },
                     { label: 'Signals and Statuses', goto: 'signals' },
