@@ -1,4 +1,4 @@
-<div class="enterprise-helpbot-widget" id="enterpriseHelpbotWidget" aria-label="Enterprise help bot">
+<div class="enterprise-helpbot-widget notranslate" id="enterpriseHelpbotWidget" aria-label="Enterprise help bot" translate="no">
     <div class="enterprise-helpbot-drawer">
 
         <button id="enterpriseHelpbotToggle" type="button" aria-label="Enterprise Help" title="Enterprise Help">
@@ -24,32 +24,17 @@
                     ← Назад
                 </button>
 
-                <div>
-                    <div class="enterprise-helpbot-title"
-                         id="enterpriseHelpbotTitle">
-                        Център за помощ
+                <div class="enterprise-helpbot-head-main">
+                    <div class="enterprise-helpbot-title-row">
+                        <div class="enterprise-helpbot-title"
+                             id="enterpriseHelpbotTitle">
+                            Център за помощ
+                        </div>
                     </div>
 
                     <div class="enterprise-helpbot-subtitle"
-                         id="enterpriseHelpbotSubtitle">
-                        Изберете секция или напишете ключова дума.
-                    </div>
+                         id="enterpriseHelpbotSubtitle"></div>
 
-                    <div class="enterprise-helpbot-lang-switch">
-
-                        <button type="button"
-                                class="enterprise-helpbot-lang-btn active"
-                                data-lang="bg">
-                            BG
-                        </button>
-
-                        <button type="button"
-                                class="enterprise-helpbot-lang-btn"
-                                data-lang="en">
-                            EN
-                        </button>
-
-                    </div>
                 </div>
 
             </div>
@@ -69,6 +54,10 @@
                 </button>
 
             </div>
+
+            <ul class="enterprise-helpbot-suggestions"
+                id="enterpriseHelpbotSuggestions"
+                hidden></ul>
 
             <ul class="enterprise-helpbot-list"
                 id="enterpriseHelpbotList"></ul>
@@ -91,7 +80,43 @@
 .enterprise-helpbot-lang-switch{
     display:flex;
     gap:6px;
-    margin-top:10px;
+    margin-top:0;
+    margin-left:auto;
+}
+
+.enterprise-helpbot-head-main{
+    width:100%;
+}
+
+.enterprise-helpbot-title-row{
+    display:flex;
+    align-items:center;
+    gap:10px;
+}
+
+.enterprise-helpbot-suggestions{
+    list-style:none;
+    margin:0 0 12px;
+    padding:0;
+
+    display:grid;
+    gap:6px;
+}
+
+.enterprise-helpbot-suggestion{
+    width:100%;
+    border:1px solid rgba(148,163,184,0.45);
+    border-radius:9px;
+    background:rgba(15,23,42,0.5);
+    color:#f8fafc;
+    text-align:left;
+    padding:8px 10px;
+    font-size:12px;
+    cursor:pointer;
+}
+
+.enterprise-helpbot-suggestion:hover{
+    background:rgba(30,41,59,0.78);
 }
 
 .enterprise-helpbot-lang-btn{
@@ -568,6 +593,7 @@
     const panel = document.getElementById('enterpriseHelpbotPanel');
 
     const listEl = document.getElementById('enterpriseHelpbotList');
+    const suggestionsEl = document.getElementById('enterpriseHelpbotSuggestions');
     const answerEl = document.getElementById('enterpriseHelpbotAnswer');
 
     const titleEl = document.getElementById('enterpriseHelpbotTitle');
@@ -596,7 +622,7 @@
     });
 }
 
-    if (!widget || !toggle || !panel || !listEl || !answerEl) return;
+    if (!widget || !toggle || !panel || !listEl || !suggestionsEl || !answerEl) return;
 
     // =========================================================
     // LANGUAGE DETECTION
@@ -608,16 +634,24 @@
             (document.documentElement.lang || '')
             .toLowerCase();
 
-        const googleCookie = decodeURIComponent(document.cookie || '');
+        const cookies = decodeURIComponent(document.cookie || '');
+        const googTrans =
+            (cookies.match(/googtrans=([^;]+)/i) || [])[1] || '';
 
-        if (
-            htmlLang.startsWith('en') ||
-            googleCookie.includes('/bg/en')
-        ) {
-            return 'en';
-        }
+        const fromCookie = googTrans
+            .split('/')
+            .filter(Boolean)
+            .pop();
 
-        return 'bg';
+        const candidate =
+            (fromCookie || htmlLang || 'bg')
+            .slice(0, 2);
+
+        const supported = ['bg', 'en', 'de', 'ru', 'tr'];
+
+        return supported.includes(candidate)
+            ? candidate
+            : 'bg';
     }
 
     // =========================================================
@@ -640,7 +674,10 @@
                 'Напишете: сигнал, статус, карта, новини...',
 
             searchButton:
-                'Търси'
+                'Търси',
+
+            suggestionsLabel:
+                'Предложения:'
         },
 
         en: {
@@ -657,7 +694,37 @@
                 'Type: signal, status, map, news...',
 
             searchButton:
-                'Search'
+                'Search',
+
+            suggestionsLabel:
+                'Suggestions:'
+        },
+
+        de: {
+            noResult: 'Kein genaues Ergebnis gefunden. Bitte verwenden Sie „Team kontaktieren“ für weitere Hilfe.',
+            searchMatch: 'Nächstgelegener Hilfebereich:',
+            contactButton: 'Team kontaktieren',
+            searchPlaceholder: 'Schreiben Sie: Meldung, Status, Karte, News...',
+            searchButton: 'Suchen',
+            suggestionsLabel: 'Vorschläge:'
+        },
+
+        ru: {
+            noResult: 'Точное совпадение не найдено. Используйте кнопку «Связаться с командой».',
+            searchMatch: 'Показан наиболее подходящий раздел:',
+            contactButton: 'Связаться с командой',
+            searchPlaceholder: 'Введите: сигнал, статус, карта, новости...',
+            searchButton: 'Поиск',
+            suggestionsLabel: 'Предложения:'
+        },
+
+        tr: {
+            noResult: 'Tam eşleşme bulunamadı. Ek yardım için "Ekiple İletişime Geç" butonunu kullanın.',
+            searchMatch: 'En yakın yardım bölümü gösteriliyor:',
+            contactButton: 'Ekiple İletişim',
+            searchPlaceholder: 'Yazın: bildirim, durum, harita, haber...',
+            searchButton: 'Ara',
+            suggestionsLabel: 'Öneriler:'
         }
     };
 
@@ -957,8 +1024,13 @@
                     }
                 ]
             }
-        }
+        },
+
     };
+
+    data.de = JSON.parse(JSON.stringify(data.en));
+    data.ru = JSON.parse(JSON.stringify(data.en));
+    data.tr = JSON.parse(JSON.stringify(data.en));
 
     // =========================================================
     // SEARCH KEYWORDS
@@ -982,6 +1054,32 @@
             { words: ['role', 'access', 'account', 'login'], target: 'account' },
             { words: ['contact', 'support', 'team'], target: 'contact' },
             { words: ['faq', 'question'], target: 'faq' }
+        ],
+        de: [
+            { words: ['meldung', 'status', 'gelöst'], target: 'signals' },
+            { words: ['karte', 'filter', 'marker'], target: 'map' },
+            { words: ['nachrichten', 'reparatur', 'störung'], target: 'news' },
+            { words: ['rolle', 'zugriff', 'konto', 'login'], target: 'account' },
+            { words: ['kontakt', 'support', 'team'], target: 'contact' },
+            { words: ['faq', 'frage'], target: 'faq' }
+        ],
+
+        ru: [
+            { words: ['сигнал', 'статус', 'решен'], target: 'signals' },
+            { words: ['карта', 'фильтр', 'маркер'], target: 'map' },
+            { words: ['новости', 'ремонт', 'авар'], target: 'news' },
+            { words: ['роль', 'доступ', 'аккаунт', 'вход'], target: 'account' },
+            { words: ['контакт', 'команда', 'поддерж'], target: 'contact' },
+            { words: ['faq', 'вопрос'], target: 'faq' }
+        ],
+
+        tr: [
+            { words: ['bildirim', 'durum', 'çözüldü'], target: 'signals' },
+            { words: ['harita', 'filtre', 'işaret'], target: 'map' },
+            { words: ['haber', 'onarım', 'arıza'], target: 'news' },
+            { words: ['rol', 'erişim', 'hesap', 'giriş'], target: 'account' },
+            { words: ['iletişim', 'destek', 'ekip'], target: 'contact' },
+            { words: ['faq', 'soru'], target: 'faq' }
         ]
     };
 
@@ -1019,6 +1117,7 @@
         backBtn.hidden = history.length === 0;
 
         listEl.innerHTML = '';
+        hideSuggestions();
 
         answerEl.hidden = true;
         answerEl.textContent = '';
@@ -1058,6 +1157,67 @@
     // SEARCH
     // =========================================================
 
+    function hideSuggestions() {
+        suggestionsEl.hidden = true;
+        suggestionsEl.innerHTML = '';
+    }
+
+    function getSearchSuggestions(query) {
+        if (!query) return [];
+
+        return keywordMap[currentLang]
+            .map(function(entry){
+                let score = 0;
+
+                entry.words.forEach(function(word){
+                    if (query.includes(word) || word.includes(query)) {
+                        score += 2;
+                    } else if (word.startsWith(query.slice(0, 2))) {
+                        score += 1;
+                    }
+                });
+
+                return { target: entry.target, score: score };
+            })
+            .filter(function(item){ return item.score > 0; })
+            .sort(function(a,b){ return b.score - a.score; })
+            .slice(0, 3);
+    }
+
+    function renderSuggestions(query) {
+        const suggestions = getSearchSuggestions(query);
+
+        if (!suggestions.length) {
+            hideSuggestions();
+            return;
+        }
+
+        suggestionsEl.innerHTML = '';
+
+        suggestions.forEach(function(item){
+            const li = document.createElement('li');
+            const btn = document.createElement('button');
+
+            btn.type = 'button';
+            btn.className = 'enterprise-helpbot-suggestion';
+            btn.textContent =
+                uiText[currentLang].suggestionsLabel +
+                ' ' +
+                data[currentLang][item.target].title;
+
+            btn.addEventListener('click', function(){
+                history.push(current);
+                render(item.target);
+                hideSuggestions();
+            });
+
+            li.appendChild(btn);
+            suggestionsEl.appendChild(li);
+        });
+
+        suggestionsEl.hidden = false;
+    }
+
     function runSearch() {
 
         const query =
@@ -1065,7 +1225,10 @@
             .trim()
             .toLowerCase();
 
-        if (!query) return;
+        if (!query) {
+            hideSuggestions();
+            return;
+        }
 
         const match =
             keywordMap[currentLang]
@@ -1095,6 +1258,7 @@
                 uiText[currentLang].noResult;
 
             answerEl.hidden = false;
+            renderSuggestions(query);
         }
     }
 
@@ -1138,6 +1302,20 @@
     });
 
     searchBtn.addEventListener('click', runSearch);
+    searchInput.addEventListener('input', function () {
+
+        const query =
+            (searchInput.value || '')
+            .trim()
+            .toLowerCase();
+
+        if (!query) {
+            hideSuggestions();
+            return;
+        }
+
+        renderSuggestions(query);
+    });
 
     searchInput.addEventListener('keydown', function (event) {
 
