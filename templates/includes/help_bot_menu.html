@@ -9,7 +9,7 @@
                  class="enterprise-helpbot-logo">
 
             <span class="enterprise-helpbot-toggle-text">
-                Помощен бот / Help Bot
+                Помощ / Help
             </span>
         </button>
 
@@ -531,6 +531,9 @@
 /* =========================================================
    LIST
 ========================================================= */
+.enterprise-helpbot-list.is-hidden{
+    display:none !important;
+}
 
 .enterprise-helpbot-list{
     list-style:none;
@@ -1160,9 +1163,431 @@
 
     };
 
-    data.de = JSON.parse(JSON.stringify(data.en));
-    data.ru = JSON.parse(JSON.stringify(data.en));
-    data.tr = JSON.parse(JSON.stringify(data.en));
+     data.de = {
+
+    root: {
+        title: 'Hilfezentrum',
+
+        items: [
+            { label: 'Häufig gestellte Fragen', goto: 'faq' },
+            { label: 'Meldungen und Status', goto: 'signals' },
+            { label: 'Karte und Filter', goto: 'map' },
+            { label: 'Nachrichten und Benachrichtigungen', goto: 'news' },
+            { label: 'Profil und Zugriff', goto: 'account' },
+            { label: 'Kontakt und Eskalation', goto: 'contact' }
+        ]
+    },
+
+    faq: {
+        title: 'Häufig gestellte Fragen',
+
+        items: [
+
+            {
+                label: 'Wie sende ich eine Meldung?',
+                answer:
+                    'Öffnen Sie den Bereich „Meldung senden“, wählen Sie einen Standort auf der Karte, fügen Sie eine Beschreibung hinzu und laden Sie bei Bedarf Bilder hoch.'
+            },
+
+            {
+                label: 'Wie verfolge ich den Status?',
+                answer:
+                    'Im Bereich „Meine Meldungen“ können Sie den aktuellen Status und die letzten Änderungen verfolgen.'
+            },
+
+            {
+                label: 'Wie ändere ich die Sprache?',
+                answer:
+                    'Verwenden Sie das Menü „Übersetzung“ oben rechts auf der Plattform.'
+            }
+        ]
+    },
+
+    signals: {
+        title: 'Meldungen und Status',
+
+        items: [
+
+            {
+                label: 'Bilder hinzufügen',
+                answer:
+                    'Die Plattform unterstützt JPG-, PNG- und WEBP-Dateien.'
+            },
+
+            {
+                label: 'Meldung bearbeiten',
+                answer:
+                    'Abhängig vom aktuellen Status können Sie Ihre Meldung bearbeiten.'
+            },
+
+            {
+                label: 'Was bedeuten die Status?',
+                answer:
+                    'Offen – registriert; In Bearbeitung – wird geprüft; Gelöst – abgeschlossen; Abgelehnt – ungültig oder doppelt.'
+            }
+        ]
+    },
+
+    map: {
+        title: 'Karte und Filter',
+
+        items: [
+
+            {
+                label: 'Nach Gebiet filtern',
+                answer:
+                    'Verwenden Sie die Filterleiste, um Ergebnisse nach Gebiet, Kategorie oder Zeitraum einzuschränken.'
+            },
+
+            {
+                label: 'Farblegende',
+                answer:
+                    'Die Markerfarben entsprechen dem aktuellen Status der Meldungen.'
+            }
+        ]
+    },
+
+    news: {
+        title: 'Nachrichten und Benachrichtigungen',
+
+        items: [
+
+            {
+                label: 'Wo finde ich offizielle Nachrichten?',
+                answer:
+                    'Der Bereich „Nachrichten“ enthält Informationen zu Ausfällen, Reparaturen und offiziellen Mitteilungen.'
+            },
+
+            {
+                label: 'Wie verfolge ich neue Veröffentlichungen?',
+                answer:
+                    'Überprüfen Sie regelmäßig den Nachrichtenbereich.'
+            }
+        ]
+    },
+
+    account: {
+        title: 'Profil und Zugriff',
+
+        items: [
+
+            {
+                label: 'Rollen und Berechtigungen',
+                answer:
+                    'Administrative Funktionen hängen von der Benutzerrolle ab.'
+            },
+
+            {
+                label: 'Probleme beim Login',
+                answer:
+                    'Nutzen Sie „Passwort vergessen“ oder kontaktieren Sie den Support.'
+            }
+        ]
+    },
+
+    contact: {
+        title: 'Kontakt und Eskalation',
+
+        items: [
+
+            {
+                label: 'An Support eskalieren',
+                answer:
+                    'Nutzen Sie die Kontaktseite für komplexe oder ungelöste Fälle.'
+            },
+
+            {
+                label: 'Notfälle',
+                answer:
+                    'Nutzen Sie bei dringenden Fällen die offiziellen Kontaktkanäle.'
+            }
+        ]
+    }
+};
+
+data.ru = {
+
+    root: {
+        title: 'Центр помощи',
+
+        items: [
+            { label: 'Частые вопросы', goto: 'faq' },
+            { label: 'Сигналы и статусы', goto: 'signals' },
+            { label: 'Карта и фильтры', goto: 'map' },
+            { label: 'Новости и уведомления', goto: 'news' },
+            { label: 'Профиль и доступ', goto: 'account' },
+            { label: 'Контакты и эскалация', goto: 'contact' }
+        ]
+    },
+
+    faq: {
+        title: 'Частые вопросы',
+
+        items: [
+
+            {
+                label: 'Как отправить сигнал?',
+                answer:
+                    'Откройте раздел «Отправить сигнал», выберите место на карте и добавьте описание.'
+            },
+
+            {
+                label: 'Как проверить статус?',
+                answer:
+                    'В разделе «Мои сигналы» отображается текущий статус и история изменений.'
+            },
+
+            {
+                label: 'Как изменить язык?',
+                answer:
+                    'Используйте меню перевода в правом верхнем углу.'
+            }
+        ]
+    },
+
+    signals: {
+        title: 'Сигналы и статусы',
+
+        items: [
+
+            {
+                label: 'Добавление изображений',
+                answer:
+                    'Поддерживаются изображения JPG, PNG и WEBP.'
+            },
+
+            {
+                label: 'Редактирование сигнала',
+                answer:
+                    'В зависимости от статуса сигнал можно редактировать.'
+            },
+
+            {
+                label: 'Что означают статусы?',
+                answer:
+                    'Открыт – зарегистрирован; В обработке – рассматривается; Решен – завершен; Отклонен – недействительный или дубликат.'
+            }
+        ]
+    },
+
+    map: {
+        title: 'Карта и фильтры',
+
+        items: [
+
+            {
+                label: 'Фильтр по району',
+                answer:
+                    'Используйте фильтры для ограничения результатов по району, категории или периоду.'
+            },
+
+            {
+                label: 'Цветовая легенда',
+                answer:
+                    'Цвета маркеров соответствуют статусам сигналов.'
+            }
+        ]
+    },
+
+    news: {
+        title: 'Новости и уведомления',
+
+        items: [
+
+            {
+                label: 'Где находятся официальные новости?',
+                answer:
+                    'Раздел «Новости» содержит информацию об авариях и официальных объявлениях.'
+            },
+
+            {
+                label: 'Как следить за новостями?',
+                answer:
+                    'Регулярно проверяйте раздел новостей.'
+            }
+        ]
+    },
+
+    account: {
+        title: 'Профиль и доступ',
+
+        items: [
+
+            {
+                label: 'Роли и права',
+                answer:
+                    'Административные функции зависят от роли пользователя.'
+            },
+
+            {
+                label: 'Проблемы со входом',
+                answer:
+                    'Используйте функцию «Забыли пароль» или обратитесь в поддержку.'
+            }
+        ]
+    },
+
+    contact: {
+        title: 'Контакты и эскалация',
+
+        items: [
+
+            {
+                label: 'Передать в поддержку',
+                answer:
+                    'Для сложных случаев используйте страницу контактов.'
+            },
+
+            {
+                label: 'Экстренные случаи',
+                answer:
+                    'При срочных ситуациях используйте официальные каналы связи.'
+            }
+        ]
+    }
+};
+
+data.tr = {
+
+    root: {
+        title: 'Yardım Merkezi',
+
+        items: [
+            { label: 'Sık Sorulan Sorular', goto: 'faq' },
+            { label: 'Bildirimler ve Durumlar', goto: 'signals' },
+            { label: 'Harita ve Filtreler', goto: 'map' },
+            { label: 'Haberler ve Bildirimler', goto: 'news' },
+            { label: 'Profil ve Erişim', goto: 'account' },
+            { label: 'İletişim ve Destek', goto: 'contact' }
+        ]
+    },
+
+    faq: {
+        title: 'Sık Sorulan Sorular',
+
+        items: [
+
+            {
+                label: 'Nasıl bildirim gönderirim?',
+                answer:
+                    '“Bildirim Gönder” bölümünü açın, haritada konum seçin ve açıklama ekleyin.'
+            },
+
+            {
+                label: 'Durumu nasıl takip ederim?',
+                answer:
+                    '“Bildirimlerim” bölümünden mevcut durumu takip edebilirsiniz.'
+            },
+
+            {
+                label: 'Dili nasıl değiştiririm?',
+                answer:
+                    'Sağ üst köşedeki çeviri menüsünü kullanın.'
+            }
+        ]
+    },
+
+    signals: {
+        title: 'Bildirimler ve Durumlar',
+
+        items: [
+
+            {
+                label: 'Fotoğraf ekleme',
+                answer:
+                    'Sistem JPG, PNG ve WEBP formatlarını destekler.'
+            },
+
+            {
+                label: 'Bildirim düzenleme',
+                answer:
+                    'Duruma bağlı olarak bildiriminizi düzenleyebilirsiniz.'
+            },
+
+            {
+                label: 'Durumlar ne anlama gelir?',
+                answer:
+                    'Açık – kayıt edildi; İşlemde – inceleniyor; Çözüldü – tamamlandı; Reddedildi – geçersiz veya tekrar eden kayıt.'
+            }
+        ]
+    },
+
+    map: {
+        title: 'Harita ve Filtreler',
+
+        items: [
+
+            {
+                label: 'Bölgeye göre filtreleme',
+                answer:
+                    'Sonuçları bölgeye, kategoriye veya tarihe göre filtreleyebilirsiniz.'
+            },
+
+            {
+                label: 'Renk açıklaması',
+                answer:
+                    'İşaretçi renkleri bildirim durumlarını gösterir.'
+            }
+        ]
+    },
+
+    news: {
+        title: 'Haberler ve Bildirimler',
+
+        items: [
+
+            {
+                label: 'Resmi haberler nerede?',
+                answer:
+                    'Haberler bölümü arızalar ve resmi duyuruları içerir.'
+            },
+
+            {
+                label: 'Yeni haberleri nasıl takip ederim?',
+                answer:
+                    'Haberler bölümünü düzenli olarak kontrol edin.'
+            }
+        ]
+    },
+
+    account: {
+        title: 'Profil ve Erişim',
+
+        items: [
+
+            {
+                label: 'Roller ve izinler',
+                answer:
+                    'Yönetici yetkileri kullanıcı rolüne göre belirlenir.'
+            },
+
+            {
+                label: 'Giriş sorunları',
+                answer:
+                    '“Şifremi Unuttum” özelliğini kullanın veya destek ekibiyle iletişime geçin.'
+            }
+        ]
+    },
+
+    contact: {
+        title: 'İletişim ve Destek',
+
+        items: [
+
+            {
+                label: 'Destek ekibine ilet',
+                answer:
+                    'Karmaşık durumlar için iletişim sayfasını kullanın.'
+            },
+
+            {
+                label: 'Acil durumlar',
+                answer:
+                    'Kritik durumlarda resmi iletişim kanallarını kullanın.'
+            }
+        ]
+    }
+};
 
     // =========================================================
     // SEARCH KEYWORDS
@@ -1234,6 +1659,7 @@
 
     const history = [];
     let current = 'root';
+    let noResultState = false;
 
     function render(nodeKey) {
 
@@ -1246,6 +1672,9 @@
         titleEl.textContent = node.title;
         subtitleEl.textContent = node.subtitle;
 
+        noResultState = false;
+        listEl.hidden = false;
+        listEl.classList.remove('is-hidden');
         backBtn.hidden = history.length === 0;
 
         listEl.innerHTML = '';
@@ -1375,6 +1804,9 @@
             (searchInput.value || '')
             .trim()
             .toLowerCase();
+        if (noResultState) {
+            return;
+        }
 
         if (!query) {
             hideSuggestions();
@@ -1405,11 +1837,16 @@
 
         } else {
 
+            noResultState = true;
+            listEl.hidden = true;
+            listEl.classList.add('is-hidden');
+            hideSuggestions();
+
             answerEl.textContent =
                 uiText[currentLang].noResult;
 
             answerEl.hidden = false;
-            renderSuggestions(query);
+            backBtn.hidden = false;
         }
     }
 
@@ -1446,6 +1883,16 @@
 
     backBtn.addEventListener('click', function () {
 
+         if (noResultState) {
+            searchInput.value = '';
+            answerEl.hidden = true;
+            listEl.hidden = false;
+            listEl.classList.remove('is-hidden');
+            noResultState = false;
+            render('root');
+            return;
+        }
+
         if (!history.length) return;
 
         const prev = history.pop();
@@ -1459,6 +1906,10 @@
             (searchInput.value || '')
             .trim()
             .toLowerCase();
+
+        if (noResultState) {
+            return;
+        }
 
         if (!query) {
             hideSuggestions();
