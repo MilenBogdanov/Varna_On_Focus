@@ -1,0 +1,15 @@
+<div class="help-bot-wrapper" id="helpBotWrapper">
+    <button type="button" class="help-bot-trigger" id="helpBotTrigger" aria-label="Помощник">
+        <img src="/media/buttons/help_bot.png" alt="Помощник">
+    </button>
+    <div class="help-bot-menu" id="helpBotMenu" hidden>
+        <div class="help-bot-title">С какво мога да помогна?</div>
+        <button type="button" class="help-bot-option" data-answer="За подаване на сигнал: отвори „Подай сигнал“, попълни формата и запази.">Как да подам сигнал?</button>
+        <button type="button" class="help-bot-option" data-answer="В „Моите сигнали“ може да следиш статус: Отворен, В процес, Решен, Отхвърлен.">Как да следя статуса?</button>
+        <button type="button" class="help-bot-option" data-answer="Използвай бутона „Контакти“ за официални канали за връзка.">Къде са контактите?</button>
+        <div class="help-bot-answer" id="helpBotAnswer">Избери въпрос от списъка.</div>
+        <a href="{% url 'contact' %}" class="help-bot-contact-link">Кликни тук, за да се свържеш с отговорен екип.</a>
+    </div>
+</div>
+<style>.help-bot-wrapper{position:fixed;right:20px;bottom:100px;z-index:1200;display:flex;flex-direction:column;align-items:flex-end;gap:10px}.help-bot-trigger{width:64px;height:64px;border:none;background:transparent;padding:0;cursor:pointer;transition:transform .2s ease}.help-bot-trigger:hover{transform:scale(1.06)}.help-bot-trigger img{width:100%;height:100%;object-fit:contain}.help-bot-menu{width:min(320px,calc(100vw - 24px));background:#fff;border:2px solid #d3e1ef;border-radius:14px;padding:12px;box-shadow:0 8px 20px rgba(23,55,89,.2)}.help-bot-title{font-weight:700;color:#19466f;margin-bottom:10px}.help-bot-option{width:100%;border:1px solid #d3e1ef;border-radius:10px;background:#f4f8fc;padding:8px 10px;margin-bottom:8px;text-align:left;cursor:pointer}.help-bot-answer{font-size:.9rem;color:#284d70;background:#f9fcff;border-radius:10px;padding:8px 10px;margin-top:4px}.help-bot-contact-link{display:block;margin-top:10px;color:#0b4f8c;font-weight:700;text-decoration:none}</style>
+<script>(function(){const wrapper=document.getElementById('helpBotWrapper');const trigger=document.getElementById('helpBotTrigger');const menu=document.getElementById('helpBotMenu');const answer=document.getElementById('helpBotAnswer');if(!wrapper||!trigger||!menu||!answer)return;trigger.addEventListener('click',()=>{menu.hidden=!menu.hidden;});menu.querySelectorAll('.help-bot-option').forEach(btn=>{btn.addEventListener('click',()=>{answer.textContent=btn.dataset.answer;});});document.addEventListener('click',(e)=>{if(!wrapper.contains(e.target)){menu.hidden=true;}});})();</script>
