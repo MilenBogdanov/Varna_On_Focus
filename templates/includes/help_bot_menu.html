@@ -1,15 +1,1200 @@
-<div class="help-bot-wrapper" id="helpBotWrapper">
-    <button type="button" class="help-bot-trigger" id="helpBotTrigger" aria-label="Помощник">
-        <img src="/media/buttons/help_bot.png" alt="Помощник">
-    </button>
-    <div class="help-bot-menu" id="helpBotMenu" hidden>
-        <div class="help-bot-title">С какво мога да помогна?</div>
-        <button type="button" class="help-bot-option" data-answer="За подаване на сигнал: отвори „Подай сигнал“, попълни формата и запази.">Как да подам сигнал?</button>
-        <button type="button" class="help-bot-option" data-answer="В „Моите сигнали“ може да следиш статус: Отворен, В процес, Решен, Отхвърлен.">Как да следя статуса?</button>
-        <button type="button" class="help-bot-option" data-answer="Използвай бутона „Контакти“ за официални канали за връзка.">Къде са контактите?</button>
-        <div class="help-bot-answer" id="helpBotAnswer">Избери въпрос от списъка.</div>
-        <a href="{% url 'contact' %}" class="help-bot-contact-link">Кликни тук, за да се свържеш с отговорен екип.</a>
+<div class="enterprise-helpbot-widget" id="enterpriseHelpbotWidget" aria-label="Enterprise help bot">
+    <div class="enterprise-helpbot-drawer">
+
+        <button id="enterpriseHelpbotToggle" type="button" aria-label="Enterprise Help" title="Enterprise Help">
+            <span class="enterprise-helpbot-arrow">❯</span>
+
+            <img src="/media/buttons/help_bot.png"
+                 alt="Помощник"
+                 class="enterprise-helpbot-logo">
+
+            <span class="enterprise-helpbot-toggle-text">
+                Help Bot
+            </span>
+        </button>
+
+        <div id="enterpriseHelpbotPanel" aria-hidden="true">
+
+            <div class="enterprise-helpbot-head">
+
+                <button type="button"
+                        id="enterpriseHelpbotBack"
+                        class="enterprise-helpbot-back"
+                        hidden>
+                    ← Назад
+                </button>
+
+                <div>
+                    <div class="enterprise-helpbot-title"
+                         id="enterpriseHelpbotTitle">
+                        Център за помощ
+                    </div>
+
+                    <div class="enterprise-helpbot-subtitle"
+                         id="enterpriseHelpbotSubtitle">
+                        Изберете секция или напишете ключова дума.
+                    </div>
+
+                    <div class="enterprise-helpbot-lang-switch">
+
+                        <button type="button"
+                                class="enterprise-helpbot-lang-btn active"
+                                data-lang="bg">
+                            BG
+                        </button>
+
+                        <button type="button"
+                                class="enterprise-helpbot-lang-btn"
+                                data-lang="en">
+                            EN
+                        </button>
+
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="enterprise-helpbot-search-wrap">
+
+                <input id="enterpriseHelpbotSearch"
+                       class="enterprise-helpbot-search"
+                       type="text"
+                       placeholder="Напишете: сигнал, статус, карта, новини..."
+                       autocomplete="off">
+
+                <button type="button"
+                        id="enterpriseHelpbotSearchBtn"
+                        class="enterprise-helpbot-search-btn">
+                    Търси
+                </button>
+
+            </div>
+
+            <ul class="enterprise-helpbot-list"
+                id="enterpriseHelpbotList"></ul>
+
+            <div class="enterprise-helpbot-answer"
+                 id="enterpriseHelpbotAnswer"
+                 hidden></div>
+
+            <a href="{% url 'contact' %}"
+               class="enterprise-helpbot-contact-link"
+               id="enterpriseHelpbotContact">
+                Свържете се с екип
+            </a>
+
+        </div>
     </div>
 </div>
-<style>.help-bot-wrapper{position:fixed;right:20px;bottom:100px;z-index:1200;display:flex;flex-direction:column;align-items:flex-end;gap:10px}.help-bot-trigger{width:64px;height:64px;border:none;background:transparent;padding:0;cursor:pointer;transition:transform .2s ease}.help-bot-trigger:hover{transform:scale(1.06)}.help-bot-trigger img{width:100%;height:100%;object-fit:contain}.help-bot-menu{width:min(320px,calc(100vw - 24px));background:#fff;border:2px solid #d3e1ef;border-radius:14px;padding:12px;box-shadow:0 8px 20px rgba(23,55,89,.2)}.help-bot-title{font-weight:700;color:#19466f;margin-bottom:10px}.help-bot-option{width:100%;border:1px solid #d3e1ef;border-radius:10px;background:#f4f8fc;padding:8px 10px;margin-bottom:8px;text-align:left;cursor:pointer}.help-bot-answer{font-size:.9rem;color:#284d70;background:#f9fcff;border-radius:10px;padding:8px 10px;margin-top:4px}.help-bot-contact-link{display:block;margin-top:10px;color:#0b4f8c;font-weight:700;text-decoration:none}</style>
-<script>(function(){const wrapper=document.getElementById('helpBotWrapper');const trigger=document.getElementById('helpBotTrigger');const menu=document.getElementById('helpBotMenu');const answer=document.getElementById('helpBotAnswer');if(!wrapper||!trigger||!menu||!answer)return;trigger.addEventListener('click',()=>{menu.hidden=!menu.hidden;});menu.querySelectorAll('.help-bot-option').forEach(btn=>{btn.addEventListener('click',()=>{answer.textContent=btn.dataset.answer;});});document.addEventListener('click',(e)=>{if(!wrapper.contains(e.target)){menu.hidden=true;}});})();</script>
+
+<style>
+.enterprise-helpbot-lang-switch{
+    display:flex;
+    gap:6px;
+    margin-top:10px;
+}
+
+.enterprise-helpbot-lang-btn{
+    border:1px solid rgba(255,255,255,.24);
+
+    background:rgba(0,0,0,.18);
+
+    color:#ffffff;
+
+    border-radius:8px;
+
+    padding:5px 10px;
+
+    font-size:11px;
+    font-weight:700;
+
+    cursor:pointer;
+
+    transition:
+        background .2s ease,
+        border-color .2s ease,
+        transform .2s ease;
+}
+
+.enterprise-helpbot-lang-btn:hover{
+    background:rgba(255,255,255,.12);
+    transform:translateY(-1px);
+}
+
+.enterprise-helpbot-lang-btn.active{
+    background:linear-gradient(
+        135deg,
+        #2563eb,
+        #38bdf8
+    );
+
+    border-color:rgba(255,255,255,.5);
+}
+/* =========================================================
+   MAIN WIDGET POSITION
+========================================================= */
+
+.enterprise-helpbot-widget{
+    position: fixed;
+
+    /* ТОЧНО ПОД ПРЕВОДА */
+    top: 178px;
+    right: 0;
+
+    z-index: 9998;
+    font-family: inherit;
+}
+
+/* =========================================================
+   DRAWER
+========================================================= */
+
+.enterprise-helpbot-drawer{
+    width: 58px;
+    max-height: 54px;
+    overflow: hidden;
+
+    border-radius: 16px 0 0 16px;
+
+    /* СЪЩИЯ GLASSMORPHISM STYLE */
+    background: rgba(255,255,255,0.08);
+
+    backdrop-filter: blur(26px) saturate(180%);
+    -webkit-backdrop-filter: blur(26px) saturate(180%);
+
+    border: 1px solid rgba(255,255,255,0.35);
+
+    box-shadow:
+        0 25px 60px rgba(0,0,0,0.25),
+        inset 0 1px 0 rgba(255,255,255,0.5);
+
+    color: #ffffff;
+
+    transition:
+        width .28s ease,
+        max-height .32s ease,
+        box-shadow .25s ease,
+        transform .25s ease;
+
+    position: relative;
+}
+
+.enterprise-helpbot-drawer::before{
+    content:"";
+    position:absolute;
+    inset:0;
+
+    background: linear-gradient(
+        to bottom,
+        rgba(255,255,255,0.25),
+        rgba(255,255,255,0.05) 40%,
+        transparent 70%
+    );
+
+    pointer-events:none;
+}
+
+.enterprise-helpbot-drawer:hover{
+    transform: translateY(-3px) scale(1.02);
+
+    box-shadow:
+        0 35px 80px rgba(0,0,0,0.35),
+        inset 0 1px 0 rgba(255,255,255,0.7);
+}
+
+.enterprise-helpbot-widget.open .enterprise-helpbot-drawer{
+    width: 380px;
+    max-height: 760px;
+
+    box-shadow:
+        0 40px 90px rgba(0,0,0,0.45),
+        inset 0 1px 0 rgba(255,255,255,0.7);
+}
+
+.enterprise-helpbot-drawer,
+.enterprise-helpbot-drawer *{
+    text-shadow:
+        0 1px 2px rgba(0,0,0,0.4),
+        0 2px 6px rgba(0,0,0,0.2);
+}
+
+/* =========================================================
+   TOGGLE BUTTON
+========================================================= */
+
+#enterpriseHelpbotToggle{
+    width: 100%;
+    min-height: 54px;
+
+    border: 0;
+    background: transparent;
+    color: inherit;
+
+    cursor: pointer;
+
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    padding: 0 14px;
+
+    text-align: left;
+}
+
+#enterpriseHelpbotToggle:hover{
+    background: rgba(148,163,184,0.14);
+}
+
+.enterprise-helpbot-arrow{
+    font-size: 14px;
+    opacity: .95;
+
+    transform: translateX(0) rotate(0deg);
+    transition: transform .3s ease;
+}
+
+.enterprise-helpbot-widget.open .enterprise-helpbot-arrow{
+    transform: translateX(2px) rotate(180deg);
+}
+
+.enterprise-helpbot-logo{
+    width: 22px;
+    height: 22px;
+
+    object-fit: contain;
+
+    border-radius: 50%;
+    background: #fff;
+    padding: 2px;
+}
+
+.enterprise-helpbot-toggle-text{
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: .01em;
+
+    opacity: 0;
+    transform: translateX(4px);
+
+    transition:
+        opacity .2s ease,
+        transform .24s ease;
+
+    white-space: nowrap;
+}
+
+.enterprise-helpbot-widget.open .enterprise-helpbot-toggle-text{
+    opacity: 1;
+    transform: translateX(0);
+}
+
+/* =========================================================
+   PANEL
+========================================================= */
+
+#enterpriseHelpbotPanel{
+    border-top: 1px solid rgba(148,163,184,0.26);
+
+    padding: 12px;
+
+    opacity: 0;
+    transform: translateY(-8px);
+
+    transition:
+        opacity .22s ease,
+        transform .22s ease;
+}
+
+.enterprise-helpbot-widget.open #enterpriseHelpbotPanel{
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* =========================================================
+   HEADER
+========================================================= */
+
+.enterprise-helpbot-head{
+    display:flex;
+    gap:10px;
+    align-items:flex-start;
+
+    margin-bottom:12px;
+}
+
+.enterprise-helpbot-back{
+    border:1px solid rgba(255,255,255,.32);
+    border-radius:9px;
+
+    background: rgba(0,0,0,.22);
+    color:#f8fafc;
+
+    padding:6px 8px;
+    cursor:pointer;
+}
+
+.enterprise-helpbot-title{
+    font-weight:700;
+    font-size:16px;
+    margin-bottom:3px;
+}
+
+.enterprise-helpbot-subtitle{
+    font-size:12px;
+    color:#dce7f2;
+}
+
+/* =========================================================
+   SEARCH
+========================================================= */
+
+.enterprise-helpbot-search-wrap{
+    display:grid;
+    grid-template-columns:1fr auto;
+    gap:8px;
+
+    margin-bottom:12px;
+}
+
+.enterprise-helpbot-search{
+    border:1px solid rgba(255,255,255,.28);
+    border-radius:10px;
+
+    background: rgba(0,0,0,.18);
+
+    color:#f8fafc;
+
+    padding:9px 10px;
+    font-size:13px;
+}
+
+.enterprise-helpbot-search::placeholder{
+    color:#d6e3ef;
+}
+
+.enterprise-helpbot-search-btn{
+    border:1px solid rgba(255,255,255,.32);
+    border-radius:10px;
+
+    background: rgba(0,0,0,.22);
+
+    color:#ffffff;
+
+    padding:8px 12px;
+
+    cursor:pointer;
+    font-weight:700;
+
+    transition:
+        background .2s ease,
+        border-color .2s ease;
+}
+
+.enterprise-helpbot-search-btn:hover{
+    background: rgba(0,0,0,.30);
+    border-color: rgba(255,255,255,.5);
+}
+
+/* =========================================================
+   LIST
+========================================================= */
+
+.enterprise-helpbot-list{
+    list-style:none;
+    margin:0;
+    padding:0;
+
+    display:grid;
+    gap:8px;
+}
+
+.enterprise-helpbot-item{
+    width:100%;
+
+    border: 1px solid rgba(255,255,255,0.18);
+    border-radius: 10px;
+
+    background: rgba(0,0,0,0.18);
+
+    color:#f8fafc;
+
+    text-align:left;
+
+    padding:9px 10px;
+
+    font-size:13px;
+    line-height:1.35;
+
+    cursor:pointer;
+
+    transition:
+        background .2s ease,
+        border-color .2s ease,
+        transform .18s ease;
+}
+
+.enterprise-helpbot-item:hover{
+    background: rgba(0,0,0,0.28);
+
+    border-color: rgba(255,255,255,0.45);
+
+    transform: translateX(-2px);
+}
+
+/* =========================================================
+   ANSWER BOX
+========================================================= */
+
+@keyframes helpbotFade{
+
+    from{
+        opacity:0;
+        transform:translateY(6px);
+    }
+
+    to{
+        opacity:1;
+        transform:translateY(0);
+    }
+}
+
+.enterprise-helpbot-answer{
+    margin-top:12px;
+
+    border-radius:14px;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(30,58,95,.95),
+            rgba(37,99,235,.88)
+        );
+
+    border:1px solid rgba(96,165,250,.55);
+
+    color:#f8fafc;
+
+    padding:14px;
+
+    font-size:13px;
+    line-height:1.6;
+
+    box-shadow:
+        0 10px 30px rgba(0,0,0,.28);
+
+    animation:
+        helpbotFade .22s ease;
+}
+
+/* =========================================================
+   CONTACT
+========================================================= */
+
+.enterprise-helpbot-contact-link{
+    margin-top:14px;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+
+    padding:12px 14px;
+
+    border-radius:12px;
+
+    background: linear-gradient(
+        135deg,
+        #1d4ed8 0%,
+        #2563eb 45%,
+        #38bdf8 100%
+    );
+
+    border:1px solid rgba(255,255,255,0.22);
+
+    color:#ffffff;
+
+    font-weight:700;
+    font-size:13px;
+
+    text-decoration:none;
+
+    box-shadow:
+        0 10px 25px rgba(37,99,235,0.35);
+
+    transition:
+        transform .2s ease,
+        box-shadow .2s ease,
+        opacity .2s ease;
+}
+
+.enterprise-helpbot-contact-link:hover{
+    transform: translateY(-2px) scale(1.01);
+
+    box-shadow:
+        0 16px 35px rgba(37,99,235,0.45);
+
+    text-decoration:none;
+}
+
+.enterprise-helpbot-contact-link::before{
+    content:"✉";
+    font-size:15px;
+}
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 640px){
+
+    .enterprise-helpbot-widget{
+        top: 175px;
+        right: 0;
+    }
+
+    .enterprise-helpbot-widget.open .enterprise-helpbot-drawer{
+        width: min(92vw, 360px);
+    }
+
+}
+
+</style>
+
+<script>
+(function () {
+
+    const widget = document.getElementById('enterpriseHelpbotWidget');
+    const toggle = document.getElementById('enterpriseHelpbotToggle');
+    const panel = document.getElementById('enterpriseHelpbotPanel');
+
+    const listEl = document.getElementById('enterpriseHelpbotList');
+    const answerEl = document.getElementById('enterpriseHelpbotAnswer');
+
+    const titleEl = document.getElementById('enterpriseHelpbotTitle');
+    const subtitleEl = document.getElementById('enterpriseHelpbotSubtitle');
+
+    const backBtn = document.getElementById('enterpriseHelpbotBack');
+
+    const searchInput = document.getElementById('enterpriseHelpbotSearch');
+    const searchBtn = document.getElementById('enterpriseHelpbotSearchBtn');
+
+    const contactBtn = document.getElementById('enterpriseHelpbotContact');
+    let currentLang =
+    localStorage.getItem('enterprise_helpbot_lang')
+    || detectLanguage();
+    const langButtons =
+    document.querySelectorAll('.enterprise-helpbot-lang-btn');
+    function updateLanguageButtons(){
+
+    langButtons.forEach(function(btn){
+
+        btn.classList.toggle(
+            'active',
+            btn.dataset.lang === currentLang
+        );
+
+    });
+}
+
+    if (!widget || !toggle || !panel || !listEl || !answerEl) return;
+
+    // =========================================================
+    // LANGUAGE DETECTION
+    // =========================================================
+
+    function detectLanguage() {
+
+        const htmlLang =
+            (document.documentElement.lang || '')
+            .toLowerCase();
+
+        const googleCookie = decodeURIComponent(document.cookie || '');
+
+        if (
+            htmlLang.startsWith('en') ||
+            googleCookie.includes('/bg/en')
+        ) {
+            return 'en';
+        }
+
+        return 'bg';
+    }
+
+    // =========================================================
+    // STATIC TEXTS
+    // =========================================================
+
+    const uiText = {
+
+        bg: {
+            noResult:
+                'Не открихме точен резултат. Моля, използвайте бутона „Свържете се с екип“ за допълнителна помощ.',
+
+            searchMatch:
+                'Показваме най-близката секция според вашата заявка:',
+
+            contactButton:
+                'Свържете се с екип',
+
+            searchPlaceholder:
+                'Напишете: сигнал, статус, карта, новини...',
+
+            searchButton:
+                'Търси'
+        },
+
+        en: {
+            noResult:
+                'No exact result was found. Please use the "Contact Team" button for additional assistance.',
+
+            searchMatch:
+                'Showing the closest matching help section:',
+
+            contactButton:
+                'Contact Team',
+
+            searchPlaceholder:
+                'Type: signal, status, map, news...',
+
+            searchButton:
+                'Search'
+        }
+    };
+
+    // =========================================================
+    // BOT CONTENT
+    // =========================================================
+
+    const data = {
+
+        // =====================================================
+        // BULGARIAN
+        // =====================================================
+
+        bg: {
+
+            root: {
+                title: 'Център за помощ',
+                subtitle: 'Изберете секция или въведете ключова дума.',
+                items: [
+                    { label: 'Често задавани въпроси', goto: 'faq' },
+                    { label: 'Сигнали и статуси', goto: 'signals' },
+                    { label: 'Карта и филтри', goto: 'map' },
+                    { label: 'Новини и известия', goto: 'news' },
+                    { label: 'Профил и достъп', goto: 'account' },
+                    { label: 'Ескалация и контакт', goto: 'contact' }
+                ]
+            },
+
+            faq: {
+                title: 'Често задавани въпроси',
+                subtitle: 'Най-често използваните функционалности.',
+                items: [
+
+                    {
+                        label: 'Как да подам сигнал?',
+                        answer:
+                            'Отворете секцията „Подай сигнал“, изберете локация върху картата, добавете описание и при нужда прикачете снимки. След изпращане сигналът ще бъде регистриран в системата.'
+                    },
+
+                    {
+                        label: 'Как да проследя статуса?',
+                        answer:
+                            'В секцията „Моите сигнали“ можете да следите текущия статус, историята на промените и последните действия по вашия случай.'
+                    },
+
+                    {
+                        label: 'Как да сменя езика?',
+                        answer:
+                            'Използвайте менюто „Превод / Translation“ в горния десен ъгъл, за да изберете предпочитан език на платформата.'
+                    }
+                ]
+            },
+
+            signals: {
+                title: 'Сигнали и статуси',
+                subtitle: 'Управление и обработка на сигнали.',
+                items: [
+
+                    {
+                        label: 'Добавяне на снимки',
+                        answer:
+                            'Системата поддържа качване на изображения във формати JPG, PNG и WEBP. Снимките помагат за по-бърза и точна обработка на сигнала.'
+                    },
+
+                    {
+                        label: 'Редакция на сигнал',
+                        answer:
+                            'При определени статуси е възможно да редактирате подадения сигнал чрез бутона „Редакция“ в страницата с детайли.'
+                    },
+
+                    {
+                        label: 'Какво означават статусите?',
+                        answer:
+                            'Отворен – сигналът е регистриран; В процес – обработва се; Решен – проблемът е приключен; Отхвърлен – невалиден или дублиран случай.'
+                    }
+                ]
+            },
+
+            map: {
+                title: 'Карта и филтри',
+                subtitle: 'Преглед и филтриране на сигнали.',
+                items: [
+
+                    {
+                        label: 'Филтриране по район',
+                        answer:
+                            'Използвайте панела с филтри, за да ограничите резултатите по район, категория, статус или период.'
+                    },
+
+                    {
+                        label: 'Легенда на цветовете',
+                        answer:
+                            'Цветовете на маркерите отговарят на различните статуси на сигналите и улесняват визуалната ориентация.'
+                    }
+                ]
+            },
+
+            news: {
+                title: 'Новини и известия',
+                subtitle: 'Официални публикации и актуализации.',
+                items: [
+
+                    {
+                        label: 'Къде са официалните новини?',
+                        answer:
+                            'Секцията „Новини“ съдържа информация за аварии, ремонти, планирани дейности и важни съобщения от администрацията.'
+                    },
+
+                    {
+                        label: 'Как да следя новите публикации?',
+                        answer:
+                            'Препоръчително е периодично да проверявате секцията „Новини“ за най-актуалната информация.'
+                    }
+                ]
+            },
+
+            account: {
+                title: 'Профил и достъп',
+                subtitle: 'Управление на профил и права.',
+                items: [
+
+                    {
+                        label: 'Роли и права',
+                        answer:
+                            'Достъпът до административни функционалности се определя от ролята на потребителя в системата.'
+                    },
+
+                    {
+                        label: 'Проблем с входа',
+                        answer:
+                            'При проблем с достъпа използвайте функцията „Забравена парола“ или се свържете с администратор.'
+                    }
+                ]
+            },
+
+            contact: {
+                title: 'Ескалация и контакт',
+                subtitle: 'Свързване с поддръжката.',
+                items: [
+
+                    {
+                        label: 'Ескалиране към екип',
+                        answer:
+                            'При сложни или нерешени казуси използвайте страницата „Контакти“, като предоставите максимално подробна информация.'
+                    },
+
+                    {
+                        label: 'Спешни случаи',
+                        answer:
+                            'При критични ситуации използвайте официалните канали за връзка, посочени в секцията „Контакти“.'
+                    }
+                ]
+            }
+        },
+
+        // =====================================================
+        // ENGLISH
+        // =====================================================
+
+        en: {
+
+            root: {
+                title: 'Help Center',
+                subtitle: 'Choose a section or enter a keyword.',
+                items: [
+                    { label: 'Frequently Asked Questions', goto: 'faq' },
+                    { label: 'Signals and Statuses', goto: 'signals' },
+                    { label: 'Map and Filters', goto: 'map' },
+                    { label: 'News and Notifications', goto: 'news' },
+                    { label: 'Profile and Access', goto: 'account' },
+                    { label: 'Escalation and Contact', goto: 'contact' }
+                ]
+            },
+
+            faq: {
+                title: 'Frequently Asked Questions',
+                subtitle: 'Most commonly used platform features.',
+                items: [
+
+                    {
+                        label: 'How do I submit a signal?',
+                        answer:
+                            'Open the "Submit Signal" section, choose a location on the map, add a description and attach photos if necessary. After submission, the signal will be registered in the system.'
+                    },
+
+                    {
+                        label: 'How do I track the status?',
+                        answer:
+                            'In the "My Signals" section you can monitor the current status, change history and latest actions related to your case.'
+                    },
+
+                    {
+                        label: 'How do I change the language?',
+                        answer:
+                            'Use the "Translation" menu in the top-right corner to switch the platform language.'
+                    }
+                ]
+            },
+
+            signals: {
+                title: 'Signals and Statuses',
+                subtitle: 'Managing and processing reports.',
+                items: [
+
+                    {
+                        label: 'Adding photos',
+                        answer:
+                            'The platform supports JPG, PNG and WEBP image uploads. Photos help improve the accuracy and speed of case processing.'
+                    },
+
+                    {
+                        label: 'Editing a signal',
+                        answer:
+                            'Depending on the current status, you may edit your submitted signal using the "Edit" button in the details page.'
+                    },
+
+                    {
+                        label: 'What do the statuses mean?',
+                        answer:
+                            'Open – registered; In Progress – currently being processed; Resolved – completed; Rejected – invalid or duplicate case.'
+                    }
+                ]
+            },
+
+            map: {
+                title: 'Map and Filters',
+                subtitle: 'Viewing and filtering reports.',
+                items: [
+
+                    {
+                        label: 'Filtering by area',
+                        answer:
+                            'Use the filter panel to narrow results by district, category, status or date range.'
+                    },
+
+                    {
+                        label: 'Marker color legend',
+                        answer:
+                            'Marker colors correspond to the current status of each signal for easier visual identification.'
+                    }
+                ]
+            },
+
+            news: {
+                title: 'News and Notifications',
+                subtitle: 'Official announcements and updates.',
+                items: [
+
+                    {
+                        label: 'Where can I find official news?',
+                        answer:
+                            'The News section contains outage information, maintenance updates and official municipal announcements.'
+                    },
+
+                    {
+                        label: 'How do I follow new updates?',
+                        answer:
+                            'We recommend checking the News section regularly for the latest published information.'
+                    }
+                ]
+            },
+
+            account: {
+                title: 'Profile and Access',
+                subtitle: 'Account permissions and access.',
+                items: [
+
+                    {
+                        label: 'Roles and permissions',
+                        answer:
+                            'Administrative features and permissions are assigned according to the user role in the system.'
+                    },
+
+                    {
+                        label: 'Login problems',
+                        answer:
+                            'Use the "Forgot Password" option or contact the support team if access problems continue.'
+                    }
+                ]
+            },
+
+            contact: {
+                title: 'Escalation and Contact',
+                subtitle: 'Support and escalation channels.',
+                items: [
+
+                    {
+                        label: 'Escalate to support team',
+                        answer:
+                            'For unresolved or complex issues, please use the Contact page and provide detailed information regarding your case.'
+                    },
+
+                    {
+                        label: 'Emergency situations',
+                        answer:
+                            'For critical incidents, please use the official emergency contact channels listed in the Contact section.'
+                    }
+                ]
+            }
+        }
+    };
+
+    // =========================================================
+    // SEARCH KEYWORDS
+    // =========================================================
+
+    const keywordMap = {
+
+        bg: [
+            { words: ['сигнал', 'статус', 'решен'], target: 'signals' },
+            { words: ['карта', 'филтър', 'маркер'], target: 'map' },
+            { words: ['новини', 'ремонт', 'авар'], target: 'news' },
+            { words: ['роля', 'достъп', 'акаунт', 'вход'], target: 'account' },
+            { words: ['контакт', 'екип', 'ескала'], target: 'contact' },
+            { words: ['faq', 'въпрос'], target: 'faq' }
+        ],
+
+        en: [
+            { words: ['signal', 'status', 'resolved'], target: 'signals' },
+            { words: ['map', 'filter', 'marker'], target: 'map' },
+            { words: ['news', 'repair', 'outage'], target: 'news' },
+            { words: ['role', 'access', 'account', 'login'], target: 'account' },
+            { words: ['contact', 'support', 'team'], target: 'contact' },
+            { words: ['faq', 'question'], target: 'faq' }
+        ]
+    };
+
+    // =========================================================
+    // APPLY UI LANGUAGE
+    // =========================================================
+
+    searchInput.placeholder =
+        uiText[currentLang].searchPlaceholder;
+
+    searchBtn.textContent =
+        uiText[currentLang].searchButton;
+
+    contactBtn.textContent =
+        uiText[currentLang].contactButton;
+
+    // =========================================================
+    // BOT RENDERING
+    // =========================================================
+
+    const history = [];
+    let current = 'root';
+
+    function render(nodeKey) {
+
+        const node = data[currentLang][nodeKey];
+        if (!node) return;
+
+        current = nodeKey;
+        updateLanguageButtons();
+
+        titleEl.textContent = node.title;
+        subtitleEl.textContent = node.subtitle;
+
+        backBtn.hidden = history.length === 0;
+
+        listEl.innerHTML = '';
+
+        answerEl.hidden = true;
+        answerEl.textContent = '';
+
+        node.items.forEach(function (item) {
+
+            const li = document.createElement('li');
+
+            const btn = document.createElement('button');
+
+            btn.type = 'button';
+            btn.className = 'enterprise-helpbot-item';
+            btn.textContent = item.label;
+
+            btn.addEventListener('click', function () {
+
+                if (item.goto) {
+
+                    history.push(current);
+                    render(item.goto);
+                    return;
+                }
+
+                if (item.answer) {
+
+                    answerEl.textContent = item.answer;
+                    answerEl.hidden = false;
+                }
+            });
+
+            li.appendChild(btn);
+            listEl.appendChild(li);
+        });
+    }
+
+    // =========================================================
+    // SEARCH
+    // =========================================================
+
+    function runSearch() {
+
+        const query =
+            (searchInput.value || '')
+            .trim()
+            .toLowerCase();
+
+        if (!query) return;
+
+        const match =
+            keywordMap[currentLang]
+            .find(function (entry) {
+
+                return entry.words.some(function (word) {
+                    return query.includes(word);
+                });
+            });
+
+        if (match) {
+
+            history.push(current);
+
+            render(match.target);
+
+            answerEl.textContent =
+                uiText[currentLang].searchMatch +
+                ' ' +
+                data[currentLang][match.target].title;
+
+            answerEl.hidden = false;
+
+        } else {
+
+            answerEl.textContent =
+                uiText[currentLang].noResult;
+
+            answerEl.hidden = false;
+        }
+    }
+
+    // =========================================================
+    // EVENTS
+    // =========================================================
+
+    toggle.addEventListener('click', function () {
+
+        searchInput.placeholder =
+            uiText[currentLang].searchPlaceholder;
+
+        searchBtn.textContent =
+            uiText[currentLang].searchButton;
+
+        contactBtn.textContent =
+            uiText[currentLang].contactButton;
+
+        render(current);
+
+        const isOpen =
+            widget.classList.toggle('open');
+
+        panel.setAttribute(
+            'aria-hidden',
+            isOpen ? 'false' : 'true'
+        );
+
+        if (isOpen) {
+            searchInput.focus();
+        }
+
+    });
+
+    backBtn.addEventListener('click', function () {
+
+        if (!history.length) return;
+
+        const prev = history.pop();
+        render(prev);
+    });
+
+    searchBtn.addEventListener('click', runSearch);
+
+    searchInput.addEventListener('keydown', function (event) {
+
+        if (event.key === 'Enter') {
+            runSearch();
+        }
+    });
+
+    document.addEventListener('click', function (event) {
+
+        if (!widget.classList.contains('open')) return;
+
+        const clickedInside =
+            event.target.closest('#enterpriseHelpbotWidget');
+
+        if (!clickedInside) {
+
+            widget.classList.remove('open');
+
+            panel.setAttribute(
+                'aria-hidden',
+                'true'
+            );
+        }
+
+    }, true);
+
+    // =========================================================
+    // INIT
+    // =========================================================
+
+    langButtons.forEach(function(btn){
+
+        btn.addEventListener('click', function(){
+
+            currentLang = btn.dataset.lang;
+
+            localStorage.setItem(
+                'enterprise_helpbot_lang',
+                currentLang
+            );
+
+            searchInput.placeholder =
+                uiText[currentLang].searchPlaceholder;
+
+            searchBtn.textContent =
+                uiText[currentLang].searchButton;
+
+            contactBtn.textContent =
+                uiText[currentLang].contactButton;
+
+            render(current);
+
+        });
+
+    });
+    render('root');
+
+})();
+</script>
