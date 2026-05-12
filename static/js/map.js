@@ -2,6 +2,9 @@ let map;
 let markers = [];
 let markerCluster;
 let userLatLng = null;
+let signalSearchData = [];
+let selectedSuggestionIndex = -1;
+let currentSearchResults = [];
 
 /* ================= MODERN MARKER ================= */
 
@@ -156,6 +159,7 @@ function initMap() {
         const bounds = [];
 
         markers = [];
+        signalSearchData = [];
 
         data.forEach(signal => {
 
@@ -233,7 +237,16 @@ function initMap() {
                 marker:marker,
                 status:signal.status,
                 category:signal.category,
-                created_at:signal.created_at
+                created_at:signal.created_at,
+                title:signal.title,
+                id:signal.id
+            });
+
+            signalSearchData.push({
+                id: signal.id,
+                title: signal.title || "",
+                category: signal.category || "Без категория",
+                marker: marker
             });
 
             categories.add(signal.category);
@@ -261,6 +274,7 @@ function initMap() {
         if(bounds.length > 0){
             map.fitBounds(bounds,{padding:[200,200]});
         }
+        setupSignalSearch();
 
     });
 
@@ -277,6 +291,108 @@ function initMap() {
 
 
 
+}
+
+function setupSignalSearch(){
+
+    const input = document.getElementById("signalSearchInput");
+    const suggestions = document.getElementById("signalSuggestions");
+
+    if(!input || !suggestions) return;
+
+    const hideSuggestions = () => {
+        suggestions.classList.remove("show");
+        suggestions.innerHTML = "";
+        selectedSuggestionIndex = -1;
+    };
+
+    const renderSuggestions = (results) => {
+        suggestions.innerHTML = "";
+        selectedSuggestionIndex = -1;
+        currentSearchResults = results;
+
+        if(!results.length){
+            hideSuggestions();
+            return;
+        }
+
+        results.forEach((signal, index) => {
+            const li = document.createElement("li");
+            li.className = "search-suggestion-item";
+            li.setAttribute("role", "option");
+            li.dataset.index = String(index);
+            li.innerHTML = `
+                ${signal.title}
+                <span class="search-suggestion-meta">${signal.category}</span>
+            `;
+
+            li.addEventListener("click", () => openSignalDetails(signal));
+            suggestions.appendChild(li);
+        });
+
+        suggestions.classList.add("show");
+    };
+
+    input.addEventListener("input", function(){
+        const query = this.value.trim().toLowerCase();
+
+        if(!query){
+            currentSearchResults = [];
+            hideSuggestions();
+            return;
+        }
+
+        const results = signalSearchData
+            .filter(item => item.title.toLowerCase().includes(query))
+            .slice(0, 8);
+
+        renderSuggestions(results);
+    });
+
+    input.addEventListener("keydown", function(event){
+        const items = Array.from(suggestions.querySelectorAll(".search-suggestion-item"));
+        if(!items.length) return;
+
+        if(event.key === "ArrowDown"){
+            event.preventDefault();
+            selectedSuggestionIndex = (selectedSuggestionIndex + 1) % items.length;
+            updateActiveSuggestion(items);
+        } else if(event.key === "ArrowUp"){
+            event.preventDefault();
+            selectedSuggestionIndex = (selectedSuggestionIndex - 1 + items.length) % items.length;
+            updateActiveSuggestion(items);
+        } else if(event.key === "Enter"){
+            event.preventDefault();
+            const index = selectedSuggestionIndex >= 0 ? selectedSuggestionIndex : 0;
+            const signal = currentSearchResults[index];
+            if(signal) openSignalDetails(signal);
+        } else if(event.key === "Escape"){
+            hideSuggestions();
+        }
+    });
+
+    document.addEventListener("click", function(event){
+        if(!event.target.closest("#mapSearch")){
+            hideSuggestions();
+        }
+    });
+}
+
+function updateActiveSuggestion(items){
+    items.forEach((item, idx) => {
+        item.classList.toggle("active", idx === selectedSuggestionIndex);
+    });
+}
+
+function openSignalDetails(signal){
+    if(signal.marker){
+        markerCluster.zoomToShowLayer(signal.marker, function(){
+            map.setView(signal.marker.getLatLng(), Math.max(map.getZoom(), 15), { animate: true });
+            signal.marker.openPopup();
+        });
+    }
+
+    window.location.href = `/signals/${signal.id}/`;
 }
 
 /* ================= FILTERS ================= */

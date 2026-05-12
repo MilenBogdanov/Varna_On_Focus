@@ -110,7 +110,19 @@
 
 <div class="map-container">
     <div id="map"></div>
-    <div class="map-legend">
+    <div class="map-search map-search-floating" id="mapSearch">
+        <div class="search-input-wrapper">
+            <input type="text"
+                   id="signalSearchInput"
+                   class="search-input"
+                   placeholder="🔍︎ Търси..."
+                   autocomplete="off"
+                   aria-label="Търсене на сигнал по заглавие">
+        </div>
+        <ul id="signalSuggestions" class="search-suggestions" role="listbox"></ul>
+    </div>
+
+<div class="map-legend">
         <div class="legend-title">⚲ Легенда на сигналите</div>
 
         <div class="legend-item">
