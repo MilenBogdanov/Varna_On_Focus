@@ -4,7 +4,9 @@ from django.contrib import messages
 from django.core.paginator import Paginator
 from django.contrib.auth import logout
 from datetime import datetime, timedelta
+import csv
 from django.utils import timezone
+from django.http import HttpResponse
 from apps.accounts.decorators import (
     citizen_required,
     municipal_admin_required,
@@ -564,6 +566,35 @@ def all_signals_view(request):
 
     if category:
         signals = signals.filter(category_id=category)
+
+    if request.GET.get("export") == "csv":
+        response = HttpResponse(content_type="text/csv; charset=utf-8")
+        response["Content-Disposition"] = 'attachment; filename="signals_export.csv"'
+        response.write("\ufeff")
+
+        writer = csv.writer(response)
+        writer.writerow([
+            "ID",
+            "Заглавие",
+            "Статус",
+            "Категория",
+            "Подаден от",
+            "Адрес",
+            "Дата",
+        ])
+
+        for signal in signals:
+            writer.writerow([
+                signal.id,
+                signal.title,
+                signal.get_status_display(),
+                signal.category.name if signal.category else "",
+                str(signal.user) if signal.user else "",
+                signal.address or "",
+                timezone.localtime(signal.created_at).strftime("%d.%m.%Y %H:%M"),
+            ])
+
+        return response
 
     paginator = Paginator(signals, 12)
     page = request.GET.get("page")
