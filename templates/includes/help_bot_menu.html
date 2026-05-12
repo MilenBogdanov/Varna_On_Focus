@@ -71,12 +71,11 @@
                         class="enterprise-helpbot-search-btn">
                     Търси
                 </button>
+                <ul class="enterprise-helpbot-suggestions"
+                    id="enterpriseHelpbotSuggestions"
+                    hidden></ul>
 
             </div>
-
-            <ul class="enterprise-helpbot-suggestions"
-                id="enterpriseHelpbotSuggestions"
-                hidden></ul>
 
             <ul class="enterprise-helpbot-list"
                 id="enterpriseHelpbotList"></ul>
@@ -96,6 +95,9 @@
 </div>
 
 <style>
+    .enterprise-helpbot-suggestions[hidden]{
+    display:none !important;
+}
 .enterprise-helpbot-lang-switch{
     display:flex;
     gap:6px;
@@ -114,28 +116,80 @@
 }
 
 .enterprise-helpbot-suggestions{
+
     list-style:none;
-    margin:0 0 12px;
-    padding:0;
+
+    margin:0;
+    padding:6px;
+
+    position:absolute;
+
+    top:calc(100% + 4px);
+    left:0;
+    right:0;
+
+    z-index:30;
 
     display:grid;
     gap:6px;
+
+    border:1px solid rgba(255,255,255,.28);
+    border-radius:12px;
+
+    background:linear-gradient(
+    135deg,
+    #1d4ed8 0%,
+    #2563eb 45%,
+    #38bdf8 100%
+);
+
+    box-shadow:
+        0 10px 25px rgba(0,0,0,.18);
+
 }
 
 .enterprise-helpbot-suggestion{
+
     width:100%;
-    border:1px solid rgba(148,163,184,0.45);
-    border-radius:9px;
-    background:rgba(15,23,42,0.5);
-    color:#f8fafc;
+
+    border:1px solid rgba(255,255,255,.22);
+    border-radius:10px;
+
+    background:linear-gradient(
+        135deg,
+        #1d4ed8 0%,
+        #2563eb 45%,
+        #38bdf8 100%
+    );
+
+    color:#ffffff;
+
     text-align:left;
-    padding:8px 10px;
+
+    padding:9px 10px;
+
     font-size:12px;
+    font-weight:600;
+
     cursor:pointer;
+
+    transition:
+        transform .18s ease,
+        box-shadow .2s ease,
+        opacity .2s ease;
+
+    box-shadow:
+        0 6px 14px rgba(37,99,235,0.22);
 }
 
 .enterprise-helpbot-suggestion:hover{
-    background:rgba(30,41,59,0.78);
+
+    transform:translateY(-1px);
+
+    opacity:.92;
+
+    box-shadow:
+        0 10px 22px rgba(37,99,235,0.35);
 }
 
 .enterprise-helpbot-lang-btn{
@@ -247,12 +301,31 @@
 }
 
 .enterprise-helpbot-widget.open .enterprise-helpbot-drawer{
-    width: 380px;
-    max-height: 760px;
+
+    width:380px;
+
+    max-height:calc(100vh - 40px);
 
     box-shadow:
         0 40px 90px rgba(0,0,0,0.45),
         inset 0 1px 0 rgba(255,255,255,0.7);
+}
+#enterpriseHelpbotPanel{
+
+    border-top:1px solid rgba(148,163,184,0.26);
+
+    padding:12px;
+
+    opacity:0;
+    transform:translateY(-8px);
+
+    transition:
+        opacity .22s ease,
+        transform .22s ease;
+
+    overflow-y:auto;
+
+    max-height:calc(100vh - 110px);
 }
 
 .enterprise-helpbot-drawer,
@@ -337,16 +410,31 @@
 ========================================================= */
 
 #enterpriseHelpbotPanel{
-    border-top: 1px solid rgba(148,163,184,0.26);
 
-    padding: 12px;
+    border-top:1px solid rgba(148,163,184,0.26);
 
-    opacity: 0;
-    transform: translateY(-8px);
+    padding:12px;
+
+    opacity:0;
+    transform:translateY(-8px);
 
     transition:
         opacity .22s ease,
         transform .22s ease;
+
+    overflow-y:auto;
+
+    max-height:calc(100vh - 110px);
+
+    scrollbar-width:thin;
+}
+#enterpriseHelpbotPanel::-webkit-scrollbar{
+    width:6px;
+}
+
+#enterpriseHelpbotPanel::-webkit-scrollbar-thumb{
+    background:rgba(255,255,255,.28);
+    border-radius:20px;
 }
 
 .enterprise-helpbot-widget.open #enterpriseHelpbotPanel{
@@ -398,6 +486,7 @@
     gap:8px;
 
     margin-bottom:12px;
+    position:relative;
 }
 
 .enterprise-helpbot-search{
@@ -583,6 +672,31 @@
 .enterprise-helpbot-contact-link::before{
     content:"✉";
     font-size:15px;
+}
+
+.enterprise-helpbot-suggestions-title{
+
+    border:1px solid rgba(255,255,255,.22);
+    border-radius:10px;
+
+    background:linear-gradient(
+        135deg,
+        #1d4ed8 0%,
+        #2563eb 45%,
+        #38bdf8 100%
+    );
+
+    color:#ffffff;
+
+    padding:8px 10px;
+
+    font-size:11px;
+    font-weight:700;
+
+    text-transform:uppercase;
+
+    box-shadow:
+        0 6px 14px rgba(37,99,235,0.25);
 }
 
 /* =========================================================
@@ -773,7 +887,7 @@
 
             faq: {
                 title: 'Често задавани въпроси',
-                subtitle: 'Най-често използваните функционалности.',
+
                 items: [
 
                     {
@@ -798,7 +912,7 @@
 
             signals: {
                 title: 'Сигнали и статуси',
-                subtitle: 'Управление и обработка на сигнали.',
+
                 items: [
 
                     {
@@ -823,7 +937,7 @@
 
             map: {
                 title: 'Карта и филтри',
-                subtitle: 'Преглед и филтриране на сигнали.',
+
                 items: [
 
                     {
@@ -842,7 +956,7 @@
 
             news: {
                 title: 'Новини и известия',
-                subtitle: 'Официални публикации и актуализации.',
+
                 items: [
 
                     {
@@ -861,7 +975,7 @@
 
             account: {
                 title: 'Профил и достъп',
-                subtitle: 'Управление на профил и права.',
+
                 items: [
 
                     {
@@ -880,7 +994,7 @@
 
             contact: {
                 title: 'Ескалация и контакт',
-                subtitle: 'Свързване с поддръжката.',
+
                 items: [
 
                     {
@@ -919,7 +1033,7 @@
 
             faq: {
                 title: 'Frequently Asked Questions',
-                subtitle: 'Most commonly used platform features.',
+
                 items: [
 
                     {
@@ -944,7 +1058,7 @@
 
             signals: {
                 title: 'Signals and Statuses',
-                subtitle: 'Managing and processing reports.',
+
                 items: [
 
                     {
@@ -969,7 +1083,7 @@
 
             map: {
                 title: 'Map and Filters',
-                subtitle: 'Viewing and filtering reports.',
+
                 items: [
 
                     {
@@ -988,7 +1102,7 @@
 
             news: {
                 title: 'News and Notifications',
-                subtitle: 'Official announcements and updates.',
+
                 items: [
 
                     {
@@ -1007,7 +1121,7 @@
 
             account: {
                 title: 'Profile and Access',
-                subtitle: 'Account permissions and access.',
+
                 items: [
 
                     {
@@ -1026,7 +1140,7 @@
 
             contact: {
                 title: 'Escalation and Contact',
-                subtitle: 'Support and escalation channels.',
+
                 items: [
 
                     {
@@ -1203,38 +1317,57 @@
     }
 
     function renderSuggestions(query) {
-        const suggestions = getSearchSuggestions(query);
 
-        if (!suggestions.length) {
+    const suggestions = getSearchSuggestions(query);
+
+    if (!suggestions.length) {
+        hideSuggestions();
+        return;
+    }
+
+    suggestionsEl.innerHTML = '';
+
+    const label = document.createElement('li');
+
+    label.className = 'enterprise-helpbot-suggestions-title';
+
+    label.textContent =
+        uiText[currentLang].suggestionsLabel;
+
+    suggestionsEl.appendChild(label);
+
+    suggestions.forEach(function(item){
+
+        const li = document.createElement('li');
+
+        const btn = document.createElement('button');
+
+        btn.type = 'button';
+
+        btn.className =
+            'enterprise-helpbot-suggestion';
+
+        btn.textContent =
+            data[currentLang][item.target].title;
+
+        btn.addEventListener('click', function(){
+
+            history.push(current);
+
+            render(item.target);
+
             hideSuggestions();
-            return;
-        }
 
-        suggestionsEl.innerHTML = '';
-
-        suggestions.forEach(function(item){
-            const li = document.createElement('li');
-            const btn = document.createElement('button');
-
-            btn.type = 'button';
-            btn.className = 'enterprise-helpbot-suggestion';
-            btn.textContent =
-                uiText[currentLang].suggestionsLabel +
-                ' ' +
-                data[currentLang][item.target].title;
-
-            btn.addEventListener('click', function(){
-                history.push(current);
-                render(item.target);
-                hideSuggestions();
-            });
-
-            li.appendChild(btn);
-            suggestionsEl.appendChild(li);
         });
 
-        suggestionsEl.hidden = false;
-    }
+        li.appendChild(btn);
+
+        suggestionsEl.appendChild(li);
+
+    });
+
+    suggestionsEl.hidden = false;
+}
 
     function runSearch() {
 
